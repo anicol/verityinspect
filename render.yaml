@@ -3,7 +3,6 @@ services:
   - type: web
     name: verityinspect-api
     env: python
-    pythonVersion: '3.11'
     rootDir: apps/api
     buildCommand: |
       pip install -r requirements.txt
@@ -73,7 +72,6 @@ services:
   - type: worker
     name: verityinspect-celery
     env: python
-    pythonVersion: '3.11'
     rootDir: apps/api
     buildCommand: pip install -r requirements.txt
     startCommand: celery -A verityinspect worker -l info
