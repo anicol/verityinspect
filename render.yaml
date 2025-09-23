@@ -153,4 +153,4 @@ databases:
   - name: verityinspect-db
     databaseName: verityinspect
     user: verityinspect_user
-    plan: starter
+    plan: Basic-256mb
