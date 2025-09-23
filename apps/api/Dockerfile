@@ -28,7 +28,7 @@ COPY . .
 RUN python manage.py collectstatic --noinput --settings=verityinspect.settings
 
 # Expose port
-EXPOSE 8000
+EXPOSE $PORT
 
-# Run Django server
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "verityinspect.wsgi:application"]
+# Use gunicorn with proper configuration for production
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - verityinspect.wsgi:application
