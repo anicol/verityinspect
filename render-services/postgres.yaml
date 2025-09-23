@@ -1,0 +1,10 @@
+- type: pserv
+  name: verityinspect-db
+  plan: starter
+  envVars:
+    - key: POSTGRES_DB
+      value: verityinspect
+    - key: POSTGRES_USER
+      value: verityinspect
+    - key: POSTGRES_PASSWORD
+      generateValue: true

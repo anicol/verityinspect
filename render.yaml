@@ -130,8 +130,9 @@ services:
     startCommand: celery -A verityinspect worker -l info
 
   # React Web App
-  - type: static
+  - type: web
     name: verityinspect-web
+    runtime: static
     buildCommand: |
       cd apps/web &&
       npm install &&
@@ -142,8 +143,9 @@ services:
         value: https://verityinspect-api.onrender.com
 
   # Marketing Site
-  - type: static
+  - type: web
     name: verityinspect-marketing
+    runtime: static
     buildCommand: |
       cd apps/marketing &&
       npm install &&

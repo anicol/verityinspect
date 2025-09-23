@@ -1,0 +1,4 @@
+- type: redis
+  name: verityinspect-redis
+  plan: starter
+  maxmemoryPolicy: allkeys-lru
