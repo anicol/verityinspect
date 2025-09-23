@@ -1,0 +1,165 @@
+[
+  {
+    "model": "brands.brand",
+    "pk": 1,
+    "fields": {
+      "name": "FastBite",
+      "description": "Quick service restaurant chain",
+      "inspection_config": {
+        "ppe_required": true,
+        "safety_checks": ["fire_extinguisher", "exit_signs", "blocked_exits"],
+        "cleanliness_standards": ["spill_free", "trash_management"],
+        "uniform_policy": {
+          "required_items": ["hat", "apron", "non_slip_shoes"],
+          "brand_colors": ["red", "white"]
+        }
+      },
+      "retention_config": {
+        "inspection_mode_days": 365,
+        "coaching_mode_days": 7
+      },
+      "is_active": true
+    }
+  },
+  {
+    "model": "brands.brand",
+    "pk": 2,
+    "fields": {
+      "name": "Coffee Corner",
+      "description": "Premium coffee shop chain",
+      "inspection_config": {
+        "ppe_required": true,
+        "safety_checks": ["fire_extinguisher", "exit_signs"],
+        "cleanliness_standards": ["equipment_sanitized", "work_surfaces_clean"],
+        "uniform_policy": {
+          "required_items": ["apron", "hat"],
+          "brand_colors": ["brown", "cream"]
+        }
+      },
+      "retention_config": {
+        "inspection_mode_days": 180,
+        "coaching_mode_days": 3
+      },
+      "is_active": true
+    }
+  },
+  {
+    "model": "brands.store",
+    "pk": 1,
+    "fields": {
+      "brand": 1,
+      "name": "Downtown Location",
+      "code": "FB001",
+      "address": "123 Main St",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94105",
+      "phone": "(415) 555-0123",
+      "manager_email": "manager.downtown@fastbite.com",
+      "timezone": "America/Los_Angeles",
+      "is_active": true
+    }
+  },
+  {
+    "model": "brands.store",
+    "pk": 2,
+    "fields": {
+      "brand": 1,
+      "name": "Airport Terminal",
+      "code": "FB002",
+      "address": "SFO Terminal 2",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94128",
+      "phone": "(415) 555-0124",
+      "manager_email": "manager.airport@fastbite.com",
+      "timezone": "America/Los_Angeles",
+      "is_active": true
+    }
+  },
+  {
+    "model": "brands.store",
+    "pk": 3,
+    "fields": {
+      "brand": 2,
+      "name": "Union Square",
+      "code": "CC001",
+      "address": "456 Powell St",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94102",
+      "phone": "(415) 555-0125",
+      "manager_email": "manager.union@coffeecorner.com",
+      "timezone": "America/Los_Angeles",
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "first_name": "System",
+      "last_name": "Administrator",
+      "email": "admin@inspectai.com",
+      "is_staff": true,
+      "is_superuser": true,
+      "role": "ADMIN",
+      "store": null,
+      "phone": "",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 2,
+    "fields": {
+      "username": "gm_downtown",
+      "first_name": "John",
+      "last_name": "Smith",
+      "email": "john.smith@fastbite.com",
+      "is_staff": false,
+      "is_superuser": false,
+      "role": "GM",
+      "store": 1,
+      "phone": "(415) 555-0200",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 3,
+    "fields": {
+      "username": "inspector_jane",
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "email": "jane.doe@fastbite.com",
+      "is_staff": false,
+      "is_superuser": false,
+      "role": "INSPECTOR",
+      "store": 1,
+      "phone": "(415) 555-0201",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 4,
+    "fields": {
+      "username": "gm_coffee",
+      "first_name": "Sarah",
+      "last_name": "Johnson",
+      "email": "sarah.johnson@coffeecorner.com",
+      "is_staff": false,
+      "is_superuser": false,
+      "role": "GM",
+      "store": 3,
+      "phone": "(415) 555-0300",
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z"
+    }
+  }
+]

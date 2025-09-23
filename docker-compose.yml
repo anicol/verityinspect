@@ -1,0 +1,93 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: verityinspect
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./apps/api:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/verityinspect
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+
+  celery:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    command: celery -A verityinspect worker -l info
+    volumes:
+      - ./apps/api:/app
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/verityinspect
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+
+  celery-beat:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    command: celery -A verityinspect beat -l info
+    volumes:
+      - ./apps/api:/app
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/verityinspect
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - api
+
+  marketing:
+    build:
+      context: ./apps/marketing
+      dockerfile: Dockerfile
+    ports:
+      - "5174:5174"
+    volumes:
+      - ./apps/marketing:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:

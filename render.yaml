@@ -1,0 +1,166 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: verityinspect-db
+    env: docker
+    plan: starter
+    dockerfilePath: ./render/postgres/Dockerfile
+    envVars:
+      - key: POSTGRES_DB
+        value: verityinspect
+      - key: POSTGRES_USER
+        value: verityinspect
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+
+  # Redis Cache/Queue
+  - type: redis
+    name: verityinspect-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+
+  # Django API Backend
+  - type: web
+    name: verityinspect-api
+    env: docker
+    plan: starter
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "verityinspect-api.onrender.com,verityinspect.com,*.verityinspect.com"
+      - key: DATABASE_URL
+        fromService:
+          type: pserv
+          name: verityinspect-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_STORAGE_BUCKET_NAME
+        value: verityinspect-media
+      - key: AWS_S3_REGION_NAME
+        value: us-east-1
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: MAX_VIDEO_SIZE_MB
+        value: "100"
+      - key: SUPPORTED_VIDEO_FORMATS
+        value: "mp4,mov,avi"
+      - key: INSPECTION_MODE_RETENTION_DAYS
+        value: "365"
+      - key: COACHING_MODE_RETENTION_DAYS
+        value: "7"
+      - key: ENABLE_AWS_REKOGNITION
+        value: "True"
+      - key: DEMO_MODE
+        value: "True"
+      - key: FACE_BLUR
+        value: "False"
+      - key: FRAME_SAMPLING_FPS
+        value: "2.5"
+      - key: MAX_FRAMES_PER_VIDEO
+        value: "20"
+    buildCommand: |
+      pip install --no-cache-dir -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate
+    startCommand: gunicorn --bind 0.0.0.0:$PORT verityinspect.wsgi:application
+
+  # Celery Worker
+  - type: worker
+    name: verityinspect-celery
+    env: docker
+    plan: starter
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    envVars:
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: verityinspect-api
+          envVarKey: SECRET_KEY
+      - key: DATABASE_URL
+        fromService:
+          type: pserv
+          name: verityinspect-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: AWS_ACCESS_KEY_ID
+        fromService:
+          type: web
+          name: verityinspect-api
+          envVarKey: AWS_ACCESS_KEY_ID
+      - key: AWS_SECRET_ACCESS_KEY
+        fromService:
+          type: web
+          name: verityinspect-api
+          envVarKey: AWS_SECRET_ACCESS_KEY
+      - key: AWS_STORAGE_BUCKET_NAME
+        value: verityinspect-media
+      - key: AWS_S3_REGION_NAME
+        value: us-east-1
+    startCommand: celery -A verityinspect worker -l info
+
+  # React Web App
+  - type: web
+    name: verityinspect-web
+    env: node
+    plan: starter
+    buildCommand: |
+      cd apps/web
+      npm install
+      npm run build
+    staticPublishPath: ./apps/web/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://verityinspect-api.onrender.com
+
+  # Marketing Site
+  - type: web
+    name: verityinspect-marketing
+    env: node
+    plan: starter
+    buildCommand: |
+      cd apps/marketing
+      npm install
+      npm run build
+    staticPublishPath: ./apps/marketing/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

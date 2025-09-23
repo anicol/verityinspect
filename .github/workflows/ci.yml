@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: inspectai_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg libpq-dev
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install Python dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Django tests
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/inspectai_test
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key
+        DEBUG: False
+        ENABLE_AWS_REKOGNITION: False
+        ENABLE_YOLO_DETECTION: False
+        ENABLE_OCR_DETECTION: False
+      run: |
+        cd backend
+        python manage.py collectstatic --noinput
+        python manage.py test
+    
+    - name: Run Django migrations check
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/inspectai_test
+        SECRET_KEY: test-secret-key
+      run: |
+        cd backend
+        python manage.py makemigrations --check --dry-run
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run TypeScript check
+      run: |
+        cd frontend
+        npm run build
+    
+    - name: Run linting
+      run: |
+        cd frontend
+        npm run lint
+    
+    - name: Run tests
+      run: |
+        cd frontend
+        npm test
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build backend image
+      run: |
+        docker build -t inspectai-backend ./backend
+    
+    - name: Build frontend image
+      run: |
+        docker build -t inspectai-frontend ./frontend
+    
+    - name: Test Docker Compose
+      run: |
+        cp .env.example .env
+        docker-compose config
