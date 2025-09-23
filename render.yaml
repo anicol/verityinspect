@@ -66,7 +66,6 @@ services:
       - key: MAX_FRAMES_PER_VIDEO
         value: "20"
     healthCheckPath: /health/
-    healthCheckTimeout: 300
 
   # Celery Worker
   - type: worker
