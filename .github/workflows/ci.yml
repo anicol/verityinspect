@@ -99,7 +99,7 @@ jobs:
     - name: Install dependencies
       run: |
         cd apps/web
-        npm ci
+        npm install
     
     - name: Run TypeScript check
       run: |
