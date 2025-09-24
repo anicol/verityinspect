@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { videosAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,7 +31,7 @@ export default function InspectorQueueWidget() {
     return 'low';
   };
 
-  const urgentCount = pendingVideos?.filter(v => getUrgencyLevel(v.created_at) === 'high').length || 0;
+  const urgentCount = pendingVideos?.filter((v: any) => getUrgencyLevel(v.created_at) === 'high').length || 0;
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -79,7 +79,7 @@ export default function InspectorQueueWidget() {
 
           {/* Recent Videos */}
           <div className="space-y-3">
-            {pendingVideos.slice(0, 3).map((video) => {
+            {pendingVideos.slice(0, 3).map((video: any) => {
               const urgency = getUrgencyLevel(video.created_at);
               
               return (
