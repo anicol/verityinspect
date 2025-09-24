@@ -67,6 +67,7 @@ jobs:
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: test-secret-key
         DEBUG: False
+        TESTING: True
         ENABLE_AWS_REKOGNITION: False
         ENABLE_YOLO_DETECTION: False
         ENABLE_OCR_DETECTION: False

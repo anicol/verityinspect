@@ -12,7 +12,8 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0').s
 
 # Production security settings
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    # Don't force SSL redirect during testing
+    SECURE_SSL_REDIRECT = not config('TESTING', default=False, cast=bool)
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
