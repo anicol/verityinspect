@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Shield, Eye, Clock, TrendingUp, CheckCircle, ArrowRight } from 'lucide-react';
+import { Shield, Eye, TrendingUp, CheckCircle, ArrowRight } from 'lucide-react';
 
 export default function HomePage() {
   return (
