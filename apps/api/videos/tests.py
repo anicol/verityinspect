@@ -113,10 +113,15 @@ class VideoAPITest(TestCase):
         
         response = self.client.get('/api/videos/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
-    @patch('videos.serializers.process_video.delay')
-    def test_upload_video(self, mock_process_video):
+    @patch('videos.tasks.process_video.delay')
+    @patch('django.core.files.storage.default_storage.save')
+    @patch('django.core.files.storage.default_storage.size')
+    def test_upload_video(self, mock_storage_size, mock_storage_save, mock_process_video):
+        mock_storage_save.return_value = 'videos/test_video.mp4'
+        mock_storage_size.return_value = 1024  # Mock file size in bytes
+        
         video_file = SimpleUploadedFile(
             "test_video.mp4",
             b"fake video content",

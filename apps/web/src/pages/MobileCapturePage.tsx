@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileCapture } from './MobileCaptureContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from 'react-query';
 import { storesAPI, videosAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
@@ -47,7 +47,7 @@ export default function MobileCapturePage() {
   // Auto-select user's store if available
   useEffect(() => {
     if (user?.store && stores) {
-      const userStore = stores.find(s => s.id === user.store);
+      const userStore = stores.find((s: any) => s.id === user.store);
       if (userStore) {
         setSelectedStore(userStore.id.toString());
       }
@@ -315,7 +315,7 @@ export default function MobileCapturePage() {
                   className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-indigo-500"
                 >
                   <option value="">Select a store</option>
-                  {stores?.map(store => (
+                  {stores?.map((store: any) => (
                     <option key={store.id} value={store.id}>
                       {store.name}
                     </option>

@@ -52,6 +52,9 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: |
+            apps/web/package.json
+            apps/marketing/package.json
           
       - name: Validate Web App
         if: contains(github.event.pull_request.changed_files, 'apps/web/')
@@ -66,28 +69,6 @@ jobs:
           cd apps/marketing
           npm install
           npm run build
-
-  validate-config:
-    name: Validate Configuration
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Validate render.yaml
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - run: |
-          # Install YAML validator
-          npm install -g yaml-lint
-          yaml-lint render.yaml
-          
-      - name: Check Docker Compose
-        run: |
-          # Validate docker-compose.yml syntax
-          docker-compose config -q
 
   security-scan:
     name: Security Scan

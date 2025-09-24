@@ -110,7 +110,7 @@ class InspectionAPITest(TestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-    @patch('inspections.views.analyze_video.delay')
+    @patch('inspections.tasks.analyze_video.delay')
     def test_start_inspection(self, mock_analyze_video):
         data = {'mode': 'INSPECTION'}
         response = self.client.post(f'/api/inspections/start/{self.video.id}/', data)
@@ -128,8 +128,8 @@ class InspectionAPITest(TestCase):
         
         response = self.client.get('/api/inspections/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['overall_score'], 85.5)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['overall_score'], 85.5)
 
     def test_get_inspection_detail(self):
         inspection = Inspection.objects.create(

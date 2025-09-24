@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 interface CaptureSettings {
   mode: 'inspection' | 'coaching';
@@ -49,6 +49,14 @@ export const MobileCaptureProvider: React.FC<{ children: React.ReactNode }> = ({
     autoStop: true
   });
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+      setIsPaused(false);
+    }
+  }, [mediaRecorder, isRecording]);
+
   // Timer for recording duration
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -72,7 +80,7 @@ export const MobileCaptureProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRecording, isPaused, settings.maxDuration, settings.autoStop]);
+  }, [isRecording, isPaused, settings.maxDuration, settings.autoStop, stopRecording]);
 
   const startRecording = async () => {
     try {
@@ -112,14 +120,6 @@ export const MobileCaptureProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.error('Failed to start recording:', error);
       throw error;
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorder && isRecording) {
-      mediaRecorder.stop();
-      setIsRecording(false);
-      setIsPaused(false);
     }
   };
 

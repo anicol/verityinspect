@@ -214,13 +214,13 @@ export default function VideoUploadPage() {
           </select>
         </div>
 
-        {uploadMutation.error && (
+        {uploadMutation.error ? (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
             {uploadMutation.error instanceof Error 
               ? uploadMutation.error.message 
               : String(uploadMutation.error) || 'Upload failed. Please try again.'}
           </div>
-        )}
+        ) : null}
 
         <div className="flex justify-end space-x-3">
           <button

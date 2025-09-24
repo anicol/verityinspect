@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, createContext, useContext, ReactNode } from 'react';
 import { useQuery, useMutation } from 'react-query';
 import { authAPI } from '@/services/api';
 import type { User, LoginCredentials } from '@/types';

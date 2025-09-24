@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { videosAPI, inspectionsAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { 
-  Clock, 
   Play, 
   CheckCircle, 
   AlertCircle, 
@@ -42,7 +41,10 @@ export default function InspectorQueuePage() {
     queryFn: () => videosAPI.getVideos({
       status: 'COMPLETED', // Videos ready for inspection
       assigned_to: user?.role === 'INSPECTOR' ? user.id : undefined,
-      ...filters
+      priority: filters.priority,
+      mode: filters.mode,
+      store: filters.store,
+      search: filters.search
     }),
     refetchInterval: 30000 // Refresh every 30 seconds
   });
@@ -70,7 +72,7 @@ export default function InspectorQueuePage() {
   const processedVideos = useMemo(() => {
     if (!videos) return [];
 
-    let filtered = videos.filter(video => {
+    let filtered = videos.filter((video: any) => {
       // Search filter
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
@@ -84,7 +86,7 @@ export default function InspectorQueuePage() {
     });
 
     // Sort by priority and upload time
-    return filtered.sort((a, b) => {
+    return filtered.sort((a: any, b: any) => {
       // Priority sorting logic (could be based on store importance, urgency, etc.)
       const aPriority = getVideoPriority(a);
       const bPriority = getVideoPriority(b);
@@ -141,7 +143,7 @@ export default function InspectorQueuePage() {
           <h1 className="text-2xl font-bold text-gray-900">Inspector Queue</h1>
           <p className="text-gray-600">
             {processedVideos.length} videos awaiting inspection
-            {activeInspections?.length > 0 && `, ${activeInspections.length} in progress`}
+            {activeInspections && activeInspections.length > 0 && `, ${activeInspections.length} in progress`}
           </p>
         </div>
         
@@ -233,7 +235,7 @@ export default function InspectorQueuePage() {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {processedVideos.map((video) => {
+            {processedVideos.map((video: any) => {
               const priority = getVideoPriority(video);
               const isSelected = selectedVideo === video.id.toString();
               
@@ -299,7 +301,7 @@ export default function InspectorQueuePage() {
                             e.stopPropagation();
                             handleStartInspection(video.id, 'inspection');
                           }}
-                          disabled={startInspectionMutation.isPending}
+                          disabled={startInspectionMutation.isLoading}
                           className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center"
                         >
                           <AlertCircle className="w-4 h-4 mr-2" />
@@ -311,7 +313,7 @@ export default function InspectorQueuePage() {
                             e.stopPropagation();
                             handleStartInspection(video.id, 'coaching');
                           }}
-                          disabled={startInspectionMutation.isPending}
+                          disabled={startInspectionMutation.isLoading}
                           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                         >
                           <Star className="w-4 h-4 mr-2" />
@@ -346,7 +348,7 @@ export default function InspectorQueuePage() {
           </div>
           
           <div className="divide-y divide-gray-200">
-            {activeInspections.map((inspection) => (
+            {activeInspections.map((inspection: any) => (
               <div key={inspection.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <div>

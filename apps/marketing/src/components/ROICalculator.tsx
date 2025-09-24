@@ -14,7 +14,7 @@ interface CalculationResults {
 
 export default function ROICalculator() {
   const [stores, setStores] = useState(100);
-  const [visitsPerYear, setVisitsPerYear] = useState(2);
+  const [visitsPerYear, setVisitsPerYear] = useState(4);
   const [costPerVisitMin, setCostPerVisitMin] = useState(500);
   const [costPerVisitMax, setCostPerVisitMax] = useState(1000);
   const [travelReductionPct, setTravelReductionPct] = useState(60);

@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from brands.models import Brand, Store
@@ -65,34 +64,30 @@ class AuthAPITest(TestCase):
         )
 
     def test_login_success(self):
-        url = reverse('login')
         data = {
             'username': 'testuser',
             'password': 'testpass123'
         }
-        response = self.client.post(url, data)
+        response = self.client.post('/api/auth/login/', data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         self.assertIn('refresh', response.data)
         self.assertIn('user', response.data)
 
     def test_login_invalid_credentials(self):
-        url = reverse('login')
         data = {
             'username': 'testuser',
             'password': 'wrongpassword'
         }
-        response = self.client.post(url, data)
+        response = self.client.post('/api/auth/login/', data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_profile_authenticated(self):
         self.client.force_authenticate(user=self.user)
-        url = reverse('profile')
-        response = self.client.get(url)
+        response = self.client.get('/api/auth/profile/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], 'testuser')
 
     def test_profile_unauthenticated(self):
-        url = reverse('profile')
-        response = self.client.get(url)
+        response = self.client.get('/api/auth/profile/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
