@@ -247,6 +247,19 @@ ENABLE_OCR_DETECTION = config('ENABLE_OCR_DETECTION', default=False, cast=bool)
 DEMO_MODE = config('DEMO_MODE', default=True, cast=bool)
 FACE_BLUR = config('FACE_BLUR', default=False, cast=bool)
 
+# Demo mode configuration
+if DEMO_MODE:
+    # Allow longer session times in demo mode
+    SESSION_COOKIE_AGE = 86400 * 7  # 7 days
+    
+    # More permissive CORS in demo mode
+    if DEBUG:
+        CORS_ALLOW_ALL_ORIGINS = True
+    
+    # Demo-specific settings
+    LOGIN_REDIRECT_URL = '/'
+    LOGOUT_REDIRECT_URL = '/login'
+
 # Frame sampling settings (for FFmpeg)
 FRAME_SAMPLING_FPS = config('FRAME_SAMPLING_FPS', default=2.5, cast=float)
 MAX_FRAMES_PER_VIDEO = config('MAX_FRAMES_PER_VIDEO', default=20, cast=int)

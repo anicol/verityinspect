@@ -15,6 +15,7 @@ import UsersPage from '@/pages/UsersPage';
 import MobileCapturePage from '@/pages/MobileCapturePage';
 import InspectorQueuePage from '@/pages/InspectorQueuePage';
 import { MobileCaptureProvider } from '@/pages/MobileCaptureContext';
+import DemoModeIndicator from '@/components/DemoModeIndicator';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -74,8 +75,14 @@ function AppRoutes() {
 }
 
 function App() {
+  // Check if demo mode is enabled (could be from env variable or API)
+  const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || 
+                     window.location.hostname.includes('demo') ||
+                     window.location.hostname.includes('verityinspect');
+
   return (
     <AuthProvider>
+      {isDemoMode && <DemoModeIndicator />}
       <AppRoutes />
     </AuthProvider>
   );
