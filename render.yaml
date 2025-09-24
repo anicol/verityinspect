@@ -71,7 +71,7 @@ services:
         value: "2.5"
       - key: MAX_FRAMES_PER_VIDEO
         value: "20"
-    healthCheckPath: /health/
+    healthCheckPath: /healthz/
 
   # Celery Worker
   - type: worker
@@ -83,6 +83,45 @@ services:
       python3.11 -m pip install -r requirements.txt
     startCommand: python3.11 -m celery -A verityinspect worker -l info
     plan: starter
+    envVars:
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: verityinspect-api
+          envVarKey: SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: verityinspect-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: verityinspect-redis
+          property: connectionString
+      - key: AWS_ACCESS_KEY_ID
+        fromService:
+          type: web
+          name: verityinspect-api
+          envVarKey: AWS_ACCESS_KEY_ID
+      - key: AWS_SECRET_ACCESS_KEY
+        fromService:
+          type: web
+          name: verityinspect-api
+          envVarKey: AWS_SECRET_ACCESS_KEY
+      - key: AWS_STORAGE_BUCKET_NAME
+        value: verityinspect-media
+      - key: AWS_S3_REGION_NAME
+        value: us-east-1
 
   # Celery Beat Scheduler
   - type: worker
