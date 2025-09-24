@@ -79,63 +79,24 @@ services:
     env: python
     rootDir: apps/api
     buildCommand: |
-      echo "Python version: $(python3.11 --version)"
-      echo "Pip version: $(python3.11 -m pip --version)"
-      echo "Current directory: $(pwd)"
-      echo "Requirements file exists: $(ls -la requirements.txt)"
-      python3.11 -m pip install --upgrade pip --break-system-packages
-      python3.11 -m pip install -r requirements.txt --break-system-packages --verbose
-      echo "Celery installed check:"
-      python3.11 -c "import sys; print('Python path:', sys.path)"
-      python3.11 -c "import celery; print(f'Celery version: {celery.__version__}')"
-      echo "Pip list:"
-      python3.11 -m pip list | grep celery
+      python3.11 -m pip install --upgrade pip --break-system-packages --quiet
+      python3.11 -m pip install -r requirements.txt --break-system-packages --quiet
     startCommand: |
-      echo "=== CELERY WORKER STARTUP DIAGNOSTICS ==="
-      echo "Python version: $(python3.11 --version)"
-      echo "Current directory: $(pwd)"
-      echo "Contents: $(ls -la)"
-      echo "Python path:"
-      python3.11 -c "import sys; [print(p) for p in sys.path]"
+      echo "Starting Celery worker with dependency check..."
       
-      echo "=== CHECKING CORE DEPENDENCIES ==="
-      echo "Checking if decouple is installed (required for Django settings):"
-      python3.11 -c "from decouple import config; print('decouple OK')" || echo "DECOUPLE MISSING - installing requirements"
-      if ! python3.11 -c "from decouple import config" 2>/dev/null; then
-        echo "Installing all requirements with --break-system-packages"
-        python3.11 -m pip install --upgrade pip --break-system-packages
-        python3.11 -m pip install -r requirements.txt --break-system-packages --verbose || echo "Requirements install failed"
-      fi
-      
-      echo "=== CHECKING CELERY INSTALLATION ==="
-      python3.11 -c "import celery; print(f'Celery {celery.__version__} found')" || echo "CELERY MISSING"
-      if ! python3.11 -c "import celery" 2>/dev/null; then
-        echo "Installing celery specifically"
-        python3.11 -m pip install celery django-celery-beat --break-system-packages
-      fi
-      
-      echo "=== FINAL DEPENDENCY VERIFICATION ==="
-      python3.11 -c "from decouple import config; print('✓ decouple')"
-      python3.11 -c "import django; print('✓ django')" 
-      python3.11 -c "import celery; print(f'✓ celery {celery.__version__}')"
-      
-      echo "=== TESTING DJANGO SETTINGS IMPORT ==="
-      export DJANGO_SETTINGS_MODULE=verityinspect.settings
-      python3.11 -c "import django; django.setup(); print('✓ Django settings loaded successfully')" || echo "❌ Django settings failed"
-      
-      echo "=== STARTING CELERY WORKER ==="
-      echo "Setting DJANGO_SETTINGS_MODULE environment variable..."
-      export DJANGO_SETTINGS_MODULE=verityinspect.settings
-      echo "DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE"
-      
-      echo "Final check - can we import decouple right before starting Celery?"
-      python3.11 -c "from decouple import config; print('✅ decouple import successful')" || {
-        echo "🚨 CRITICAL: decouple still not available - installing python-decouple specifically"
-        python3.11 -m pip install python-decouple --break-system-packages --force-reinstall
-        python3.11 -c "from decouple import config; print('✅ decouple now working')"
+      # Quick dependency check and install if needed
+      python3.11 -c "from decouple import config" 2>/dev/null || {
+        echo "Installing missing dependencies..."
+        python3.11 -m pip install python-decouple --break-system-packages --quiet
       }
       
-      echo "Attempting to start Celery worker..."
+      # Verify critical imports work
+      python3.11 -c "from decouple import config; import django; import celery" || {
+        echo "Installing requirements.txt..."
+        python3.11 -m pip install -r requirements.txt --break-system-packages --quiet
+      }
+      
+      echo "Starting Celery worker..."
       python3.11 -m celery -A verityinspect worker -l info
     plan: starter
     envVars:
@@ -186,37 +147,24 @@ services:
     env: python
     rootDir: apps/api
     buildCommand: |
-      echo "Python version: $(python3.11 --version)"
-      echo "Current directory: $(pwd)"
-      python3.11 -m pip install --upgrade pip --break-system-packages
-      python3.11 -m pip install -r requirements.txt --break-system-packages --verbose
-      echo "Celery installed check:"
-      python3.11 -c "import celery; print(f'Celery version: {celery.__version__}')"
-      python3.11 -m pip list | grep celery
+      python3.11 -m pip install --upgrade pip --break-system-packages --quiet
+      python3.11 -m pip install -r requirements.txt --break-system-packages --quiet
     startCommand: |
-      echo "=== CELERY BEAT STARTUP DIAGNOSTICS ==="
-      echo "Python version: $(python3.11 --version)"
-      echo "Current directory: $(pwd)"
+      echo "Starting Celery beat scheduler with dependency check..."
       
-      echo "=== CHECKING CORE DEPENDENCIES ==="
-      echo "Checking if decouple is installed (required for Django settings):"
-      python3.11 -c "from decouple import config; print('decouple OK')" || echo "DECOUPLE MISSING - installing requirements"
-      if ! python3.11 -c "from decouple import config" 2>/dev/null; then
-        echo "Installing all requirements with --break-system-packages"
-        python3.11 -m pip install --upgrade pip --break-system-packages
-        python3.11 -m pip install -r requirements.txt --break-system-packages --verbose
-      fi
+      # Quick dependency check and install if needed
+      python3.11 -c "from decouple import config" 2>/dev/null || {
+        echo "Installing missing dependencies..."
+        python3.11 -m pip install python-decouple --break-system-packages --quiet
+      }
       
-      echo "=== FINAL DEPENDENCY VERIFICATION ==="
-      python3.11 -c "from decouple import config; print('✓ decouple')"
-      python3.11 -c "import django; print('✓ django')" 
-      python3.11 -c "import celery; print(f'✓ celery {celery.__version__}')"
+      # Verify critical imports work
+      python3.11 -c "from decouple import config; import django; import celery" || {
+        echo "Installing requirements.txt..."
+        python3.11 -m pip install -r requirements.txt --break-system-packages --quiet
+      }
       
-      echo "=== TESTING DJANGO SETTINGS IMPORT ==="
-      export DJANGO_SETTINGS_MODULE=verityinspect.settings
-      python3.11 -c "import django; django.setup(); print('✓ Django settings loaded successfully')" || echo "❌ Django settings failed"
-      
-      echo "=== STARTING CELERY BEAT SCHEDULER ==="
+      echo "Starting Celery beat scheduler..."
       python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     plan: starter
     envVars:
