@@ -71,7 +71,7 @@ services:
         value: "2.5"
       - key: MAX_FRAMES_PER_VIDEO
         value: "20"
-    healthCheckPath: /healthz/
+    healthCheckPath: /health/
 
   # Celery Worker
   - type: worker
