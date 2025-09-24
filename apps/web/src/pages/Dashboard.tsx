@@ -2,6 +2,7 @@ import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { inspectionsAPI, videosAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
+import InspectorQueueWidget from '@/components/InspectorQueueWidget';
 import {
   BarChart3,
   Video,
@@ -90,7 +91,11 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Inspector Queue Widget - Only for inspectors and admins */}
+        {(user?.role === 'INSPECTOR' || user?.role === 'ADMIN') && (
+          <InspectorQueueWidget />
+        )}
         {/* Recent Videos */}
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between mb-4">

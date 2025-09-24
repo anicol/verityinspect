@@ -206,11 +206,11 @@ export default function VideoUploadPage() {
                     {store.brand_name} - {store.name}
                   </option>
                 ))
-              : user?.store && (
+              : user?.store ? (
                   <option value={user.store}>
                     {stores?.find(s => s.id === user.store)?.name || 'My Store'}
                   </option>
-                )}
+                ) : null}
           </select>
         </div>
 

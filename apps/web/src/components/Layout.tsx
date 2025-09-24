@@ -18,6 +18,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Videos', href: '/videos', icon: Video },
   { name: 'Inspections', href: '/inspections', icon: FileSearch },
+  { name: 'Inspector Queue', href: '/inspector-queue', icon: CheckSquare, inspectorOnly: true },
   { name: 'Action Items', href: '/actions', icon: CheckSquare },
   { name: 'Brands', href: '/brands', icon: Building2, adminOnly: true },
   { name: 'Stores', href: '/stores', icon: Store },
@@ -30,7 +31,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   const filteredNavigation = navigation.filter(
-    (item) => !item.adminOnly || user?.role === 'ADMIN'
+    (item) => 
+      (!item.adminOnly || user?.role === 'ADMIN') &&
+      (!item.inspectorOnly || user?.role === 'INSPECTOR' || user?.role === 'ADMIN')
   );
 
   return (

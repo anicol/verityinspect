@@ -13,6 +13,7 @@ import BrandsPage from '@/pages/BrandsPage';
 import StoresPage from '@/pages/StoresPage';
 import UsersPage from '@/pages/UsersPage';
 import MobileCapturePage from '@/pages/MobileCapturePage';
+import InspectorQueuePage from '@/pages/InspectorQueuePage';
 import { MobileCaptureProvider } from '@/pages/MobileCaptureContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -53,6 +54,7 @@ function AppRoutes() {
                 <Route path="/brands" element={<BrandsPage />} />
                 <Route path="/stores" element={<StoresPage />} />
                 <Route path="/users" element={<UsersPage />} />
+                <Route path="/inspector-queue" element={<InspectorQueuePage />} />
                 <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
