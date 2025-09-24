@@ -271,15 +271,35 @@ MAX_FRAMES_PER_VIDEO = config('MAX_FRAMES_PER_VIDEO', default=20, cast=int)
 WEBHOOK_TIMEOUT_SECONDS = config('WEBHOOK_TIMEOUT_SECONDS', default=30, cast=int)
 WEBHOOK_RETRY_ATTEMPTS = config('WEBHOOK_RETRY_ATTEMPTS', default=3, cast=int)
 
-# Email settings
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@verityinspect.com')
+# Email settings - AWS SES Configuration
+USE_SES = config('USE_SES', default=True, cast=bool)
+
+if USE_SES and not DEBUG:
+    # AWS SES Configuration (Recommended for AWS/Render)
+    EMAIL_BACKEND = 'django_ses.SESBackend'
+    AWS_SES_REGION_NAME = config('AWS_SES_REGION_NAME', default='us-east-1')
+    AWS_SES_REGION_ENDPOINT = f'email.{AWS_SES_REGION_NAME}.amazonaws.com'
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@verityinspect.com')
+    SERVER_EMAIL = config('SERVER_EMAIL', default='admin@verityinspect.com')
+    
+    # Use existing AWS credentials from your setup
+    # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are already configured above
+    
+else:
+    # Fallback SMTP Configuration
+    EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@verityinspect.com')
+    SERVER_EMAIL = config('SERVER_EMAIL', default='admin@verityinspect.com')
+
+# Email timeout settings
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=30, cast=int)
 
 # For development/testing, use console backend
-if DEBUG and not EMAIL_HOST_USER:
+if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
