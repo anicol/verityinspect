@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ArrowRight, Calendar, Phone, Mail, Building } from 'lucide-react';
+import { ArrowRight, Calendar, Phone, Mail, Building, CheckCircle } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { sendDemoRequest } from '../services/apiService';
 
 export default function DemoPage() {
   const [formData, setFormData] = useState({
@@ -14,11 +15,41 @@ export default function DemoPage() {
     role: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Demo request:', formData);
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await sendDemoRequest(formData);
+      
+      // Show success message
+      setIsSubmitted(true);
+      
+      // Reset form after delay
+      setTimeout(() => {
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          company: '',
+          phone: '',
+          stores: '',
+          role: '',
+          message: ''
+        });
+        setIsSubmitted(false);
+      }, 3000);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send demo request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -194,12 +225,30 @@ export default function DemoPage() {
                   />
                 </div>
 
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+                    {error}
+                  </div>
+                )}
+
+                {isSubmitted && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-600 text-sm flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Thank you! Your demo request has been sent successfully.
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center justify-center font-semibold"
+                  disabled={isSubmitting}
+                  className={`w-full px-6 py-3 rounded-lg transition-colors inline-flex items-center justify-center font-semibold ${
+                    isSubmitting 
+                      ? 'bg-gray-400 text-white cursor-not-allowed' 
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
                 >
-                  Request Demo
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {isSubmitting ? 'Sending...' : 'Request Demo'}
+                  {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
                 </button>
               </form>
             </div>
