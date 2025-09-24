@@ -49,6 +49,14 @@ export const MobileCaptureProvider: React.FC<{ children: React.ReactNode }> = ({
     autoStop: true
   });
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+      setIsPaused(false);
+    }
+  }, [mediaRecorder, isRecording]);
+
   // Timer for recording duration
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -114,14 +122,6 @@ export const MobileCaptureProvider: React.FC<{ children: React.ReactNode }> = ({
       throw error;
     }
   };
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorder && isRecording) {
-      mediaRecorder.stop();
-      setIsRecording(false);
-      setIsPaused(false);
-    }
-  }, [mediaRecorder, isRecording]);
 
   const pauseRecording = () => {
     if (mediaRecorder && isRecording && !isPaused) {
