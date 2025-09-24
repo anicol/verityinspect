@@ -144,7 +144,7 @@ export default function InspectorQueuePage() {
           <h1 className="text-2xl font-bold text-gray-900">Inspector Queue</h1>
           <p className="text-gray-600">
             {processedVideos.length} videos awaiting inspection
-            {activeInspections?.length > 0 && `, ${activeInspections.length} in progress`}
+            {activeInspections && activeInspections.length > 0 && `, ${activeInspections.length} in progress`}
           </p>
         </div>
         
@@ -302,7 +302,7 @@ export default function InspectorQueuePage() {
                             e.stopPropagation();
                             handleStartInspection(video.id, 'inspection');
                           }}
-                          disabled={startInspectionMutation.isPending}
+                          disabled={startInspectionMutation.isLoading}
                           className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center"
                         >
                           <AlertCircle className="w-4 h-4 mr-2" />
@@ -314,7 +314,7 @@ export default function InspectorQueuePage() {
                             e.stopPropagation();
                             handleStartInspection(video.id, 'coaching');
                           }}
-                          disabled={startInspectionMutation.isPending}
+                          disabled={startInspectionMutation.isLoading}
                           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                         >
                           <Star className="w-4 h-4 mr-2" />
