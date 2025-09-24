@@ -126,7 +126,7 @@ class InspectionAPITest(TestCase):
             overall_score=85.5
         )
         
-        response = self.client.get('/api/inspections/')
+        response = self.client.get('/api/inspections')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['overall_score'], 85.5)
@@ -138,7 +138,7 @@ class InspectionAPITest(TestCase):
             overall_score=85.5
         )
         
-        response = self.client.get(f'/api/inspections/{inspection.id}/')
+        response = self.client.get(f'/api/inspections/{inspection.id}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['overall_score'], 85.5)
 
@@ -150,7 +150,7 @@ class InspectionAPITest(TestCase):
             overall_score=85.5
         )
         
-        response = self.client.get('/api/inspections/stats/')
+        response = self.client.get('/api/inspections/stats')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['total_inspections'], 1)
         self.assertEqual(response.data['completed_inspections'], 1)

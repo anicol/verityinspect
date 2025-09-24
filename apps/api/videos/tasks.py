@@ -250,7 +250,10 @@ def extract_frames_from_s3_video(video, video_path):
         return []
 
 
-def apply_inspection_rules(video, frames):
+# Rule engine functions temporarily disabled due to missing Rule/Detection models
+# TODO: Re-enable when Rule and Detection models are implemented
+
+# def apply_inspection_rules(video, frames):
     """Apply inspection mode rules with compliance checks"""
     try:
         # Create inspection record

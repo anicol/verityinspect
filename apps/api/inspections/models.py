@@ -110,3 +110,49 @@ class ActionItem(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.priority})"
+
+
+# Placeholder models for rule engine (to be fully implemented later)
+class Rule(models.Model):
+    class RuleType(models.TextChoices):
+        PPE = 'PPE', 'Personal Protective Equipment'
+        SAFETY = 'SAFETY', 'Safety'
+        CLEANLINESS = 'CLEANLINESS', 'Cleanliness'
+        TRAINING = 'TRAINING', 'Training'
+        PROCESS = 'PROCESS', 'Process'
+
+    brand = models.ForeignKey('brands.Brand', on_delete=models.CASCADE, related_name='rules')
+    name = models.CharField(max_length=200)
+    rule_type = models.CharField(max_length=20, choices=RuleType.choices)
+    description = models.TextField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'rules'
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.rule_type})"
+
+
+class Detection(models.Model):
+    inspection = models.ForeignKey(Inspection, on_delete=models.CASCADE, related_name='detections')
+    frame = models.ForeignKey('videos.VideoFrame', on_delete=models.CASCADE)
+    rule = models.ForeignKey(Rule, on_delete=models.CASCADE)
+    confidence = models.FloatField(help_text="Detection confidence score 0-1")
+    bbox_x = models.IntegerField(default=0)
+    bbox_y = models.IntegerField(default=0)
+    bbox_width = models.IntegerField(default=0)
+    bbox_height = models.IntegerField(default=0)
+    metadata = models.JSONField(default=dict)
+    suggestions = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'detections'
+        ordering = ['-confidence', 'created_at']
+
+    def __str__(self):
+        return f"{self.rule.name} - {self.confidence:.2f}"
