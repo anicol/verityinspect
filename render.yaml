@@ -6,18 +6,9 @@ services:
     rootDir: apps/api
     region: oregon
     buildCommand: |
-      echo "Build starting in: $(pwd)"
-      ls -la
       python3.11 -m pip install --upgrade pip
       python3.11 -m pip install -r requirements.txt
-      echo "Checking Django apps can be imported:"
-      python3.11 -c "import uploads; print('uploads: OK')" || echo "uploads: FAILED"
-      python3.11 -c "import core; print('core: OK')" || echo "core: FAILED"
     startCommand: |
-      echo "Current directory: $(pwd)"
-      echo "Python path: $PYTHONPATH"
-      ls -la
-      export PYTHONPATH="${PYTHONPATH}:$(pwd)"
       python3.11 manage.py migrate --settings=verityinspect.settings
       python3.11 manage.py collectstatic --noinput --settings=verityinspect.settings
       python3.11 manage.py create_demo_users --settings=verityinspect.settings || echo "Demo users may already exist"
