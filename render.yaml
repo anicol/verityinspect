@@ -124,9 +124,23 @@ services:
       python3.11 -c "import django; django.setup(); print('✓ Django settings loaded successfully')" || echo "❌ Django settings failed"
       
       echo "=== STARTING CELERY WORKER ==="
+      echo "Setting DJANGO_SETTINGS_MODULE environment variable..."
+      export DJANGO_SETTINGS_MODULE=verityinspect.settings
+      echo "DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE"
+      
+      echo "Final check - can we import decouple right before starting Celery?"
+      python3.11 -c "from decouple import config; print('✅ decouple import successful')" || {
+        echo "🚨 CRITICAL: decouple still not available - installing python-decouple specifically"
+        python3.11 -m pip install python-decouple --break-system-packages --force-reinstall
+        python3.11 -c "from decouple import config; print('✅ decouple now working')"
+      }
+      
+      echo "Attempting to start Celery worker..."
       python3.11 -m celery -A verityinspect worker -l info
     plan: starter
     envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: verityinspect.settings
       - key: SECRET_KEY
         fromService:
           type: web
@@ -206,6 +220,8 @@ services:
       python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     plan: starter
     envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: verityinspect.settings
       - key: SECRET_KEY
         fromService:
           type: web
