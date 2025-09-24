@@ -13,6 +13,7 @@ export default function HomePage() {
               <span className="ml-2 text-2xl font-bold text-gray-900">VerityInspect</span>
             </div>
             <nav className="hidden md:flex space-x-8">
+              <Link to="/coaching-mode" className="text-gray-600 hover:text-gray-900">Coaching Mode</Link>
               <Link to="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</Link>
               <Link to="/roi-calculator" className="text-gray-600 hover:text-gray-900">ROI Calculator</Link>
               <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
