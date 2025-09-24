@@ -71,6 +71,15 @@ services:
         value: "2.5"
       - key: MAX_FRAMES_PER_VIDEO
         value: "20"
+      # Email/SES Configuration
+      - key: USE_SES
+        value: "True"
+      - key: AWS_SES_REGION_NAME
+        value: us-east-1
+      - key: DEFAULT_FROM_EMAIL
+        value: noreply@verityinspect.com
+      - key: SERVER_EMAIL
+        value: admin@verityinspect.com
     healthCheckPath: /health/
 
   # Celery Worker
