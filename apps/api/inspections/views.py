@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
+from django.db import models
 from .models import Inspection, Finding, ActionItem
 from .serializers import (
     InspectionSerializer, InspectionListSerializer, FindingSerializer,
