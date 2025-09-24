@@ -14,13 +14,13 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
-const API_BASE_URL = process.env.API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.API_URL || process.env.VITE_API_URL || 'https://verityinspect-api.onrender.com';
 const OUTPUT_DIR = path.join(__dirname, '../apps/web/src/generated');
 
 async function fetchSchema() {
   console.log('Fetching OpenAPI schema...');
   
-  const url = `${API_BASE_URL}/api/schema/`;
+  const url = `${API_BASE_URL}/api/schema/?format=json`;
   const client = url.startsWith('https') ? https : http;
   
   return new Promise((resolve, reject) => {
