@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { videosAPI, inspectionsAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { 
-  Clock, 
   Play, 
   CheckCircle, 
   AlertCircle, 

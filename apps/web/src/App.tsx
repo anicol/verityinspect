@@ -17,20 +17,6 @@ import InspectorQueuePage from '@/pages/InspectorQueuePage';
 import { MobileCaptureProvider } from '@/pages/MobileCaptureContext';
 import DemoModeIndicator from '@/components/DemoModeIndicator';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return <>{children}</>;
-}
-
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
   

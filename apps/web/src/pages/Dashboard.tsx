@@ -9,7 +9,6 @@ import {
   FileSearch,
   AlertTriangle,
   CheckSquare,
-  TrendingUp,
   Plus,
 } from 'lucide-react';
 
