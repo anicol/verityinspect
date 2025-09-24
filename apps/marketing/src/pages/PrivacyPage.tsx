@@ -1,24 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Shield, Eye, Trash2, Clock, Lock } from 'lucide-react';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link to="/" className="flex items-center">
-              <Shield className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">VerityInspect</span>
-            </Link>
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/" className="text-gray-600 hover:text-gray-900">Home</Link>
-              <Link to="/roi-calculator" className="text-gray-600 hover:text-gray-900">ROI Calculator</Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero */}
       <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -242,6 +230,8 @@ export default function PrivacyPage() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

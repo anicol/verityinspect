@@ -19,38 +19,42 @@ export default function Header() {
           <nav className="hidden md:flex items-center space-x-8">
             {/* Product Dropdown */}
             <div 
-              className="relative"
+              className="relative group"
               onMouseEnter={() => setShowProductDropdown(true)}
               onMouseLeave={() => setShowProductDropdown(false)}
             >
-              <button className="flex items-center text-gray-600 hover:text-gray-900">
+              <button className="flex items-center text-gray-600 hover:text-gray-900 py-2">
                 Product
                 <ChevronDown className="ml-1 h-4 w-4" />
               </button>
               {showProductDropdown && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-md shadow-lg border">
+                <div className="absolute top-full left-0 w-48 bg-white rounded-md shadow-lg border z-50">
                   <div className="py-1">
                     <Link
                       to="/coaching-mode"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowProductDropdown(false)}
                     >
                       Coaching Mode
                     </Link>
                     <Link
                       to="/enterprise"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowProductDropdown(false)}
                     >
                       Corporate / Enterprise
                     </Link>
                     <Link
                       to="/pricing"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowProductDropdown(false)}
                     >
                       Pricing
                     </Link>
                     <Link
                       to="/demo"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowProductDropdown(false)}
                     >
                       Demo
                     </Link>
@@ -61,26 +65,28 @@ export default function Header() {
 
             {/* Company Dropdown */}
             <div 
-              className="relative"
+              className="relative group"
               onMouseEnter={() => setShowCompanyDropdown(true)}
               onMouseLeave={() => setShowCompanyDropdown(false)}
             >
-              <button className="flex items-center text-gray-600 hover:text-gray-900">
+              <button className="flex items-center text-gray-600 hover:text-gray-900 py-2">
                 Company
                 <ChevronDown className="ml-1 h-4 w-4" />
               </button>
               {showCompanyDropdown && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-md shadow-lg border">
+                <div className="absolute top-full left-0 w-48 bg-white rounded-md shadow-lg border z-50">
                   <div className="py-1">
                     <Link
                       to="/about"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowCompanyDropdown(false)}
                     >
                       About
                     </Link>
                     <Link
                       to="/contact"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setShowCompanyDropdown(false)}
                     >
                       Contact
                     </Link>
@@ -97,16 +103,16 @@ export default function Header() {
 
             {/* Support Dropdown */}
             <div 
-              className="relative"
+              className="relative group"
               onMouseEnter={() => setShowSupportDropdown(true)}
               onMouseLeave={() => setShowSupportDropdown(false)}
             >
-              <button className="flex items-center text-gray-600 hover:text-gray-900">
+              <button className="flex items-center text-gray-600 hover:text-gray-900 py-2">
                 Support
                 <ChevronDown className="ml-1 h-4 w-4" />
               </button>
               {showSupportDropdown && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-md shadow-lg border">
+                <div className="absolute top-full left-0 w-48 bg-white rounded-md shadow-lg border z-50">
                   <div className="py-1">
                     <a
                       href="#"
@@ -149,7 +155,7 @@ export default function Header() {
                 Start Free Trial
               </Link>
               <Link
-                to="/enterprise"
+                to="/demo"
                 className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Get Demo
