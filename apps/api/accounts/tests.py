@@ -101,14 +101,14 @@ class AuthAPITest(TestCase):
         refresh = RefreshToken.for_user(self.user)
         data = {'refresh': str(refresh)}
         
-        response = self.client.post('/api/auth/token/refresh/', data)
+        response = self.client.post('/api/auth/refresh/', data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         
     def test_invalid_refresh_token(self):
         """Test invalid refresh token handling"""
         data = {'refresh': 'invalid_token'}
-        response = self.client.post('/api/auth/token/refresh/', data)
+        response = self.client.post('/api/auth/refresh/', data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
