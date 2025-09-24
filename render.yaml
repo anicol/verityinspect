@@ -6,15 +6,17 @@ services:
     rootDir: apps/api
     region: oregon
     buildCommand: |
-      python -m pip install --upgrade pip
-      pip install -r requirements.txt
+      python3.11 -m pip install --upgrade pip
+      python3.11 -m pip install -r requirements.txt
     startCommand: |
-      python manage.py migrate --settings=verityinspect.settings
-      python manage.py collectstatic --noinput --settings=verityinspect.settings
-      python manage.py create_demo_users --settings=verityinspect.settings || echo "Demo users may already exist"
+      python3.11 manage.py migrate --settings=verityinspect.settings
+      python3.11 manage.py collectstatic --noinput --settings=verityinspect.settings
+      python3.11 manage.py create_demo_users --settings=verityinspect.settings || echo "Demo users may already exist"
       gunicorn verityinspect.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     plan: starter
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
@@ -76,9 +78,9 @@ services:
     env: python
     rootDir: apps/api
     buildCommand: |
-      python -m pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: celery -A verityinspect worker -l info
+      python3.11 -m pip install --upgrade pip
+      python3.11 -m pip install -r requirements.txt
+    startCommand: python3.11 -m celery -A verityinspect worker -l info
     plan: starter
     envVars:
       - key: SECRET_KEY
