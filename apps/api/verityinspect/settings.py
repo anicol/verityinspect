@@ -41,7 +41,7 @@ LOCAL_APPS = [
     'core',
     'accounts',
     'brands',
-    'uploads',
+    'uploads.apps.UploadsConfig',
     'inspections',
     'videos',
     'ai_services',
