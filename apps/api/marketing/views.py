@@ -51,7 +51,7 @@ Sent from VerityInspect Marketing Website
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['alistair.nicol@gmail.com'],
+            recipient_list=['alistair@verityinspect.com'],
             fail_silently=False,
         )
         
@@ -106,7 +106,7 @@ Sent from VerityInspect Marketing Website
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['alistair.nicol@gmail.com'],
+            recipient_list=['alistair@verityinspect.com'],
             fail_silently=False,
         )
         
