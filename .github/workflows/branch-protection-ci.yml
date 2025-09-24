@@ -52,6 +52,9 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: |
+            apps/web/package.json
+            apps/marketing/package.json
           
       - name: Validate Web App
         if: contains(github.event.pull_request.changed_files, 'apps/web/')

@@ -57,7 +57,7 @@ jobs:
     
     - name: Install Python dependencies
       run: |
-        cd backend
+        cd apps/api
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
@@ -71,7 +71,7 @@ jobs:
         ENABLE_YOLO_DETECTION: False
         ENABLE_OCR_DETECTION: False
       run: |
-        cd backend
+        cd apps/api
         python manage.py collectstatic --noinput
         python manage.py test
     
@@ -80,7 +80,7 @@ jobs:
         DATABASE_URL: postgres://postgres:postgres@localhost:5432/inspectai_test
         SECRET_KEY: test-secret-key
       run: |
-        cd backend
+        cd apps/api
         python manage.py makemigrations --check --dry-run
 
   frontend-tests:
@@ -94,26 +94,26 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+        cache-dependency-path: apps/web/package.json
     
     - name: Install dependencies
       run: |
-        cd frontend
+        cd apps/web
         npm ci
     
     - name: Run TypeScript check
       run: |
-        cd frontend
+        cd apps/web
         npm run build
     
     - name: Run linting
       run: |
-        cd frontend
+        cd apps/web
         npm run lint
     
     - name: Run tests
       run: |
-        cd frontend
+        cd apps/web
         npm test
 
   docker-build:
@@ -128,11 +128,11 @@ jobs:
     
     - name: Build backend image
       run: |
-        docker build -t inspectai-backend ./backend
+        docker build -t inspectai-backend ./apps/api
     
     - name: Build frontend image
       run: |
-        docker build -t inspectai-frontend ./frontend
+        docker build -t inspectai-frontend ./apps/web
     
     - name: Test Docker Compose
       run: |
