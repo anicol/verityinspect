@@ -34,7 +34,7 @@ vi.mock('./MobileCaptureContext', () => ({
 // Mock react-router-dom navigate
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
+  const actual = await vi.importActual('react-router-dom') as any
   return {
     ...actual,
     useNavigate: () => mockNavigate
@@ -288,7 +288,21 @@ describe('MobileCapturePage', () => {
       isOptimalForCapture: true
     })
 
-    const mockUploadVideo = vi.mocked(apiModule.videosAPI.uploadVideo).mockResolvedValue({ id: 1 })
+    const mockUploadVideo = vi.mocked(apiModule.videosAPI.uploadVideo).mockResolvedValue({
+      id: 1,
+      title: 'Test Recording',
+      uploaded_by: 1,
+      uploaded_by_name: 'Test User',
+      store: 1,
+      store_name: 'Test Store',
+      file: 'test-video.webm',
+      status: 'UPLOADED' as const,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      file_size: 1024,
+      duration: null,
+      thumbnail: null
+    } as any)
     const mockResetRecording = vi.fn()
 
     mockUseMobileCapture.mockReturnValue({
