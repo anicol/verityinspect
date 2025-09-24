@@ -90,7 +90,24 @@ services:
       python3.11 -c "import celery; print(f'Celery version: {celery.__version__}')"
       echo "Pip list:"
       python3.11 -m pip list | grep celery
-    startCommand: python3.11 -m celery -A verityinspect worker -l info
+    startCommand: |
+      echo "=== CELERY WORKER STARTUP DIAGNOSTICS ==="
+      echo "Python version: $(python3.11 --version)"
+      echo "Current directory: $(pwd)"
+      echo "Python path:"
+      python3.11 -c "import sys; [print(p) for p in sys.path]"
+      echo "Checking for celery module:"
+      python3.11 -c "import celery; print('SUCCESS: Celery found, version:', celery.__version__)" || {
+        echo "ERROR: Celery not found, attempting runtime install..."
+        python3.11 -m pip install celery --break-system-packages --user
+        echo "Retry celery import:"
+        python3.11 -c "import celery; print('SUCCESS: Celery found after install, version:', celery.__version__)" || {
+          echo "FINAL ERROR: Celery still not found"
+          exit 1
+        }
+      }
+      echo "=== STARTING CELERY WORKER ==="
+      python3.11 -m celery -A verityinspect worker -l info
     plan: starter
     envVars:
       - key: SECRET_KEY
@@ -145,7 +162,22 @@ services:
       echo "Celery installed check:"
       python3.11 -c "import celery; print(f'Celery version: {celery.__version__}')"
       python3.11 -m pip list | grep celery
-    startCommand: python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    startCommand: |
+      echo "=== CELERY BEAT STARTUP DIAGNOSTICS ==="
+      echo "Python version: $(python3.11 --version)"
+      echo "Current directory: $(pwd)"
+      echo "Checking for celery module:"
+      python3.11 -c "import celery; print('SUCCESS: Celery found, version:', celery.__version__)" || {
+        echo "ERROR: Celery not found, attempting runtime install..."
+        python3.11 -m pip install celery django-celery-beat --break-system-packages --user
+        echo "Retry celery import:"
+        python3.11 -c "import celery; print('SUCCESS: Celery found after install, version:', celery.__version__)" || {
+          echo "FINAL ERROR: Celery still not found"
+          exit 1
+        }
+      }
+      echo "=== STARTING CELERY BEAT ==="
+      python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     plan: starter
     envVars:
       - key: SECRET_KEY
