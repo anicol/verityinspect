@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 interface CaptureSettings {
   mode: 'inspection' | 'coaching';
@@ -72,7 +72,7 @@ export const MobileCaptureProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRecording, isPaused, settings.maxDuration, settings.autoStop]);
+  }, [isRecording, isPaused, settings.maxDuration, settings.autoStop, stopRecording]);
 
   const startRecording = async () => {
     try {
@@ -115,13 +115,13 @@ export const MobileCaptureProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
       setIsRecording(false);
       setIsPaused(false);
     }
-  };
+  }, [mediaRecorder, isRecording]);
 
   const pauseRecording = () => {
     if (mediaRecorder && isRecording && !isPaused) {
