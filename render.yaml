@@ -6,8 +6,8 @@ services:
     rootDir: apps/api
     region: oregon
     buildCommand: |
-      python3.11 -m pip install --upgrade pip
-      python3.11 -m pip install -r requirements.txt
+      python3.11 -m pip install --upgrade pip --break-system-packages
+      python3.11 -m pip install -r requirements.txt --break-system-packages
     startCommand: |
       python3.11 manage.py migrate --settings=verityinspect.settings --verbosity=2
       python3.11 manage.py collectstatic --noinput --settings=verityinspect.settings
@@ -79,8 +79,8 @@ services:
     env: python
     rootDir: apps/api
     buildCommand: |
-      python3.11 -m pip install --upgrade pip
-      python3.11 -m pip install -r requirements.txt
+      python3.11 -m pip install --upgrade pip --break-system-packages
+      python3.11 -m pip install -r requirements.txt --break-system-packages
     startCommand: python3.11 -m celery -A verityinspect worker -l info
     plan: starter
     envVars:
@@ -129,8 +129,8 @@ services:
     env: python
     rootDir: apps/api
     buildCommand: |
-      python3.11 -m pip install --upgrade pip
-      python3.11 -m pip install -r requirements.txt
+      python3.11 -m pip install --upgrade pip --break-system-packages
+      python3.11 -m pip install -r requirements.txt --break-system-packages
     startCommand: python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     plan: starter
     envVars:
