@@ -6,6 +6,7 @@ import secrets
 import string
 from .models import User
 from brands.models import Brand, Store
+from .demo_data import create_demo_videos_and_inspections
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -121,5 +122,8 @@ class TrialSignupSerializer(serializers.Serializer):
         user.store = store
         user.increment_trial_usage('store')  # Count the auto-created store
         user.save()
+        
+        # Create demo videos and inspections for instant value
+        demo_result = create_demo_videos_and_inspections(user, store)
         
         return user
