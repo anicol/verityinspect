@@ -1,45 +1,45 @@
 import { Link } from 'react-router-dom';
-import { Shield } from 'lucide-react';
 import ROICalculator from '@/components/ROICalculator';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 export default function ROICalculatorPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <Link to="/" className="flex items-center">
-              <Shield className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">VerityInspect</span>
-            </Link>
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/" className="text-gray-600 hover:text-gray-900">Home</Link>
-              <Link to="/privacy" className="text-gray-600 hover:text-gray-900">Privacy</Link>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                Get Demo
-              </button>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Calculator */}
       <main className="py-8">
         <ROICalculator />
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t py-8">
+      {/* CTA Section */}
+      <section className="bg-white border-t py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-gray-600 mb-4">
-            Ready to start saving? Get a personalized demo of VerityInspect.
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Ready to Start Saving?
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Get a personalized demo to see how VerityInspect can transform your inspection process.
           </p>
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-            Schedule Demo
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/demo"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Get Enterprise Demo
+            </Link>
+            <Link
+              to="/coaching-mode"
+              className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Try Coaching Mode Free
+            </Link>
+          </div>
         </div>
-      </footer>
+      </section>
+
+      <Footer />
     </div>
   );
 }

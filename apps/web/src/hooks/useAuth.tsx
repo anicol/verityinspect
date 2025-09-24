@@ -56,6 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     authAPI.logout();
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     setUser(null);
     setError(null);
   };

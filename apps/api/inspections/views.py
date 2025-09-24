@@ -28,7 +28,7 @@ class InspectionListView(generics.ListAPIView):
             return Inspection.objects.filter(video__store=user.store)
 
 
-class InspectionDetailView(generics.RetrieveAPIView):
+class InspectionDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = InspectionSerializer
     permission_classes = [IsAuthenticated]
 

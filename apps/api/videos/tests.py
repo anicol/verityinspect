@@ -151,3 +151,55 @@ class VideoAPITest(TestCase):
         response = self.client.get(f'/api/videos/{video.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['title'], 'Test Video')
+        
+    def test_video_status_filtering(self):
+        """Test filtering videos by status"""
+        Video.objects.create(
+            uploaded_by=self.user, store=self.store,
+            title="Processing Video", file="processing.mp4",
+            status=Video.Status.PROCESSING
+        )
+        Video.objects.create(
+            uploaded_by=self.user, store=self.store, 
+            title="Complete Video", file="complete.mp4",
+            status=Video.Status.COMPLETED
+        )
+        
+        response = self.client.get('/api/videos/?status=PROCESSING')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Processing Video')
+
+    def test_upload_video_invalid_file(self):
+        """Test upload with invalid file type"""
+        invalid_file = SimpleUploadedFile(
+            "test.txt",
+            b"not a video file",
+            content_type="text/plain"
+        )
+        
+        data = {
+            'title': 'Invalid Upload',
+            'store': self.store.id,
+            'file': invalid_file
+        }
+        
+        response = self.client.post('/api/videos/', data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+    def test_upload_video_missing_title(self):
+        """Test upload without required title field"""
+        video_file = SimpleUploadedFile(
+            "test_video.mp4",
+            b"fake video content",
+            content_type="video/mp4"
+        )
+        
+        data = {
+            'store': self.store.id,
+            'file': video_file
+        }
+        
+        response = self.client.post('/api/videos/', data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('title', str(response.data))
