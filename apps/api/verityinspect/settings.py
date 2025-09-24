@@ -32,6 +32,7 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'storages',
+    'django_celery_beat',
     'drf_spectacular',
     'django_filters',
 ]
@@ -164,6 +165,22 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Celery Beat Schedule for automated tasks
+CELERY_BEAT_SCHEDULE = {
+    # Daily retention cleanup at 2 AM
+    'cleanup-expired-uploads': {
+        'task': 'uploads.tasks.cleanup_expired_uploads_task',
+        'schedule': 60 * 60 * 24,  # Every 24 hours
+        'options': {'queue': 'maintenance'}
+    },
+    # Hourly temp file cleanup  
+    'cleanup-temp-files': {
+        'task': 'uploads.tasks.cleanup_temp_files_task',
+        'schedule': 60 * 60,  # Every hour
+        'options': {'queue': 'maintenance'}
+    },
+}
 
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')

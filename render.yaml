@@ -83,6 +83,17 @@ services:
       python3.11 -m pip install -r requirements.txt
     startCommand: python3.11 -m celery -A verityinspect worker -l info
     plan: starter
+
+  # Celery Beat Scheduler
+  - type: worker
+    name: verityinspect-celery-beat
+    env: python
+    rootDir: apps/api
+    buildCommand: |
+      python3.11 -m pip install --upgrade pip
+      python3.11 -m pip install -r requirements.txt
+    startCommand: python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    plan: starter
     envVars:
       - key: SECRET_KEY
         fromService:
