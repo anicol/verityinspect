@@ -1,0 +1,24 @@
+# Global code owners - all files require review
+* @anicol
+
+# Frontend applications
+/apps/web/ @anicol
+/apps/marketing/ @anicol
+
+# Backend API  
+/apps/api/ @anicol
+
+# Infrastructure and deployment
+/render.yaml @anicol
+/docker-compose.yml @anicol
+/.github/ @anicol
+/AWS_SETUP_GUIDE.md @anicol
+/DEPLOYMENT.md @anicol
+
+# Documentation
+*.md @anicol
+
+# Configuration files
+package.json @anicol
+requirements.txt @anicol
+Dockerfile @anicol

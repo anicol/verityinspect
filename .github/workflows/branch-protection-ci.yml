@@ -1,0 +1,112 @@
+name: Branch Protection CI
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+
+jobs:
+  validate-api:
+    name: Validate API Changes
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.changed_files, 'apps/api/')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install API dependencies
+        run: |
+          cd apps/api
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Check Django configuration
+        run: |
+          cd apps/api
+          python manage.py check --settings=verityinspect.settings
+          
+      - name: Validate migrations
+        run: |
+          cd apps/api
+          python manage.py makemigrations --check --dry-run --settings=verityinspect.settings
+
+  validate-frontend:
+    name: Validate Frontend Changes
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.changed_files, 'apps/web/') || contains(github.event.pull_request.changed_files, 'apps/marketing/')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Validate Web App
+        if: contains(github.event.pull_request.changed_files, 'apps/web/')
+        run: |
+          cd apps/web
+          npm install
+          npm run build
+          
+      - name: Validate Marketing Site
+        if: contains(github.event.pull_request.changed_files, 'apps/marketing/')
+        run: |
+          cd apps/marketing
+          npm install
+          npm run build
+
+  validate-config:
+    name: Validate Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Validate render.yaml
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: |
+          # Install YAML validator
+          npm install -g yaml-lint
+          yaml-lint render.yaml
+          
+      - name: Check Docker Compose
+        run: |
+          # Validate docker-compose.yml syntax
+          docker-compose config -q
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
