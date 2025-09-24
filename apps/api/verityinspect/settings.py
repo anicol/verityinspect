@@ -275,7 +275,7 @@ WEBHOOK_TIMEOUT_SECONDS = config('WEBHOOK_TIMEOUT_SECONDS', default=30, cast=int
 WEBHOOK_RETRY_ATTEMPTS = config('WEBHOOK_RETRY_ATTEMPTS', default=3, cast=int)
 
 # Email settings - AWS SES Configuration
-USE_SES = config('USE_SES', default=True, cast=bool)
+USE_SES = config('USE_SES', default=False, cast=bool)  # Temporarily disabled until IAM permissions are set
 
 if USE_SES and not DEBUG:
     # AWS SES Configuration (Recommended for AWS/Render)
