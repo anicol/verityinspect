@@ -38,13 +38,13 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'core',
-    'accounts',
-    'brands',
+    'core.apps.CoreConfig',
+    'accounts.apps.AccountsConfig', 
+    'brands.apps.BrandsConfig',
     'uploads.apps.UploadsConfig',
-    'inspections',
-    'videos',
-    'ai_services',
+    'inspections.apps.InspectionsConfig',
+    'videos.apps.VideosConfig',
+    'ai_services.apps.AiServicesConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
