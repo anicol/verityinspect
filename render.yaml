@@ -9,9 +9,10 @@ services:
       python3.11 -m pip install --upgrade pip
       python3.11 -m pip install -r requirements.txt
     startCommand: |
-      python3.11 manage.py migrate --settings=verityinspect.settings
+      python3.11 manage.py migrate --settings=verityinspect.settings --verbosity=2
       python3.11 manage.py collectstatic --noinput --settings=verityinspect.settings
-      python3.11 manage.py create_demo_users --settings=verityinspect.settings || echo "Demo users may already exist"
+      python3.11 manage.py create_demo_users --settings=verityinspect.settings || echo "Skipping demo users - may already exist"
+      python3.11 manage.py check --settings=verityinspect.settings
       gunicorn verityinspect.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     plan: starter
     envVars:
