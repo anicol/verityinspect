@@ -90,7 +90,23 @@ services:
       python3.11 -c "import celery; print(f'Celery version: {celery.__version__}')"
       echo "Pip list:"
       python3.11 -m pip list | grep celery
-    startCommand: python3.11 -m celery -A verityinspect worker -l info
+    startCommand: |
+      echo "=== CELERY WORKER STARTUP DIAGNOSTICS ==="
+      echo "Python version: $(python3.11 --version)"
+      echo "Current directory: $(pwd)"
+      echo "Python path:"
+      python3.11 -c "import sys; [print(p) for p in sys.path]"
+      echo "Checking if celery is installed:"
+      python3.11 -c "import celery; print(f'Celery {celery.__version__} found')" || echo "CELERY NOT FOUND - installing now"
+      if ! python3.11 -c "import celery" 2>/dev/null; then
+        echo "Installing celery with --break-system-packages"
+        python3.11 -m pip install celery --break-system-packages
+        python3.11 -m pip install django-celery-beat --break-system-packages
+      fi
+      echo "Final celery check:"
+      python3.11 -c "import celery; print(f'Celery {celery.__version__} ready')"
+      echo "Starting worker..."
+      python3.11 -m celery -A verityinspect worker -l info
     plan: starter
     envVars:
       - key: SECRET_KEY
@@ -145,7 +161,21 @@ services:
       echo "Celery installed check:"
       python3.11 -c "import celery; print(f'Celery version: {celery.__version__}')"
       python3.11 -m pip list | grep celery
-    startCommand: python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    startCommand: |
+      echo "=== CELERY BEAT STARTUP DIAGNOSTICS ==="
+      echo "Python version: $(python3.11 --version)"
+      echo "Current directory: $(pwd)"
+      echo "Checking if celery is installed:"
+      python3.11 -c "import celery; print(f'Celery {celery.__version__} found')" || echo "CELERY NOT FOUND - installing now"
+      if ! python3.11 -c "import celery" 2>/dev/null; then
+        echo "Installing celery with --break-system-packages"
+        python3.11 -m pip install celery --break-system-packages
+        python3.11 -m pip install django-celery-beat --break-system-packages
+      fi
+      echo "Final celery check:"
+      python3.11 -c "import celery; print(f'Celery {celery.__version__} ready')"
+      echo "Starting beat scheduler..."
+      python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     plan: starter
     envVars:
       - key: SECRET_KEY
