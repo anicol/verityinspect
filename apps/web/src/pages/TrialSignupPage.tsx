@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { API_CONFIG, API_ENDPOINTS } from '@/config/api';
 
 interface TrialSignupData {
   email: string;
@@ -30,11 +31,9 @@ export default function TrialSignupPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/accounts/trial-signup/', {
+      const response = await fetch(`${API_CONFIG.baseURL}${API_ENDPOINTS.auth.trialSignup}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: API_CONFIG.headers,
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
@@ -46,16 +45,16 @@ export default function TrialSignupPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store tokens and user data
+        // Store tokens and trigger auth state update
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
-        localStorage.setItem('user', JSON.stringify(data.user));
         
         setSuccess(true);
         
         // Redirect to dashboard after brief success message
+        // The page reload will trigger the auth provider to pick up the stored tokens
         setTimeout(() => {
-          navigate('/dashboard');
+          window.location.href = '/dashboard';
         }, 1500);
       } else {
         setError(data.email?.[0] || data.password?.[0] || 'Failed to create account');

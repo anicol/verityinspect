@@ -10,6 +10,15 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me')
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0').split(',')
 
+# Add Render and custom domain hosts for production
+if not DEBUG:
+    ALLOWED_HOSTS.extend([
+        'verityinspect-api.onrender.com',
+        'api.verityinspect.com', 
+        'verityinspect.com',
+        '.verityinspect.com',  # Allow all subdomains
+    ])
+
 # Production security settings
 if not DEBUG:
     # Don't force SSL redirect during testing
@@ -192,10 +201,15 @@ if DEBUG:
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
+        # Render default URLs
         'https://verityinspect-web.onrender.com',
         'https://verityinspect-marketing.onrender.com',
+        # Custom subdomains for production
         'https://verityinspect.com',
-        'https://www.verityinspect.com',
+        'https://www.verityinspect.com', 
+        'https://app.verityinspect.com',
+        # Allow other subdomains if configured
+        'https://marketing.verityinspect.com',
     ]
 
 CORS_ALLOW_CREDENTIALS = True

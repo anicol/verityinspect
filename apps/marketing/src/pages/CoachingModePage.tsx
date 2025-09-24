@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Shield, Play, CheckCircle, ArrowRight, Smartphone, Clock, Eye, Star, Users, TrendingUp, AlertCircle } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { TRIAL_SIGNUP_URL } from '../config/urls';
 
 export default function CoachingModePage() {
   return (
@@ -36,11 +37,14 @@ export default function CoachingModePage() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 hover:scale-105 transition-all duration-200 inline-flex items-center justify-center shadow-lg hover:shadow-xl">
+              <a 
+                href={TRIAL_SIGNUP_URL}
+                className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 hover:scale-105 transition-all duration-200 inline-flex items-center justify-center shadow-lg hover:shadow-xl"
+              >
                 <ArrowRight className="mr-2 h-5 w-5" />
                 Start Free Trial
                 <span className="ml-2 text-sm opacity-90">(no credit card required)</span>
-              </button>
+              </a>
             </div>
             
           </div>
@@ -285,9 +289,12 @@ export default function CoachingModePage() {
                 <p className="text-gray-600">Works on any smartphone</p>
               </div>
             </div>
-            <button className="bg-blue-600 text-white px-10 py-4 rounded-lg text-xl font-semibold hover:bg-blue-700 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl pulse">
+            <a 
+              href={TRIAL_SIGNUP_URL}
+              className="bg-blue-600 text-white px-10 py-4 rounded-lg text-xl font-semibold hover:bg-blue-700 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl pulse inline-block"
+            >
               Start My Free Trial
-            </button>
+            </a>
             <p className="text-sm text-gray-500 mt-4">No special hardware required</p>
           </div>
         </div>

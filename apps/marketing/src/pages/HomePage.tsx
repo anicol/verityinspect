@@ -3,6 +3,7 @@ import { Shield, Eye, TrendingUp, CheckCircle, ArrowRight, Users, Smartphone, Cl
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ROICalculatorWidget from '../components/ROICalculatorWidget';
+import { TRIAL_SIGNUP_URL } from '../config/urls';
 
 export default function HomePage() {
   return (
@@ -21,12 +22,12 @@ export default function HomePage() {
               Empower managers with private, fast feedback and give brands scalable, consistent compliance when they need it.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                to="/coaching-mode"
+              <a 
+                href={TRIAL_SIGNUP_URL}
                 className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 hover:scale-105 transition-all duration-200 inline-flex items-center justify-center shadow-lg hover:shadow-xl"
               >
                 Start Free Trial
-              </Link>
+              </a>
               <Link
                 to="/demo"
                 className="border border-gray-300 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-colors"

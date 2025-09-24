@@ -5,10 +5,15 @@ export interface User {
   first_name: string;
   last_name: string;
   full_name: string;
-  role: 'ADMIN' | 'GM' | 'INSPECTOR';
+  role: 'ADMIN' | 'GM' | 'INSPECTOR' | 'TRIAL_ADMIN';
   store: number | null;
   phone: string;
   is_active: boolean;
+  is_trial_user?: boolean;
+  trial_expires_at?: string;
+  trial_videos_used?: number;
+  trial_stores_used?: number;
+  trial_reports_downloaded?: number;
   created_at: string;
 }
 

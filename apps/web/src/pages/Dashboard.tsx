@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { inspectionsAPI, videosAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import InspectorQueueWidget from '@/components/InspectorQueueWidget';
+import InteractiveDemoExperience from '@/components/demo/InteractiveDemoExperience';
 import {
   BarChart3,
   Video,
@@ -25,6 +26,14 @@ export default function Dashboard() {
   const { data: recentInspections } = useQuery(
     'recent-inspections',
     () => inspectionsAPI.getInspections({ ordering: '-created_at', limit: 5 })
+  );
+
+  // Check if user should see demo experience
+  // Show demo if: trial user with no completed inspections, or very new user
+  const shouldShowDemo = user && (
+    // Check if user has demo metadata in created videos or is new trial user
+    (recentVideos && recentVideos.some(v => v.metadata?.demo_mode)) ||
+    (stats?.total_inspections === 0 && user.role !== 'ADMIN')
   );
 
   const statCards = [
@@ -53,6 +62,11 @@ export default function Dashboard() {
       color: 'text-yellow-600 bg-yellow-100',
     },
   ];
+
+  // Show interactive demo for trial users or new users
+  if (shouldShowDemo) {
+    return <InteractiveDemoExperience />;
+  }
 
   return (
     <div className="space-y-6">

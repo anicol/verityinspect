@@ -132,8 +132,8 @@ class User(AbstractUser):
         if self.email_verified_at:
             score += 10  # Email verified
             
-        # Recency bonus (active in last 24 hours)
-        if self.last_active_at and (timezone.now() - self.last_active_at).hours < 24:
+        # Recency bonus (active in last 24 hours)  
+        if self.last_active_at and (timezone.now() - self.last_active_at).total_seconds() < 24 * 3600:
             score += 10
             
         self.trial_conversion_score = min(score, 100)
