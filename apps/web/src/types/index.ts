@@ -14,6 +14,9 @@ export interface User {
   trial_videos_used?: number;
   trial_stores_used?: number;
   trial_reports_downloaded?: number;
+  has_seen_demo?: boolean;
+  requested_demo?: boolean;
+  demo_completed_at?: string;
   created_at: string;
 }
 

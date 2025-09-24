@@ -62,7 +62,11 @@ const DEMO_VIDEO = {
   }
 };
 
-export default function InteractiveDemoExperience() {
+interface InteractiveDemoExperienceProps {
+  onSkipToDashboard?: () => void;
+}
+
+export default function InteractiveDemoExperience({ onSkipToDashboard }: InteractiveDemoExperienceProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -166,23 +170,36 @@ export default function InteractiveDemoExperience() {
     <div className="space-y-6">
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-lg">
-        <h1 className="text-2xl font-bold mb-2">Welcome to VerityInspect, {user?.first_name}! 👋</h1>
-        <p className="text-indigo-100 mb-4">
-          Experience the power of AI-powered restaurant inspections with this interactive demo
-        </p>
-        <div className="flex items-center space-x-4 text-sm text-indigo-200">
-          <span className="flex items-center">
-            <Eye className="w-4 h-4 mr-1" />
-            Watch AI analyze in real-time
-          </span>
-          <span className="flex items-center">
-            <CheckCircle className="w-4 h-4 mr-1" />
-            See instant compliance scores
-          </span>
-          <span className="flex items-center">
-            <AlertTriangle className="w-4 h-4 mr-1" />
-            Get actionable recommendations
-          </span>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold mb-2">Welcome to VerityInspect, {user?.first_name}! 👋</h1>
+            <p className="text-indigo-100 mb-4">
+              Experience the power of AI-powered restaurant inspections with this interactive demo
+            </p>
+            <div className="flex items-center space-x-4 text-sm text-indigo-200">
+              <span className="flex items-center">
+                <Eye className="w-4 h-4 mr-1" />
+                Watch AI analyze in real-time
+              </span>
+              <span className="flex items-center">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                See instant compliance scores
+              </span>
+              <span className="flex items-center">
+                <AlertTriangle className="w-4 h-4 mr-1" />
+                Get actionable recommendations
+              </span>
+            </div>
+          </div>
+          {/* Skip Button - Always visible */}
+          {onSkipToDashboard && (
+            <button
+              onClick={onSkipToDashboard}
+              className="text-indigo-200 hover:text-white transition-colors text-sm underline"
+            >
+              Skip to Dashboard →
+            </button>
+          )}
         </div>
       </div>
 

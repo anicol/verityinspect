@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { inspectionsAPI, videosAPI } from '@/services/api';
@@ -15,6 +16,7 @@ import {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [demoRequested, setDemoRequested] = useState(false);
 
   const { data: stats } = useQuery('inspection-stats', inspectionsAPI.getStats);
   
@@ -28,13 +30,21 @@ export default function Dashboard() {
     () => inspectionsAPI.getInspections({ ordering: '-created_at', limit: 5 })
   );
 
-  // Check if user should see demo experience
-  // Show demo if: trial user with no completed inspections, or very new user
+  // MVP Demo Experience Logic
   const shouldShowDemo = user && (
-    // Check if user has demo metadata in created videos or is new trial user
-    (recentVideos && recentVideos.some(v => v.metadata?.demo_mode)) ||
-    (stats?.total_inspections === 0 && user.role !== 'ADMIN')
+    (user.is_trial_user && (stats?.total_inspections || 0) < 3) ||  // Trial users with <3 real inspections
+    (user.created_at && getHoursSinceSignup(user.created_at) < 48) || // Brand new users (including admins)
+    user.requested_demo ||                                            // Explicit demo request from backend
+    demoRequested                                                     // Local demo request
   );
+
+  // Helper function to calculate hours since signup
+  function getHoursSinceSignup(createdAt: string): number {
+    const signup = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - signup.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60));
+  }
 
   const statCards = [
     {
@@ -63,9 +73,15 @@ export default function Dashboard() {
     },
   ];
 
+  // Handle skip to dashboard
+  const handleSkipToDashboard = () => {
+    setDemoRequested(false);
+    // Could also set a flag in localStorage to remember user preference
+  };
+
   // Show interactive demo for trial users or new users
   if (shouldShowDemo) {
-    return <InteractiveDemoExperience />;
+    return <InteractiveDemoExperience onSkipToDashboard={handleSkipToDashboard} />;
   }
 
   return (
@@ -76,6 +92,14 @@ export default function Dashboard() {
           <p className="text-gray-600">Welcome back, {user?.full_name}</p>
         </div>
         <div className="flex space-x-3">
+          {user?.is_trial_user && !shouldShowDemo && (
+            <button
+              onClick={() => setDemoRequested(true)}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              🎬 View Demo
+            </button>
+          )}
           <Link
             to="/videos/upload"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"

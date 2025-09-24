@@ -35,6 +35,11 @@ class User(AbstractUser):
     referral_code = models.CharField(max_length=10, unique=True, null=True, blank=True)
     referred_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     
+    # Demo experience tracking
+    has_seen_demo = models.BooleanField(default=False, help_text="Whether user has viewed the interactive demo")
+    requested_demo = models.BooleanField(default=False, help_text="User explicitly requested to see demo")
+    demo_completed_at = models.DateTimeField(null=True, blank=True, help_text="When user completed the demo")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -137,6 +142,33 @@ class User(AbstractUser):
             score += 10
             
         self.trial_conversion_score = min(score, 100)
+    
+    @property 
+    def hours_since_signup(self):
+        """Hours since user signup for MVP demo logic"""
+        if not self.created_at:
+            return 0
+        delta = timezone.now() - self.created_at
+        return int(delta.total_seconds() / 3600)
+    
+    @property
+    def total_inspections(self):
+        """Total real inspections (not demo) completed by user"""
+        from inspections.models import Inspection
+        # Only count non-demo inspections 
+        return Inspection.objects.filter(
+            video__uploaded_by=self,
+            status='COMPLETED',
+            video__metadata__demo_mode__isnull=True
+        ).count()
+    
+    def should_show_demo(self):
+        """MVP Demo Experience Logic"""
+        return (
+            (self.is_trial_user and self.total_inspections < 3) or  # Trial users still exploring
+            self.hours_since_signup < 48 or                          # Brand new users (including admins) 
+            self.requested_demo                                       # Explicit click on "View Demo"
+        )
     
     def get_trial_status(self):
         """Get comprehensive trial status"""
