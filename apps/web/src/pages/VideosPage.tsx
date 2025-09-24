@@ -28,13 +28,22 @@ export default function VideosPage() {
           <h1 className="text-2xl font-bold text-gray-900">Videos</h1>
           <p className="text-gray-600">Manage your uploaded videos</p>
         </div>
-        <Link
-          to="/videos/upload"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-        >
-          <Upload className="w-4 h-4 mr-2" />
-          Upload Video
-        </Link>
+        <div className="flex space-x-3">
+          <Link
+            to="/capture"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+          >
+            <Video className="w-4 h-4 mr-2" />
+            Mobile Capture
+          </Link>
+          <Link
+            to="/videos/upload"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Video
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}

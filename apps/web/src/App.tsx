@@ -12,6 +12,8 @@ import ActionItemsPage from '@/pages/ActionItemsPage';
 import BrandsPage from '@/pages/BrandsPage';
 import StoresPage from '@/pages/StoresPage';
 import UsersPage from '@/pages/UsersPage';
+import MobileCapturePage from '@/pages/MobileCapturePage';
+import { MobileCaptureProvider } from '@/pages/MobileCaptureContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,22 +34,32 @@ function AppRoutes() {
   
   if (isAuthenticated) {
     return (
-      <Layout>
+      <MobileCaptureProvider>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/videos" element={<VideosPage />} />
-          <Route path="/videos/upload" element={<VideoUploadPage />} />
-          <Route path="/videos/:id" element={<VideoDetailPage />} />
-          <Route path="/inspections" element={<InspectionsPage />} />
-          <Route path="/inspections/:id" element={<InspectionDetailPage />} />
-          <Route path="/actions" element={<ActionItemsPage />} />
-          <Route path="/brands" element={<BrandsPage />} />
-          <Route path="/stores" element={<StoresPage />} />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Mobile capture route - full screen without layout */}
+          <Route path="/capture" element={<MobileCapturePage />} />
+          
+          {/* Regular routes with layout */}
+          <Route path="/*" element={
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/videos" element={<VideosPage />} />
+                <Route path="/videos/upload" element={<VideoUploadPage />} />
+                <Route path="/videos/:id" element={<VideoDetailPage />} />
+                <Route path="/inspections" element={<InspectionsPage />} />
+                <Route path="/inspections/:id" element={<InspectionDetailPage />} />
+                <Route path="/actions" element={<ActionItemsPage />} />
+                <Route path="/brands" element={<BrandsPage />} />
+                <Route path="/stores" element={<StoresPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/login" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Layout>
+          } />
         </Routes>
-      </Layout>
+      </MobileCaptureProvider>
     );
   }
   
