@@ -107,9 +107,22 @@ services:
         }
       }
       echo "=== STARTING CELERY WORKER ==="
-      python3.11 -m celery -A verityinspect worker -l info
+      echo "Checking Django settings..."
+      python3.11 -c "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'verityinspect.settings'); import django; django.setup(); print('Django setup successful')" || {
+        echo "ERROR: Django setup failed"
+        exit 1
+      }
+      echo "Testing Celery app import..."
+      python3.11 -c "from verityinspect.celery import app; print('Celery app import successful')" || {
+        echo "ERROR: Celery app import failed"
+        exit 1
+      }
+      echo "All checks passed, starting Celery worker..."
+      exec python3.11 -m celery -A verityinspect worker -l info --without-heartbeat --without-gossip --without-mingle
     plan: starter
     envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: verityinspect.settings
       - key: SECRET_KEY
         fromService:
           type: web
@@ -177,9 +190,22 @@ services:
         }
       }
       echo "=== STARTING CELERY BEAT ==="
-      python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+      echo "Checking Django settings..."
+      python3.11 -c "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'verityinspect.settings'); import django; django.setup(); print('Django setup successful')" || {
+        echo "ERROR: Django setup failed"
+        exit 1
+      }
+      echo "Testing Celery app import..."
+      python3.11 -c "from verityinspect.celery import app; print('Celery app import successful')" || {
+        echo "ERROR: Celery app import failed"
+        exit 1
+      }
+      echo "All checks passed, starting Celery beat..."
+      exec python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     plan: starter
     envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: verityinspect.settings
       - key: SECRET_KEY
         fromService:
           type: web
