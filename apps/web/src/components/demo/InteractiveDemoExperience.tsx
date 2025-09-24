@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Upload, Eye, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useBehaviorTracking } from '@/hooks/useBehaviorTracking';
 import SmartUploadModal from './SmartUploadModal';
 import ContextualHelp, { DemoHelpTips } from './ContextualHelp';
 
@@ -69,12 +70,15 @@ interface InteractiveDemoExperienceProps {
 export default function InteractiveDemoExperience({ onSkipToDashboard }: InteractiveDemoExperienceProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { trackDemoStarted, trackDemoCompleted, trackDemoSkipped, trackUploadInitiated } = useBehaviorTracking();
+  
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [revealedFindings, setRevealedFindings] = useState<number[]>([]);
   const [analysisPhase, setAnalysisPhase] = useState<'waiting' | 'analyzing' | 'complete'>('waiting');
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [demoTrackedAsStarted, setDemoTrackedAsStarted] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -96,6 +100,10 @@ export default function InteractiveDemoExperience({ onSkipToDashboard }: Interac
             setIsPlaying(false);
             setAnalysisPhase('complete');
             setShowResults(true);
+            
+            // Track demo completion
+            trackDemoCompleted();
+            
             return DEMO_VIDEO.duration;
           }
           
@@ -110,6 +118,12 @@ export default function InteractiveDemoExperience({ onSkipToDashboard }: Interac
   const handlePlayPause = () => {
     if (!isPlaying && analysisPhase === 'waiting') {
       setAnalysisPhase('analyzing');
+      
+      // Track demo started on first play
+      if (!demoTrackedAsStarted) {
+        trackDemoStarted();
+        setDemoTrackedAsStarted(true);
+      }
     }
     setIsPlaying(!isPlaying);
   };
@@ -148,7 +162,15 @@ export default function InteractiveDemoExperience({ onSkipToDashboard }: Interac
     }
   };
 
+  const handleSkipToDashboard = () => {
+    trackDemoSkipped();
+    if (onSkipToDashboard) {
+      onSkipToDashboard();
+    }
+  };
+
   const handleUploadClick = () => {
+    trackUploadInitiated({ source: 'demo_cta' });
     setShowUploadModal(true);
   };
 
@@ -158,6 +180,11 @@ export default function InteractiveDemoExperience({ onSkipToDashboard }: Interac
 
   const handleUpload = (scenario?: string) => {
     setShowUploadModal(false);
+    trackUploadInitiated({ 
+      source: 'demo_modal', 
+      scenario: scenario || 'custom' 
+    });
+    
     if (scenario) {
       // Navigate with scenario context
       navigate('/videos/upload', { state: { scenario } });
@@ -194,7 +221,7 @@ export default function InteractiveDemoExperience({ onSkipToDashboard }: Interac
           {/* Skip Button - Always visible */}
           {onSkipToDashboard && (
             <button
-              onClick={onSkipToDashboard}
+              onClick={handleSkipToDashboard}
               className="text-indigo-200 hover:text-white transition-colors text-sm underline"
             >
               Skip to Dashboard →

@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { inspectionsAPI, videosAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
+import { useBehaviorTracking } from '@/hooks/useBehaviorTracking';
+import { useSmartNudges } from '@/hooks/useSmartNudges';
 import InspectorQueueWidget from '@/components/InspectorQueueWidget';
 import InteractiveDemoExperience from '@/components/demo/InteractiveDemoExperience';
+import { SmartNudgeContainer } from '@/components/nudges/SmartNudgeNotification';
 import {
   BarChart3,
   Video,
@@ -17,6 +20,17 @@ import {
 export default function Dashboard() {
   const { user } = useAuth();
   const [demoRequested, setDemoRequested] = useState(false);
+  
+  // Behavior tracking and smart nudges
+  const { trackDashboardView } = useBehaviorTracking();
+  const { nudges, handleNudgeAction, dismissNudge } = useSmartNudges();
+
+  // Track dashboard view on mount
+  useEffect(() => {
+    if (user) {
+      trackDashboardView();
+    }
+  }, [user, trackDashboardView]);
 
   const { data: stats } = useQuery('inspection-stats', inspectionsAPI.getStats);
   
@@ -109,6 +123,13 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Smart Nudges */}
+      <SmartNudgeContainer
+        nudges={nudges}
+        onDismiss={dismissNudge}
+        onAction={handleNudgeAction}
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

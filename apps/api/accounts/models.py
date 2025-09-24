@@ -193,3 +193,169 @@ class User(AbstractUser):
             'can_access_team_features': self.can_access_team_features(),
             'conversion_score': self.trial_conversion_score
         }
+
+
+class UserBehaviorEvent(models.Model):
+    """Track user behavioral events for smart nudges and analytics"""
+    
+    class EventType(models.TextChoices):
+        # Demo events
+        DEMO_STARTED = 'DEMO_STARTED', 'Demo Started'
+        DEMO_COMPLETED = 'DEMO_COMPLETED', 'Demo Completed'
+        DEMO_SKIPPED = 'DEMO_SKIPPED', 'Demo Skipped'
+        
+        # Upload events  
+        UPLOAD_INITIATED = 'UPLOAD_INITIATED', 'Upload Initiated'
+        UPLOAD_COMPLETED = 'UPLOAD_COMPLETED', 'Upload Completed'
+        UPLOAD_FAILED = 'UPLOAD_FAILED', 'Upload Failed'
+        
+        # Engagement events
+        LOGIN = 'LOGIN', 'User Login'
+        DASHBOARD_VIEW = 'DASHBOARD_VIEW', 'Dashboard Viewed'
+        VIDEO_VIEW = 'VIDEO_VIEW', 'Video Viewed'
+        INSPECTION_VIEW = 'INSPECTION_VIEW', 'Inspection Viewed'
+        
+        # Conversion events
+        TRIAL_EXTENDED = 'TRIAL_EXTENDED', 'Trial Extended'
+        UPGRADE_CLICKED = 'UPGRADE_CLICKED', 'Upgrade Button Clicked'
+        BILLING_VIEW = 'BILLING_VIEW', 'Billing Page Viewed'
+        
+        # Churn risk events
+        INACTIVITY_7_DAYS = 'INACTIVITY_7_DAYS', '7 Days Inactive'
+        TRIAL_EXPIRY_WARNING = 'TRIAL_EXPIRY_WARNING', 'Trial Expiry Warning Shown'
+        SESSION_TIMEOUT = 'SESSION_TIMEOUT', 'Session Timed Out'
+
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='behavior_events')
+    event_type = models.CharField(max_length=50, choices=EventType.choices)
+    metadata = models.JSONField(default=dict, help_text="Additional event context and data")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    session_id = models.CharField(max_length=100, blank=True, null=True, help_text="Browser session identifier")
+    
+    class Meta:
+        db_table = 'user_behavior_events'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['user', 'event_type']),
+            models.Index(fields=['user', 'timestamp']),
+            models.Index(fields=['event_type', 'timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.event_type} at {self.timestamp}"
+
+    @classmethod
+    def track_event(cls, user, event_type, metadata=None, session_id=None):
+        """Convenient method to track user behavioral events"""
+        return cls.objects.create(
+            user=user,
+            event_type=event_type,
+            metadata=metadata or {},
+            session_id=session_id
+        )
+
+
+class SmartNudge(models.Model):
+    """Smart nudges shown to users based on behavioral patterns"""
+    
+    class NudgeType(models.TextChoices):
+        # Onboarding nudges
+        UPLOAD_FIRST_VIDEO = 'UPLOAD_FIRST_VIDEO', 'Upload Your First Video'
+        COMPLETE_DEMO = 'COMPLETE_DEMO', 'Complete the Demo'
+        EXPLORE_FEATURES = 'EXPLORE_FEATURES', 'Explore More Features'
+        
+        # Engagement nudges
+        RETURN_AFTER_UPLOAD = 'RETURN_AFTER_UPLOAD', 'Check Your Analysis Results'
+        TRY_SECOND_VIDEO = 'TRY_SECOND_VIDEO', 'Upload Another Video'
+        VIEW_DETAILED_REPORT = 'VIEW_DETAILED_REPORT', 'View Detailed Report'
+        
+        # Conversion nudges
+        TRIAL_EXPIRING_SOON = 'TRIAL_EXPIRING_SOON', 'Trial Expiring Soon'
+        UPGRADE_PROMPT = 'UPGRADE_PROMPT', 'Upgrade to Continue'
+        FEATURE_LIMIT_REACHED = 'FEATURE_LIMIT_REACHED', 'Feature Limit Reached'
+        
+        # Re-engagement nudges
+        INACTIVE_USER = 'INACTIVE_USER', 'We Miss You'
+        UNFINISHED_UPLOAD = 'UNFINISHED_UPLOAD', 'Complete Your Upload'
+    
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending'
+        SHOWN = 'SHOWN', 'Shown'
+        CLICKED = 'CLICKED', 'Clicked'
+        DISMISSED = 'DISMISSED', 'Dismissed'
+        EXPIRED = 'EXPIRED', 'Expired'
+    
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='nudges')
+    nudge_type = models.CharField(max_length=50, choices=NudgeType.choices)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    cta_text = models.CharField(max_length=100, blank=True, help_text="Call to action button text")
+    cta_url = models.CharField(max_length=500, blank=True, help_text="Call to action URL")
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    priority = models.IntegerField(default=1, help_text="1=highest, 5=lowest priority")
+    
+    # Timing and conditions
+    trigger_condition = models.JSONField(default=dict, help_text="Conditions that triggered this nudge")
+    show_after = models.DateTimeField(help_text="Earliest time to show this nudge")
+    expires_at = models.DateTimeField(null=True, blank=True, help_text="When this nudge expires")
+    
+    # Tracking
+    shown_at = models.DateTimeField(null=True, blank=True)
+    clicked_at = models.DateTimeField(null=True, blank=True) 
+    dismissed_at = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'smart_nudges'
+        ordering = ['priority', '-created_at']
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['user', 'show_after']),
+            models.Index(fields=['nudge_type', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.nudge_type} ({self.status})"
+    
+    def mark_shown(self):
+        """Mark nudge as shown to user"""
+        self.status = self.Status.SHOWN
+        self.shown_at = timezone.now()
+        self.save()
+    
+    def mark_clicked(self):
+        """Mark nudge as clicked by user"""
+        self.status = self.Status.CLICKED
+        self.clicked_at = timezone.now()
+        self.save()
+    
+    def mark_dismissed(self):
+        """Mark nudge as dismissed by user"""
+        self.status = self.Status.DISMISSED  
+        self.dismissed_at = timezone.now()
+        self.save()
+    
+    @property
+    def is_expired(self):
+        """Check if nudge has expired"""
+        if not self.expires_at:
+            return False
+        return timezone.now() > self.expires_at
+    
+    @classmethod
+    def create_nudge(cls, user, nudge_type, title, message, cta_text="", cta_url="", 
+                     show_after=None, expires_at=None, priority=1, trigger_condition=None):
+        """Convenient method to create smart nudges"""
+        return cls.objects.create(
+            user=user,
+            nudge_type=nudge_type,
+            title=title,
+            message=message,
+            cta_text=cta_text,
+            cta_url=cta_url,
+            show_after=show_after or timezone.now(),
+            expires_at=expires_at,
+            priority=priority,
+            trigger_condition=trigger_condition or {}
+        )

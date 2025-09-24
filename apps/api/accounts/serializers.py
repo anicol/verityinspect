@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 import secrets
 import string
-from .models import User
+from .models import User, SmartNudge, UserBehaviorEvent
 from brands.models import Brand, Store
 from .demo_data import create_demo_videos_and_inspections
 
@@ -127,3 +127,33 @@ class TrialSignupSerializer(serializers.Serializer):
         demo_result = create_demo_videos_and_inspections(user, store)
         
         return user
+
+
+class SmartNudgeSerializer(serializers.ModelSerializer):
+    """Serializer for SmartNudge model"""
+    
+    class Meta:
+        model = SmartNudge
+        fields = [
+            'id', 'nudge_type', 'title', 'message', 'cta_text', 'cta_url',
+            'status', 'priority', 'show_after', 'expires_at', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class UserBehaviorEventSerializer(serializers.ModelSerializer):
+    """Serializer for UserBehaviorEvent model"""
+    
+    class Meta:
+        model = UserBehaviorEvent
+        fields = [
+            'id', 'event_type', 'metadata', 'timestamp', 'session_id'
+        ]
+        read_only_fields = ['id', 'timestamp']
+
+
+class BehaviorEventCreateSerializer(serializers.Serializer):
+    """Serializer for creating behavior events"""
+    event_type = serializers.ChoiceField(choices=UserBehaviorEvent.EventType.choices)
+    metadata = serializers.JSONField(default=dict, required=False)
+    session_id = serializers.CharField(max_length=100, required=False, allow_blank=True)
