@@ -139,8 +139,46 @@ SIMPLE_JWT = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'VerityInspect API',
-    'DESCRIPTION': 'API for AI-powered video inspection platform',
+    'DESCRIPTION': 'AI-powered video inspection platform for restaurant safety and compliance',
     'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'SERVERS': [
+        {
+            'url': 'https://verityinspect-api.onrender.com',
+            'description': 'Production server'
+        },
+        {
+            'url': 'http://localhost:8000',
+            'description': 'Development server'
+        }
+    ],
+    'TAGS': [
+        {'name': 'Authentication', 'description': 'User authentication and management'},
+        {'name': 'Videos', 'description': 'Video upload and management'},
+        {'name': 'Uploads', 'description': 'Presigned URL uploads and processing'},
+        {'name': 'Inspections', 'description': 'AI-powered video inspections'},
+        {'name': 'Brands', 'description': 'Brand and store management'},
+        {'name': 'Core', 'description': 'Health checks and system status'},
+    ],
+    'EXTERNAL_DOCS': {
+        'description': 'VerityInspect Documentation',
+        'url': 'https://docs.verityinspect.com'
+    },
+    'CONTACT': {
+        'name': 'VerityInspect Support',
+        'email': 'support@verityinspect.com'
+    },
+    'LICENSE': {
+        'name': 'Proprietary'
+    },
+    'PREPROCESSING_HOOKS': [
+        'verityinspect.schema.custom_preprocessing_hook',
+    ],
+    'POSTPROCESSING_HOOKS': [
+        'verityinspect.schema.custom_postprocessing_hook',
+    ],
 }
 
 # CORS settings for production

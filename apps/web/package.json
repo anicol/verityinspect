@@ -9,7 +9,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "generate-client": "node ../../scripts/generate-client.js",
+    "generate-client:prod": "API_URL=https://verityinspect-api.onrender.com node ../../scripts/generate-client.js"
   },
   "dependencies": {
     "react": "^18.2.0",
