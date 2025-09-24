@@ -84,6 +84,15 @@ export default function LoginPage() {
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <a href="/trial-signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Start free trial
+              </a>
+            </p>
+          </div>
         </form>
       </div>
     </div>
