@@ -79,8 +79,17 @@ services:
     env: python
     rootDir: apps/api
     buildCommand: |
+      echo "Python version: $(python3.11 --version)"
+      echo "Pip version: $(python3.11 -m pip --version)"
+      echo "Current directory: $(pwd)"
+      echo "Requirements file exists: $(ls -la requirements.txt)"
       python3.11 -m pip install --upgrade pip --break-system-packages
-      python3.11 -m pip install -r requirements.txt --break-system-packages
+      python3.11 -m pip install -r requirements.txt --break-system-packages --verbose
+      echo "Celery installed check:"
+      python3.11 -c "import sys; print('Python path:', sys.path)"
+      python3.11 -c "import celery; print(f'Celery version: {celery.__version__}')"
+      echo "Pip list:"
+      python3.11 -m pip list | grep celery
     startCommand: python3.11 -m celery -A verityinspect worker -l info
     plan: starter
     envVars:
@@ -129,8 +138,13 @@ services:
     env: python
     rootDir: apps/api
     buildCommand: |
+      echo "Python version: $(python3.11 --version)"
+      echo "Current directory: $(pwd)"
       python3.11 -m pip install --upgrade pip --break-system-packages
-      python3.11 -m pip install -r requirements.txt --break-system-packages
+      python3.11 -m pip install -r requirements.txt --break-system-packages --verbose
+      echo "Celery installed check:"
+      python3.11 -c "import celery; print(f'Celery version: {celery.__version__}')"
+      python3.11 -m pip list | grep celery
     startCommand: python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     plan: starter
     envVars:
