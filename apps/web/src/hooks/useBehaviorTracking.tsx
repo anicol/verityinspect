@@ -1,5 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useMutation } from 'react-query';
+import { API_CONFIG } from '@/config/api';
 
 interface BehaviorTracker {
   trackEvent: (eventType: string, metadata?: any) => void;
@@ -23,7 +24,7 @@ const getSessionId = (): string => {
 // API calls for behavior tracking
 const behaviorAPI = {
   trackEvent: async (data: { event_type: string; metadata?: any; session_id?: string }) => {
-    const response = await fetch('/api/auth/behavior/track_event/', {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/behavior/track_event/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -40,7 +41,7 @@ const behaviorAPI = {
   },
 
   trackDemoStarted: async (session_id: string) => {
-    const response = await fetch('/api/auth/behavior/demo_started/', {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/behavior/demo_started/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ const behaviorAPI = {
   },
 
   trackDemoCompleted: async (session_id: string) => {
-    const response = await fetch('/api/auth/behavior/demo_completed/', {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/behavior/demo_completed/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -74,7 +75,7 @@ const behaviorAPI = {
   },
 
   trackDemoSkipped: async (session_id: string) => {
-    const response = await fetch('/api/auth/behavior/demo_skipped/', {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/behavior/demo_skipped/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ const behaviorAPI = {
   },
 
   trackDashboardView: async (session_id: string) => {
-    const response = await fetch('/api/auth/behavior/dashboard_view/', {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/behavior/dashboard_view/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -109,7 +110,7 @@ const behaviorAPI = {
 };
 
 export function useBehaviorTracking(): BehaviorTracker {
-  const sessionId = getSessionId();
+  const sessionId = useMemo(() => getSessionId(), []);
 
   // Generic event tracking
   const trackEventMutation = useMutation(behaviorAPI.trackEvent, {
@@ -149,31 +150,35 @@ export function useBehaviorTracking(): BehaviorTracker {
       metadata,
       session_id: sessionId
     });
-  }, [trackEventMutation, sessionId]);
+  }, [sessionId]);
 
   const trackDemoStarted = useCallback(() => {
     trackDemoStartedMutation.mutate(sessionId);
-  }, [trackDemoStartedMutation, sessionId]);
+  }, [sessionId]);
 
   const trackDemoCompleted = useCallback(() => {
     trackDemoCompletedMutation.mutate(sessionId);
-  }, [trackDemoCompletedMutation, sessionId]);
+  }, [sessionId]);
 
   const trackDemoSkipped = useCallback(() => {
     trackDemoSkippedMutation.mutate(sessionId);
-  }, [trackDemoSkippedMutation, sessionId]);
+  }, [sessionId]);
 
   const trackDashboardView = useCallback(() => {
     trackDashboardViewMutation.mutate(sessionId);
-  }, [trackDashboardViewMutation, sessionId]);
+  }, [sessionId]);
 
   const trackUploadInitiated = useCallback((metadata: any = {}) => {
-    trackEvent('UPLOAD_INITIATED', {
-      ...metadata,
-      timestamp: new Date().toISOString(),
-      page: 'upload'
+    trackEventMutation.mutate({
+      event_type: 'UPLOAD_INITIATED',
+      metadata: {
+        ...metadata,
+        timestamp: new Date().toISOString(),
+        page: 'upload'
+      },
+      session_id: sessionId
     });
-  }, [trackEvent]);
+  }, [sessionId]);
 
   return {
     trackEvent,

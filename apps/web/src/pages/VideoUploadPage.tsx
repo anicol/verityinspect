@@ -4,6 +4,8 @@ import { useMutation, useQuery } from 'react-query';
 import { videosAPI, storesAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { Upload, X, CheckCircle } from 'lucide-react';
+import TrialStatusBanner from '@/components/TrialStatusBanner';
+import UploadLimitGuard from '@/components/UploadLimitGuard';
 
 export default function VideoUploadPage() {
   const navigate = useNavigate();
@@ -95,12 +97,26 @@ export default function VideoUploadPage() {
         <p className="text-gray-600">Upload a video for AI inspection analysis</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* File Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Video File
-          </label>
+      {/* Trial Status Banner */}
+      <TrialStatusBanner
+        onUpgradeClick={() => {
+          // TODO: Navigate to upgrade/pricing page
+          console.log('Navigate to upgrade page');
+        }}
+      />
+
+      <UploadLimitGuard
+        onUpgradeClick={() => {
+          // TODO: Navigate to upgrade/pricing page
+          console.log('Navigate to upgrade page');
+        }}
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* File Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Video File
+            </label>
           {!file ? (
             <div
               className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
@@ -238,7 +254,8 @@ export default function VideoUploadPage() {
             {uploadMutation.isLoading ? 'Uploading...' : 'Upload Video'}
           </button>
         </div>
-      </form>
+        </form>
+      </UploadLimitGuard>
     </div>
   );
 }

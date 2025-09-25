@@ -6,8 +6,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useBehaviorTracking } from '@/hooks/useBehaviorTracking';
 import { useSmartNudges } from '@/hooks/useSmartNudges';
 import InspectorQueueWidget from '@/components/InspectorQueueWidget';
-import InteractiveDemoExperience from '@/components/demo/InteractiveDemoExperience';
+import InteractiveTwoVideoDemoContainer from '@/components/demo/InteractiveTwoVideoDemoContainer';
 import { SmartNudgeContainer } from '@/components/nudges/SmartNudgeNotification';
+import TrialStatusBanner from '@/components/TrialStatusBanner';
 import {
   BarChart3,
   Video,
@@ -30,7 +31,7 @@ export default function Dashboard() {
     if (user) {
       trackDashboardView();
     }
-  }, [user, trackDashboardView]);
+  }, [user]); // Removed trackDashboardView from dependencies to prevent infinite loop
 
   const { data: stats } = useQuery('inspection-stats', inspectionsAPI.getStats);
   
@@ -95,7 +96,7 @@ export default function Dashboard() {
 
   // Show interactive demo for trial users or new users
   if (shouldShowDemo) {
-    return <InteractiveDemoExperience onSkipToDashboard={handleSkipToDashboard} />;
+    return <InteractiveTwoVideoDemoContainer onClose={handleSkipToDashboard} />;
   }
 
   return (
@@ -129,6 +130,14 @@ export default function Dashboard() {
         nudges={nudges}
         onDismiss={dismissNudge}
         onAction={handleNudgeAction}
+      />
+
+      {/* Trial Status Banner */}
+      <TrialStatusBanner
+        onUpgradeClick={() => {
+          // TODO: Navigate to upgrade/pricing page
+          console.log('Navigate to upgrade page');
+        }}
       />
 
       {/* Stats Grid */}

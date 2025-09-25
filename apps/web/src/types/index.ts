@@ -1,3 +1,21 @@
+export interface TrialStatus {
+  is_trial: boolean;
+  expires_at?: string;
+  days_remaining?: number;
+  hours_remaining?: number;
+  is_expired?: boolean;
+  videos_used?: number;
+  videos_remaining?: number;
+  stores_used?: number;
+  stores_remaining?: number;
+  reports_downloaded?: number;
+  reports_remaining?: number;
+  can_upload_video?: boolean;
+  can_create_store?: boolean;
+  can_download_report?: boolean;
+  conversion_score?: number;
+}
+
 export interface User {
   id: number;
   username: string;
@@ -10,10 +28,7 @@ export interface User {
   phone: string;
   is_active: boolean;
   is_trial_user?: boolean;
-  trial_expires_at?: string;
-  trial_videos_used?: number;
-  trial_stores_used?: number;
-  trial_reports_downloaded?: number;
+  trial_status?: TrialStatus;
   has_seen_demo?: boolean;
   requested_demo?: boolean;
   demo_completed_at?: string;

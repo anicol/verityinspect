@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { API_CONFIG } from '@/config/api';
 
 interface SmartNudge {
   id: number;
@@ -16,7 +17,7 @@ interface SmartNudge {
 // API calls for nudges
 const nudgeAPI = {
   getActiveNudges: async (): Promise<SmartNudge[]> => {
-    const response = await fetch('/api/auth/nudges/active/', {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/nudges/active/`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -31,7 +32,7 @@ const nudgeAPI = {
   },
 
   markNudgeShown: async (nudgeId: number) => {
-    const response = await fetch(`/api/auth/nudges/${nudgeId}/mark_shown/`, {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/nudges/${nudgeId}/mark_shown/`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -46,7 +47,7 @@ const nudgeAPI = {
   },
 
   markNudgeClicked: async (nudgeId: number) => {
-    const response = await fetch(`/api/auth/nudges/${nudgeId}/mark_clicked/`, {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/nudges/${nudgeId}/mark_clicked/`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -61,7 +62,7 @@ const nudgeAPI = {
   },
 
   dismissNudge: async (nudgeId: number) => {
-    const response = await fetch(`/api/auth/nudges/${nudgeId}/dismiss/`, {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/nudges/${nudgeId}/dismiss/`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
