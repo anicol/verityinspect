@@ -31,7 +31,7 @@ export default function Dashboard() {
     if (user) {
       trackDashboardView();
     }
-  }, [user]); // Removed trackDashboardView from dependencies to prevent infinite loop
+  }, [user, trackDashboardView]);
 
   const { data: stats } = useQuery('inspection-stats', inspectionsAPI.getStats);
   

@@ -1,5 +1,5 @@
 // Generated TypeScript types for VerityInspect API
-// Generated at: 2025-09-24T17:59:53.708Z
+// Generated at: 2025-09-25T15:07:18.298Z
 
 export interface ActionItem {
   id: number;

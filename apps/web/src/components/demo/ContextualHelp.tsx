@@ -43,33 +43,33 @@ export default function ContextualHelp({ tip, children }: ContextualHelpProps) {
       const rect = trigger.getBoundingClientRect();
       const tooltipRect = tooltip.getBoundingClientRect();
       
-      let newPosition = tip.position;
+      let newPosition: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' = tip.position;
       
       // Check if tooltip goes off right edge
       if (rect.right + tooltipRect.width > window.innerWidth - 20) {
         if (tip.position.includes('left')) {
-          newPosition = tip.position.replace('left', 'right');
+          newPosition = tip.position.replace('left', 'right') as 'top-right' | 'bottom-right';
         }
       }
       
       // Check if tooltip goes off left edge
       if (rect.left - tooltipRect.width < 20) {
         if (tip.position.includes('right')) {
-          newPosition = tip.position.replace('right', 'left');
+          newPosition = tip.position.replace('right', 'left') as 'top-left' | 'bottom-left';
         }
       }
       
       // Check if tooltip goes off top edge
       if (rect.top - tooltipRect.height < 20) {
         if (tip.position.includes('top')) {
-          newPosition = tip.position.replace('top', 'bottom');
+          newPosition = tip.position.replace('top', 'bottom') as 'bottom-left' | 'bottom-right';
         }
       }
       
       // Check if tooltip goes off bottom edge
       if (rect.bottom + tooltipRect.height > window.innerHeight - 20) {
         if (tip.position.includes('bottom')) {
-          newPosition = tip.position.replace('bottom', 'top');
+          newPosition = tip.position.replace('bottom', 'top') as 'top-left' | 'top-right';
         }
       }
       

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import '@videojs/themes/dist/city/index.css';
@@ -36,6 +36,10 @@ export default function ClickableVideoPlayer({
   const overlayRef = useRef<HTMLDivElement>(null);
   const [clicks, setClicks] = useState<ClickEvent[]>([]);
 
+  const handleVideoEnd = useCallback(() => {
+    onVideoEnd?.();
+  }, [onVideoEnd]);
+
   useEffect(() => {
     if (!videoRef.current || !src) return;
 
@@ -58,13 +62,10 @@ export default function ClickableVideoPlayer({
       playerRef.current = player;
 
       // Handle video end
-      player.on('ended', () => {
-        onVideoEnd?.();
-      });
-
+      player.on('ended', handleVideoEnd);
 
       // Handle errors
-      player.on('error', (error) => {
+      player.on('error', (error: any) => {
         console.error('ClickableVideoPlayer error:', error);
       });
 
@@ -83,7 +84,7 @@ export default function ClickableVideoPlayer({
         playerRef.current = null;
       }
     };
-  }, [src]);
+  }, [src, controls, autoplay, handleVideoEnd]);
 
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!playerRef.current || clicks.length >= maxClicks) return;

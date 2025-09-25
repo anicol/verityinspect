@@ -168,7 +168,7 @@ export function useBehaviorTracking(): BehaviorTracker {
       metadata,
       session_id: sessionId
     });
-  }, [sessionId]);
+  }, [sessionId, trackEventMutation]);
 
   const trackDemoStarted = useCallback(() => {
     mutationsRef.current.trackDemoStarted.mutate(sessionId);
@@ -196,7 +196,7 @@ export function useBehaviorTracking(): BehaviorTracker {
       },
       session_id: sessionId
     });
-  }, [sessionId]);
+  }, [sessionId, trackEventMutation]);
 
   return {
     trackEvent,

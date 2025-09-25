@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import '@videojs/themes/dist/city/index.css';
@@ -44,6 +44,28 @@ export default function AnnotatedVideoPlayer({
   const [revealedViolations, setRevealedViolations] = useState<Set<number>>(new Set());
   const [currentTime, setCurrentTime] = useState(0);
 
+  const handleViolationRevealed = useCallback((violation: Violation) => {
+    onViolationRevealed?.(violation);
+  }, [onViolationRevealed]);
+
+  const handleVideoEnd = useCallback(() => {
+    onVideoEnd?.();
+  }, [onVideoEnd]);
+
+  // Handle violation detection based on current time
+  useEffect(() => {
+    violations.forEach(violation => {
+      if (
+        currentTime >= violation.timestamp &&
+        currentTime <= violation.timestamp + (violation.duration || 3) &&
+        !revealedViolations.has(violation.id)
+      ) {
+        setRevealedViolations(prev => new Set(prev).add(violation.id));
+        handleViolationRevealed(violation);
+      }
+    });
+  }, [currentTime, violations, revealedViolations, handleViolationRevealed]);
+
   useEffect(() => {
     if (!videoRef.current || !src) return;
 
@@ -65,31 +87,19 @@ export default function AnnotatedVideoPlayer({
 
       playerRef.current = player;
 
-      // Handle time updates for violation overlays
+      // Handle time updates
       player.on('timeupdate', () => {
         const time = player.currentTime();
-        setCurrentTime(time);
-        
-        // Check for violations to reveal
-        violations.forEach(violation => {
-          if (
-            time >= violation.timestamp &&
-            time <= violation.timestamp + (violation.duration || 3) &&
-            !revealedViolations.has(violation.id)
-          ) {
-            setRevealedViolations(prev => new Set(prev).add(violation.id));
-            onViolationRevealed?.(violation);
-          }
-        });
+        if (time !== undefined) {
+          setCurrentTime(time);
+        }
       });
 
       // Handle video end
-      player.on('ended', () => {
-        onVideoEnd?.();
-      });
+      player.on('ended', handleVideoEnd);
 
       // Handle errors
-      player.on('error', (error) => {
+      player.on('error', (error: any) => {
         console.error('Video.js error:', error);
       });
 
@@ -108,7 +118,7 @@ export default function AnnotatedVideoPlayer({
         playerRef.current = null;
       }
     };
-  }, [src]);
+  }, [src, controls, autoplay, handleVideoEnd]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
