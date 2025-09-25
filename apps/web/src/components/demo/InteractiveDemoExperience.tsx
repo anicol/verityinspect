@@ -113,7 +113,7 @@ export default function InteractiveDemoExperience({ onSkipToDashboard }: Interac
     }
     
     return () => clearInterval(interval);
-  }, [isPlaying, currentTime, revealedFindings]);
+  }, [isPlaying, currentTime, revealedFindings, trackDemoCompleted]);
 
   const handlePlayPause = () => {
     if (!isPlaying && analysisPhase === 'waiting') {

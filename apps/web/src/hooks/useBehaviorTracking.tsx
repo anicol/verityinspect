@@ -150,23 +150,23 @@ export function useBehaviorTracking(): BehaviorTracker {
       metadata,
       session_id: sessionId
     });
-  }, [sessionId]);
+  }, [sessionId, trackEventMutation]);
 
   const trackDemoStarted = useCallback(() => {
     trackDemoStartedMutation.mutate(sessionId);
-  }, [sessionId]);
+  }, [sessionId, trackDemoStartedMutation]);
 
   const trackDemoCompleted = useCallback(() => {
     trackDemoCompletedMutation.mutate(sessionId);
-  }, [sessionId]);
+  }, [sessionId, trackDemoCompletedMutation]);
 
   const trackDemoSkipped = useCallback(() => {
     trackDemoSkippedMutation.mutate(sessionId);
-  }, [sessionId]);
+  }, [sessionId, trackDemoSkippedMutation]);
 
   const trackDashboardView = useCallback(() => {
     trackDashboardViewMutation.mutate(sessionId);
-  }, [sessionId]);
+  }, [sessionId, trackDashboardViewMutation]);
 
   const trackUploadInitiated = useCallback((metadata: any = {}) => {
     trackEventMutation.mutate({
@@ -178,7 +178,7 @@ export function useBehaviorTracking(): BehaviorTracker {
       },
       session_id: sessionId
     });
-  }, [sessionId]);
+  }, [sessionId, trackEventMutation]);
 
   return {
     trackEvent,
