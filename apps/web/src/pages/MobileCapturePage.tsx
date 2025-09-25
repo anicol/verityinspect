@@ -6,6 +6,51 @@ import { storesAPI, videosAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 
+const SHOT_LIST = [
+  {
+    id: 'entrance',
+    title: 'Store Entrance',
+    description: 'Capture the main entrance and front of house area',
+    tips: ['Show entrance doors clearly', 'Include any signage or displays', 'Check for cleanliness and safety'],
+    duration: 30
+  },
+  {
+    id: 'dining_area',
+    title: 'Dining Area',
+    description: 'Record the customer seating and dining space',
+    tips: ['Pan across all seating areas', 'Show table cleanliness', 'Check floor conditions'],
+    duration: 45
+  },
+  {
+    id: 'counter',
+    title: 'Service Counter',
+    description: 'Capture the ordering counter and menu boards',
+    tips: ['Show menu boards clearly', 'Check staff uniforms and PPE', 'Verify counter cleanliness'],
+    duration: 30
+  },
+  {
+    id: 'kitchen_prep',
+    title: 'Kitchen & Prep Area',
+    description: 'Record food preparation and kitchen areas',
+    tips: ['Show staff following safety protocols', 'Check equipment cleanliness', 'Verify proper PPE usage'],
+    duration: 60
+  },
+  {
+    id: 'restrooms',
+    title: 'Restrooms',
+    description: 'Quick check of restroom facilities',
+    tips: ['Verify cleanliness standards', 'Check supply levels', 'Ensure proper signage'],
+    duration: 20
+  },
+  {
+    id: 'exits',
+    title: 'Emergency Exits',
+    description: 'Verify all emergency exits are clear',
+    tips: ['Check exit signs are visible', 'Ensure pathways are unobstructed', 'Verify door functionality'],
+    duration: 15
+  }
+];
+
 export default function MobileCapturePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -15,6 +60,10 @@ export default function MobileCapturePage() {
   const [title, setTitle] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [useGuidedMode, setUseGuidedMode] = useState(true);
+  const [currentShotIndex, setCurrentShotIndex] = useState(0);
+  const [completedShots, setCompletedShots] = useState<string[]>([]);
+  const [shotRecordings, setShotRecordings] = useState<{[key: string]: Blob}>({});
   
   const {
     isRecording,
@@ -75,17 +124,55 @@ export default function MobileCapturePage() {
 
   const handleStopRecording = () => {
     stopRecording();
-    setShowPreview(true);
+    
+    if (useGuidedMode && recordedBlob) {
+      const currentShot = SHOT_LIST[currentShotIndex];
+      setShotRecordings(prev => ({
+        ...prev,
+        [currentShot.id]: recordedBlob
+      }));
+      setCompletedShots(prev => [...prev, currentShot.id]);
+      
+      if (currentShotIndex < SHOT_LIST.length - 1) {
+        setCurrentShotIndex(prev => prev + 1);
+        resetRecording();
+      } else {
+        setShowPreview(true);
+      }
+    } else {
+      setShowPreview(true);
+    }
   };
 
   const handleRetake = () => {
+    if (useGuidedMode) {
+      const currentShot = SHOT_LIST[currentShotIndex];
+      setShotRecordings(prev => {
+        const updated = { ...prev };
+        delete updated[currentShot.id];
+        return updated;
+      });
+      setCompletedShots(prev => prev.filter(id => id !== currentShot.id));
+    }
     resetRecording();
     setShowPreview(false);
   };
 
   const handleUpload = async () => {
-    if (!recordedBlob || !selectedStore || !title.trim()) {
+    if (!selectedStore || !title.trim()) {
       alert('Please fill in all required fields');
+      return;
+    }
+
+    let videoToUpload = recordedBlob;
+    
+    if (useGuidedMode && Object.keys(shotRecordings).length > 0) {
+      const shotIds = Object.keys(shotRecordings);
+      videoToUpload = shotRecordings[shotIds[shotIds.length - 1]];
+    }
+
+    if (!videoToUpload) {
+      alert('No video recorded');
       return;
     }
 
@@ -93,15 +180,22 @@ export default function MobileCapturePage() {
     
     try {
       const formData = new FormData();
-      formData.append('file', recordedBlob, `${title}.webm`);
+      formData.append('file', videoToUpload, `${title}.webm`);
       formData.append('title', title);
       formData.append('store', selectedStore);
       formData.append('mode', settings.mode);
+      
+      if (useGuidedMode) {
+        formData.append('guided_shots', JSON.stringify(completedShots));
+      }
 
       await videosAPI.uploadVideo(formData);
       
       // Reset and navigate back
       resetRecording();
+      setShotRecordings({});
+      setCompletedShots([]);
+      setCurrentShotIndex(0);
       navigate('/videos', { replace: true });
       
     } catch (error) {
@@ -168,17 +262,28 @@ export default function MobileCapturePage() {
         </button>
         
         <h1 className="text-lg font-semibold">
-          {settings.mode === 'inspection' ? 'Inspection Capture' : 'Coaching Capture'}
+          {useGuidedMode 
+            ? `${settings.mode === 'inspection' ? 'Inspection' : 'Coaching'} Walkthrough`
+            : `${settings.mode === 'inspection' ? 'Inspection' : 'Coaching'} Capture`
+          }
         </h1>
         
-        <button
-          onClick={() => updateSettings({ 
-            mode: settings.mode === 'inspection' ? 'coaching' : 'inspection' 
-          })}
-          className="px-3 py-1 bg-indigo-600 rounded-lg text-sm"
-        >
-          {settings.mode === 'inspection' ? 'Switch to Coaching' : 'Switch to Inspection'}
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setUseGuidedMode(!useGuidedMode)}
+            className="px-3 py-1 bg-green-600 rounded-lg text-sm"
+          >
+            {useGuidedMode ? 'Free Mode' : 'Guided Mode'}
+          </button>
+          <button
+            onClick={() => updateSettings({ 
+              mode: settings.mode === 'inspection' ? 'coaching' : 'inspection' 
+            })}
+            className="px-3 py-1 bg-indigo-600 rounded-lg text-sm"
+          >
+            {settings.mode === 'inspection' ? 'Coaching' : 'Inspection'}
+          </button>
+        </div>
       </div>
 
       {/* Video Preview */}
@@ -222,6 +327,58 @@ export default function MobileCapturePage() {
           </span>
         </div>
       </div>
+
+      {/* Guided Mode Instructions */}
+      {useGuidedMode && !showPreview && (
+        <div className="bg-gray-800 p-4 border-b border-gray-700">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">
+              {SHOT_LIST[currentShotIndex].title}
+            </h3>
+            <span className="text-sm text-gray-400">
+              {currentShotIndex + 1} of {SHOT_LIST.length}
+            </span>
+          </div>
+          
+          <p className="text-gray-300 mb-3">
+            {SHOT_LIST[currentShotIndex].description}
+          </p>
+          
+          <div className="mb-3">
+            <h4 className="text-sm font-semibold text-green-400 mb-2">Tips:</h4>
+            <ul className="text-sm text-gray-300 space-y-1">
+              {SHOT_LIST[currentShotIndex].tips.map((tip, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="text-green-400 mr-2">•</span>
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-400">
+              Recommended: {SHOT_LIST[currentShotIndex].duration}s
+            </span>
+            
+            {/* Progress indicator */}
+            <div className="flex space-x-1">
+              {SHOT_LIST.map((shot, index) => (
+                <div
+                  key={shot.id}
+                  className={`w-2 h-2 rounded-full ${
+                    completedShots.includes(shot.id)
+                      ? 'bg-green-500'
+                      : index === currentShotIndex
+                      ? 'bg-blue-500'
+                      : 'bg-gray-600'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Controls */}
       <div className="p-4 space-y-4">
@@ -267,16 +424,66 @@ export default function MobileCapturePage() {
 
             {/* Recording Info */}
             <div className="text-center text-gray-400 text-sm">
-              {!isRecording && `Max Duration: ${formatDuration(settings.maxDuration)}`}
+              {!isRecording && useGuidedMode && (
+                <div>
+                  <div>Recommended: {formatDuration(SHOT_LIST[currentShotIndex].duration)}</div>
+                  <div className="text-xs mt-1">
+                    Completed: {completedShots.length}/{SHOT_LIST.length} shots
+                  </div>
+                </div>
+              )}
+              {!isRecording && !useGuidedMode && `Max Duration: ${formatDuration(settings.maxDuration)}`}
               {isRecording && !isPaused && 'Recording...'}
               {isPaused && 'Recording Paused'}
             </div>
+            
+            {/* Guided Mode Navigation */}
+            {useGuidedMode && !isRecording && (
+              <div className="flex justify-center space-x-4 mt-4">
+                <button
+                  onClick={() => setCurrentShotIndex(Math.max(0, currentShotIndex - 1))}
+                  disabled={currentShotIndex === 0}
+                  className="px-4 py-2 bg-gray-600 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous Shot
+                </button>
+                <button
+                  onClick={() => setCurrentShotIndex(Math.min(SHOT_LIST.length - 1, currentShotIndex + 1))}
+                  disabled={currentShotIndex === SHOT_LIST.length - 1}
+                  className="px-4 py-2 bg-gray-600 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Skip Shot
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <>
             {/* Preview Controls */}
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">Recording Complete</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                {useGuidedMode ? 'Walkthrough Complete' : 'Recording Complete'}
+              </h3>
+              
+              {useGuidedMode && (
+                <div className="mb-4 p-3 bg-gray-800 rounded-lg">
+                  <h4 className="text-sm font-semibold mb-2">Completed Shots:</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {SHOT_LIST.map((shot) => (
+                      <div
+                        key={shot.id}
+                        className={`p-2 rounded ${
+                          completedShots.includes(shot.id)
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-700 text-gray-400'
+                        }`}
+                      >
+                        {shot.title}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-center space-x-4 mb-6">
                 <button
@@ -337,7 +544,25 @@ export default function MobileCapturePage() {
 
       {/* Settings Panel */}
       <div className="p-4 border-t border-gray-700">
-        <h4 className="text-sm font-semibold mb-3">Capture Settings</h4>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-sm font-semibold">Capture Settings</h4>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs text-gray-400">Guided Mode</span>
+            <button
+              onClick={() => setUseGuidedMode(!useGuidedMode)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                useGuidedMode ? 'bg-green-600' : 'bg-gray-600'
+              }`}
+              disabled={isRecording}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  useGuidedMode ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
         
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
