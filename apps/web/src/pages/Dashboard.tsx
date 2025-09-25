@@ -1,8 +1,14 @@
+import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { inspectionsAPI, videosAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
+import { useBehaviorTracking } from '@/hooks/useBehaviorTracking';
+import { useSmartNudges } from '@/hooks/useSmartNudges';
 import InspectorQueueWidget from '@/components/InspectorQueueWidget';
+import InteractiveTwoVideoDemoContainer from '@/components/demo/InteractiveTwoVideoDemoContainer';
+import { SmartNudgeContainer } from '@/components/nudges/SmartNudgeNotification';
+import TrialStatusBanner from '@/components/TrialStatusBanner';
 import {
   BarChart3,
   Video,
@@ -14,6 +20,18 @@ import {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [demoRequested, setDemoRequested] = useState(false);
+  
+  // Behavior tracking and smart nudges
+  const { trackDashboardView } = useBehaviorTracking();
+  const { nudges, handleNudgeAction, dismissNudge } = useSmartNudges();
+
+  // Track dashboard view on mount
+  useEffect(() => {
+    if (user) {
+      trackDashboardView();
+    }
+  }, [user, trackDashboardView]);
 
   const { data: stats } = useQuery('inspection-stats', inspectionsAPI.getStats);
   
@@ -26,6 +44,22 @@ export default function Dashboard() {
     'recent-inspections',
     () => inspectionsAPI.getInspections({ ordering: '-created_at', limit: 5 })
   );
+
+  // MVP Demo Experience Logic
+  const shouldShowDemo = user && (
+    (user.is_trial_user && (stats?.total_inspections || 0) < 3) ||  // Trial users with <3 real inspections
+    (user.created_at && getHoursSinceSignup(user.created_at) < 48) || // Brand new users (including admins)
+    user.requested_demo ||                                            // Explicit demo request from backend
+    demoRequested                                                     // Local demo request
+  );
+
+  // Helper function to calculate hours since signup
+  function getHoursSinceSignup(createdAt: string): number {
+    const signup = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - signup.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60));
+  }
 
   const statCards = [
     {
@@ -54,6 +88,17 @@ export default function Dashboard() {
     },
   ];
 
+  // Handle skip to dashboard
+  const handleSkipToDashboard = () => {
+    setDemoRequested(false);
+    // Could also set a flag in localStorage to remember user preference
+  };
+
+  // Show interactive demo for trial users or new users
+  if (shouldShowDemo) {
+    return <InteractiveTwoVideoDemoContainer onClose={handleSkipToDashboard} />;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -62,6 +107,14 @@ export default function Dashboard() {
           <p className="text-gray-600">Welcome back, {user?.full_name}</p>
         </div>
         <div className="flex space-x-3">
+          {user?.is_trial_user && !shouldShowDemo && (
+            <button
+              onClick={() => setDemoRequested(true)}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              🎬 View Demo
+            </button>
+          )}
           <Link
             to="/videos/upload"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
@@ -71,6 +124,21 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Smart Nudges */}
+      <SmartNudgeContainer
+        nudges={nudges}
+        onDismiss={dismissNudge}
+        onAction={handleNudgeAction}
+      />
+
+      {/* Trial Status Banner */}
+      <TrialStatusBanner
+        onUpgradeClick={() => {
+          // TODO: Navigate to upgrade/pricing page
+          console.log('Navigate to upgrade page');
+        }}
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

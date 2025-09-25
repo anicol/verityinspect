@@ -291,7 +291,7 @@ function generateMethodBody(httpMethod, hasRequestBody, hasQueryParams) {
     parts.push('data');
   }
   
-  if (hasQueryParams || (!hasRequestBody && ['get', 'delete'].includes(httpMethod))) {
+  if (hasQueryParams) {
     parts.push('{ params }');
   }
   

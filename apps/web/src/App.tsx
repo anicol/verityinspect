@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/Layout';
 import LoginPage from '@/pages/LoginPage';
+import TrialSignupPage from '@/pages/TrialSignupPage';
 import Dashboard from '@/pages/Dashboard';
 import VideosPage from '@/pages/VideosPage';
 import VideoUploadPage from '@/pages/VideoUploadPage';
@@ -55,6 +56,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/trial-signup" element={<TrialSignupPage />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

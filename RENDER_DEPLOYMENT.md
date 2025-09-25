@@ -124,27 +124,74 @@ AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
    - Visit: `https://verityinspect-marketing.onrender.com`
    - Test ROI calculator
 
-### 7. Custom Domain Setup (Optional)
+### 7. Subdomain Setup for Production
 
-1. **Add Custom Domains in Render**
-   - API: `api.verityinspect.com`
-   - Web: `app.verityinspect.com`
-   - Marketing: `verityinspect.com`
+The application is now configured for subdomain architecture:
 
-2. **Configure DNS**
-   ```bash
-   # Add these CNAME records to your domain:
-   CNAME api     verityinspect-api.onrender.com
-   CNAME app     verityinspect-web.onrender.com  
-   CNAME www     verityinspect-marketing.onrender.com
-   A     @       [Get IP from Render for marketing site]
-   ```
+**Target URLs:**
+- Marketing: `https://verityinspect.com`
+- Web App: `https://app.verityinspect.com`  
+- API: `https://api.verityinspect.com`
 
-3. **Update CORS Settings**
-   After custom domains are active, update `ALLOWED_HOSTS` in API service:
-   ```bash
-   ALLOWED_HOSTS=api.verityinspect.com,verityinspect.com,*.verityinspect.com
-   ```
+#### 7.1 Add Custom Domains in Render
+
+For each service in Render dashboard:
+
+1. **API Service** (`verityinspect-api`)
+   - Go to Settings → Custom Domains
+   - Add: `api.verityinspect.com`
+
+2. **Web App Service** (`verityinspect-web`)
+   - Go to Settings → Custom Domains  
+   - Add: `app.verityinspect.com`
+
+3. **Marketing Service** (`verityinspect-marketing`)
+   - Go to Settings → Custom Domains
+   - Add: `verityinspect.com` and `www.verityinspect.com`
+
+#### 7.2 Configure DNS Records
+
+Add these DNS records to your domain provider (Cloudflare, Namecheap, etc.):
+
+```dns
+Type    Name    Value                               TTL
+A       @       76.76.19.61                        Auto (from Render)
+CNAME   www     verityinspect-marketing.onrender.com  Auto
+CNAME   app     verityinspect-web.onrender.com       Auto  
+CNAME   api     verityinspect-api.onrender.com       Auto
+```
+
+**Note**: Replace `76.76.19.61` with the actual IP provided by Render for your marketing service.
+
+#### 7.3 Environment Variables Update
+
+The Django settings are already configured to support subdomains. No additional environment variables needed.
+
+#### 7.4 Test Subdomain Setup
+
+After DNS propagation (5-60 minutes):
+
+```bash
+# Test each subdomain
+curl https://api.verityinspect.com/health/
+curl -I https://app.verityinspect.com/
+curl -I https://verityinspect.com/
+
+# Test CORS between subdomains
+curl -H "Origin: https://app.verityinspect.com" \
+     -H "Access-Control-Request-Method: POST" \
+     -X OPTIONS \
+     https://api.verityinspect.com/api/accounts/trial-signup/
+```
+
+#### 7.5 Trial Signup Flow
+
+Once subdomains are active:
+
+1. Visit `https://verityinspect.com`
+2. Click "Start Free Trial" → redirects to `https://app.verityinspect.com/trial-signup`
+3. Complete signup → API calls go to `https://api.verityinspect.com`
+4. Success → redirects to `https://app.verityinspect.com/dashboard`
 
 ### 8. Production Configuration
 

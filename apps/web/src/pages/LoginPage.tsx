@@ -18,7 +18,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to InspectAI
+            Sign in to VerityInspect
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             AI-powered video inspection platform
@@ -83,6 +83,15 @@ export default function LoginPage() {
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <a href="/trial-signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Start free trial
+              </a>
+            </p>
           </div>
         </form>
       </div>
