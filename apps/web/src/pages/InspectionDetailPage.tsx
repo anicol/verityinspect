@@ -107,7 +107,7 @@ function FindingCard({ finding }: { finding: Finding }) {
             onError={(e) => {
               // Hide broken image and show fallback
               e.currentTarget.style.display = 'none';
-              const fallback = e.currentTarget.parentElement?.querySelector('.image-fallback');
+              const fallback = e.currentTarget.parentElement?.querySelector('.image-fallback') as HTMLElement;
               if (fallback) fallback.style.display = 'flex';
             }}
           />
