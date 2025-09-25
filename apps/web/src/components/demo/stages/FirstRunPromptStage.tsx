@@ -94,7 +94,7 @@ export default function DemoDetectionStage({ onComplete }: DemoDetectionStagePro
             
             <AnnotatedVideoPlayer
               src={videoData.video_url}
-              violations={videoData.violations}
+              violations={videoData.violations || []}
               onViolationRevealed={handleViolationRevealed}
               onVideoEnd={handleVideoEnd}
               autoplay={true}
@@ -108,7 +108,7 @@ export default function DemoDetectionStage({ onComplete }: DemoDetectionStagePro
           <div className="text-center">
             <div className="mb-8">
               <div className="text-4xl md:text-5xl font-bold text-red-600 mb-2">
-                {videoData.violations.length}
+                {videoData.violations?.length || 0}
               </div>
               <p className="text-gray-700 text-lg mb-4">
                 issues detected automatically

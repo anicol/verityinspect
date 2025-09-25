@@ -64,7 +64,7 @@ export default function TryStage({
   return (
     <div className="bg-white min-h-screen">
       {/* Progress indicator */}
-      <DemoProgress currentStage="try" watchCompleted={true} />
+      <DemoProgress currentStage="first-run" welcomeCompleted={true} howItWorksCompleted={true} whyManagersCompleted={true} />
       
       {/* Header */}
       <div className="text-center py-6 md:py-8 px-4">

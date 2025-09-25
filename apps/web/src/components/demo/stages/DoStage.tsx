@@ -50,7 +50,7 @@ export default function DoStage({
   return (
     <div className="bg-white min-h-screen">
       {/* Progress indicator */}
-      <DemoProgress currentStage="do" watchCompleted={true} tryCompleted={true} />
+      <DemoProgress currentStage="first-run" welcomeCompleted={true} howItWorksCompleted={true} whyManagersCompleted={true} />
       
       {/* Header */}
       <div className="text-center py-6 md:py-8 px-4">
