@@ -1,14 +1,15 @@
 import os
 import subprocess
 import json
+import logging
 import boto3
 from celery import shared_task
 from django.conf import settings
 from PIL import Image
 from .models import Video, VideoFrame
 from uploads.models import Upload
-from inspections.models import Inspection
-from uploads.models import Rule, Detection
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True)
@@ -23,7 +24,7 @@ def process_video_upload(self, upload_id):
 
         # Download video from S3 to temp location
         video_path = download_from_s3(upload.s3_key)
-        
+
         # Extract video metadata
         metadata = extract_video_metadata(video_path)
         upload.duration_s = int(float(metadata.get('duration', 0)))
@@ -42,20 +43,20 @@ def process_video_upload(self, upload_id):
 
         # Extract frames for analysis
         frames = extract_frames_from_s3_video(video, video_path)
-        
+
         # Apply rule engine for automated analysis
         if upload.mode == Upload.Mode.INSPECTION:
             inspection = apply_inspection_rules(video, frames)
         else:
             inspection = apply_coaching_rules(video, frames)
-        
+
         # Clean up temp file
         if os.path.exists(video_path):
             os.remove(video_path)
-            
+
         upload.status = Upload.Status.COMPLETE
         upload.save()
-        
+
         video.status = Video.Status.COMPLETED
         video.save()
 
@@ -66,14 +67,14 @@ def process_video_upload(self, upload_id):
         upload.status = Upload.Status.FAILED
         upload.error_message = str(exc)
         upload.save()
-        
+
         # Clean up temp file on error
         try:
             if 'video_path' in locals() and os.path.exists(video_path):
                 os.remove(video_path)
-        except:
+        except Exception:
             pass
-            
+
         raise self.retry(exc=exc, countdown=60, max_retries=3)
 
 
@@ -85,7 +86,7 @@ def process_video(self, video_id):
         video.save()
 
         video_path = video.file.path
-        
+
         # Extract video metadata
         metadata = extract_video_metadata(video_path)
         video.duration = float(metadata.get('duration', 0))
@@ -122,10 +123,10 @@ def extract_video_metadata(video_path):
         ]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         metadata = json.loads(result.stdout)
-        
+
         # Extract relevant information
         video_stream = next((s for s in metadata['streams'] if s['codec_type'] == 'video'), {})
-        
+
         return {
             'duration': float(metadata['format'].get('duration', 0)),
             'size': int(metadata['format'].get('size', 0)),
@@ -143,16 +144,16 @@ def generate_thumbnail(video_path, video_id):
     try:
         thumbnail_dir = os.path.join(settings.MEDIA_ROOT, 'thumbnails')
         os.makedirs(thumbnail_dir, exist_ok=True)
-        
+
         thumbnail_filename = f"video_{video_id}_thumb.jpg"
         thumbnail_path = os.path.join(thumbnail_dir, thumbnail_filename)
-        
+
         cmd = [
             'ffmpeg', '-i', video_path, '-ss', '00:00:01',
             '-vframes', '1', '-y', thumbnail_path
         ]
         subprocess.run(cmd, check=True, capture_output=True)
-        
+
         # Return relative path for Django
         return f"thumbnails/{thumbnail_filename}"
     except Exception:
@@ -168,24 +169,24 @@ def download_from_s3(s3_key):
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
             region_name=settings.AWS_S3_REGION_NAME
         )
-        
+
         # Create temp directory
         temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
         os.makedirs(temp_dir, exist_ok=True)
-        
+
         # Generate temp file path
         filename = os.path.basename(s3_key)
         temp_path = os.path.join(temp_dir, f"temp_{filename}")
-        
+
         # Download file
         s3_client.download_file(
             settings.AWS_STORAGE_BUCKET_NAME,
             s3_key,
             temp_path
         )
-        
+
         return temp_path
-        
+
     except Exception as e:
         raise Exception(f"Failed to download from S3: {str(e)}")
 
@@ -195,18 +196,18 @@ def extract_frames_from_s3_video(video, video_path):
     try:
         frames_dir = os.path.join(settings.MEDIA_ROOT, 'frames')
         os.makedirs(frames_dir, exist_ok=True)
-        
+
         duration = video.duration or 0
         if duration <= 0:
             return []
-        
+
         # Configure frame sampling based on settings
         max_frames = int(settings.MAX_FRAMES_PER_VIDEO)
         sampling_fps = float(settings.FRAME_SAMPLING_FPS)
-        
+
         frames = []
         frame_count = 0
-        
+
         # Calculate frame timestamps
         if duration <= max_frames / sampling_fps:
             # Short video: sample at specified FPS
@@ -251,113 +252,129 @@ def extract_frames_from_s3_video(video, video_path):
         return []
 
 
-# Rule engine functions temporarily disabled due to missing Rule/Detection models
-# TODO: Re-enable when Rule and Detection models are implemented
-
-# def apply_inspection_rules(video, frames):
+def apply_inspection_rules(video, frames):
     """Apply inspection mode rules with compliance checks"""
     try:
+        from inspections.models import Inspection
+        from inspections.tasks import analyze_video
+
         # Create inspection record
         inspection = Inspection.objects.create(
             video=video,
             mode=Inspection.Mode.INSPECTION,
-            status=Inspection.Status.PROCESSING,
-            score=0.0
+            status=Inspection.Status.PENDING
         )
-        
-        # Get active rules for the store's brand
-        rules = Rule.objects.filter(
-            brand=video.store.brand,
-            is_active=True
-        )
-        
-        total_score = 0.0
-        rule_count = 0
-        
-        # Simplified rule application (full implementation pending)
-        for rule in rules:
-            # Mock scoring for now
-            rule_score = 75.0  # Placeholder score
-            total_score += rule_score
-            rule_count += 1
-        
-        # Calculate final score
-        if rule_count > 0:
-            inspection.score = total_score / rule_count
-        
-        inspection.status = Inspection.Status.COMPLETED
-        inspection.save()
-        
+
+        analyze_video.delay(inspection.id)
+
         return inspection
-        
+
     except Exception as e:
-        print(f"Error applying inspection rules: {e}")
+        logger.error(f"Error applying inspection rules: {e}")
         return None
 
 
 def apply_coaching_rules(video, frames):
     """Apply coaching mode rules with improvement suggestions"""
     try:
+        from inspections.models import Inspection
+        from inspections.tasks import analyze_video
+        from django.utils import timezone
+        from datetime import timedelta
+        from django.conf import settings
+
         # Create inspection record
         inspection = Inspection.objects.create(
             video=video,
             mode=Inspection.Mode.COACHING,
-            status=Inspection.Status.PROCESSING,
-            score=0.0
+            status=Inspection.Status.PENDING
         )
-        
-        # Get coaching-focused rules (all active rules for coaching mode)
-        rules = Rule.objects.filter(
-            brand=video.store.brand,
-            is_active=True
-        )
-        
-        # Simplified coaching analysis (full implementation pending)
-        for rule in rules:
-            # Mock coaching analysis for now
-            pass  # Placeholder - coaching suggestions will be added later
-        
-        inspection.status = Inspection.Status.COMPLETED
+
+        retention_days = getattr(settings, 'COACHING_MODE_RETENTION_DAYS', 7)
+        inspection.expires_at = timezone.now() + timedelta(days=retention_days)
         inspection.save()
-        
+
+        analyze_video.delay(inspection.id)
+
         return inspection
-        
+
     except Exception as e:
-        print(f"Error applying coaching rules: {e}")
+        logger.error(f"Error applying coaching rules: {e}")
         return None
 
 
 def apply_rule_to_frames(rule, frames, coaching_mode=False):
-    """Apply a specific rule to video frames"""
-    detections = []
-    total_score = 0.0
-    
-    for frame in frames:
-        # Mock AI analysis - in production this would call actual AI services
-        detection_data = {
-            'confidence': 0.85,
-            'bbox_x': 100,
-            'bbox_y': 100,
-            'bbox_width': 200,
-            'bbox_height': 200,
-            'analysis_type': rule.name,
-            'coaching_mode': coaching_mode
-        }
-        
-        # Mock scoring based on rule name
-        rule_name_lower = rule.name.lower()
-        if 'ppe' in rule_name_lower or 'helmet' in rule_name_lower:
-            score = 0.9  # Mock high compliance
-        elif 'safety' in rule_name_lower:
-            score = 0.8  # Mock moderate compliance  
-        else:
-            score = 0.75  # Mock basic compliance
-            
-        total_score += score
-        detections.append((frame, detection_data))
-    
-    avg_score = total_score / len(frames) if frames else 0
-    return avg_score, detections
+    """Apply a specific rule to video frames using AI analysis"""
+    violations = []
+
+    try:
+        from ai_services.analyzer import VideoAnalyzer
+        analyzer = VideoAnalyzer()
+
+        rule_config = rule.config_json
+        rule_type = rule_config.get('type', 'unknown')
+
+        for frame in frames:
+            try:
+                # Get frame path and read as bytes for analysis
+                frame_path = frame.image.path if frame.image else None
+                frame_bytes = None
+
+                if frame_path and os.path.exists(frame_path):
+                    with open(frame_path, 'rb') as f:
+                        frame_bytes = f.read()
+
+                    frame_analysis = analyzer.analyze_frame(frame_path, frame_bytes)
+
+                    # Generate findings from analysis
+                    findings = analyzer.generate_findings(frame_analysis, frame)
+
+                    for finding in findings:
+                        if rule_type == 'ppe_detection' and finding.get('category') == 'PPE':
+                            violations.append({
+                                'rule': rule,
+                                'frame': frame,
+                                'confidence': finding.get('confidence', 0.0),
+                                'severity': 'medium' if coaching_mode else finding.get('severity', 'high').lower(),
+                                'description': finding.get('description',
+                                                           f"PPE issue detected in frame {frame.frame_number}"),
+                                'bounding_box': finding.get('bounding_box'),
+                                'recommended_action': finding.get('recommended_action', '')
+                            })
+                        
+                        elif rule_type == 'safety_check' and finding.get('category') == 'SAFETY':
+                            violations.append({
+                                'rule': rule,
+                                'frame': frame,
+                                'confidence': finding.get('confidence', 0.0),
+                                'severity': finding.get('severity', 'high').lower(),
+                                'description': finding.get('description',
+                                                           f"Safety violation detected in frame {frame.frame_number}"),
+                                'bounding_box': finding.get('bounding_box'),
+                                'recommended_action': finding.get('recommended_action', '')
+                            })
+                        
+                        elif rule_type == 'cleanliness_check' and finding.get('category') == 'CLEANLINESS':
+                            violations.append({
+                                'rule': rule,
+                                'frame': frame,
+                                'confidence': finding.get('confidence', 0.0),
+                                'severity': 'medium' if coaching_mode else finding.get('severity', 'medium').lower(),
+                                'description': finding.get('description',
+                                                           f"Cleanliness issue detected in frame {frame.frame_number}"),
+                                'bounding_box': finding.get('bounding_box'),
+                                'recommended_action': finding.get('recommended_action', '')
+                            })
+                
+            except Exception as frame_error:
+                logger.error(f"Error analyzing frame {frame.frame_number}: {frame_error}")
+                continue
+
+        return violations
+
+    except Exception as e:
+        logger.error(f"Error applying rule {rule.code}: {e}")
+        return []
 
 
 def generate_coaching_suggestions(rule, detection_data):
