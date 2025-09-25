@@ -32,7 +32,7 @@ export default function InteractiveTwoVideoDemoContainer({
       trackDemoStarted();
       setDemoStarted(true);
     }
-  }, [currentStage, demoStarted]); // Removed trackDemoStarted to prevent infinite loop
+  }, [currentStage, demoStarted, trackDemoStarted]);
 
   const handleWelcomeComplete = () => {
     setWelcomeCompleted(true);
