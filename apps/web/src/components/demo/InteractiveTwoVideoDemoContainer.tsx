@@ -51,7 +51,7 @@ export default function InteractiveTwoVideoDemoContainer({
       trackDemoStarted();
       setDemoStarted(true);
     }
-  }, [currentStage, demoStarted, trackDemoStarted]);
+  }, [currentStage, demoStarted]); // Removed trackDemoStarted to prevent infinite loop
 
   const handleWatchComplete = () => {
     setWatchCompleted(true);

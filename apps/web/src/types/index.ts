@@ -32,6 +32,8 @@ export interface User {
   has_seen_demo?: boolean;
   requested_demo?: boolean;
   demo_completed_at?: string;
+  hours_since_signup?: number;
+  total_inspections?: number;
   created_at: string;
 }
 

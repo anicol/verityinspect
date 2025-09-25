@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, time
 import secrets
 import string
 from .models import User, SmartNudge, UserBehaviorEvent
@@ -12,12 +12,15 @@ from .demo_data import create_demo_videos_and_inspections
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField()
     trial_status = serializers.SerializerMethodField()
+    hours_since_signup = serializers.ReadOnlyField()
+    total_inspections = serializers.ReadOnlyField()
 
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'full_name', 
-                 'role', 'store', 'phone', 'is_active', 'is_trial_user', 'trial_status', 'created_at')
-        read_only_fields = ('id', 'created_at', 'is_trial_user', 'trial_status')
+                 'role', 'store', 'phone', 'is_active', 'is_trial_user', 'trial_status', 
+                 'hours_since_signup', 'total_inspections', 'has_seen_demo', 'demo_completed_at', 'created_at')
+        read_only_fields = ('id', 'created_at', 'is_trial_user', 'trial_status', 'hours_since_signup', 'total_inspections')
     
     def get_trial_status(self, obj):
         """Get trial status information"""
@@ -99,7 +102,7 @@ class TrialSignupSerializer(serializers.Serializer):
             last_name=last_name,
             role=User.Role.TRIAL_ADMIN,
             is_trial_user=True,
-            trial_expires_at=timezone.now() + timedelta(days=7),
+            trial_expires_at=timezone.now().replace(hour=23, minute=59, second=59, microsecond=999999) + timedelta(days=6),
             referral_code=referral_code
         )
         

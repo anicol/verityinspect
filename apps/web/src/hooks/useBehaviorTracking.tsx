@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useMutation } from 'react-query';
 import { API_CONFIG } from '@/config/api';
 
@@ -144,8 +144,26 @@ export function useBehaviorTracking(): BehaviorTracker {
     }
   });
 
+  // Use refs to store stable mutation functions
+  const mutationsRef = useRef({
+    trackEvent: trackEventMutation,
+    trackDemoStarted: trackDemoStartedMutation,
+    trackDemoCompleted: trackDemoCompletedMutation,
+    trackDemoSkipped: trackDemoSkippedMutation,
+    trackDashboardView: trackDashboardViewMutation
+  });
+  
+  // Update refs when mutations change
+  mutationsRef.current = {
+    trackEvent: trackEventMutation,
+    trackDemoStarted: trackDemoStartedMutation,
+    trackDemoCompleted: trackDemoCompletedMutation,
+    trackDemoSkipped: trackDemoSkippedMutation,
+    trackDashboardView: trackDashboardViewMutation
+  };
+
   const trackEvent = useCallback((eventType: string, metadata: any = {}) => {
-    trackEventMutation.mutate({
+    mutationsRef.current.trackEvent.mutate({
       event_type: eventType,
       metadata,
       session_id: sessionId
@@ -153,23 +171,23 @@ export function useBehaviorTracking(): BehaviorTracker {
   }, [sessionId]);
 
   const trackDemoStarted = useCallback(() => {
-    trackDemoStartedMutation.mutate(sessionId);
+    mutationsRef.current.trackDemoStarted.mutate(sessionId);
   }, [sessionId]);
 
   const trackDemoCompleted = useCallback(() => {
-    trackDemoCompletedMutation.mutate(sessionId);
+    mutationsRef.current.trackDemoCompleted.mutate(sessionId);
   }, [sessionId]);
 
   const trackDemoSkipped = useCallback(() => {
-    trackDemoSkippedMutation.mutate(sessionId);
+    mutationsRef.current.trackDemoSkipped.mutate(sessionId);
   }, [sessionId]);
 
   const trackDashboardView = useCallback(() => {
-    trackDashboardViewMutation.mutate(sessionId);
+    mutationsRef.current.trackDashboardView.mutate(sessionId);
   }, [sessionId]);
 
   const trackUploadInitiated = useCallback((metadata: any = {}) => {
-    trackEventMutation.mutate({
+    mutationsRef.current.trackEvent.mutate({
       event_type: 'UPLOAD_INITIATED',
       metadata: {
         ...metadata,
