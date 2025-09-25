@@ -17,6 +17,7 @@ import {
   Calendar,
   FileText,
   Target,
+  Camera,
 } from 'lucide-react';
 import type { Inspection, Finding, ActionItem } from '@/types';
 
@@ -97,13 +98,25 @@ function FindingCard({ finding }: { finding: Finding }) {
         </span>
       </div>
       
-      {finding.frame_image && (
+      {finding.frame_image ? (
         <div className="relative">
           <img 
             src={finding.frame_image} 
             alt="Finding evidence"
             className="w-full h-48 object-cover rounded-md"
+            onError={(e) => {
+              // Hide broken image and show fallback
+              e.currentTarget.style.display = 'none';
+              const fallback = e.currentTarget.parentElement?.querySelector('.image-fallback');
+              if (fallback) fallback.style.display = 'flex';
+            }}
           />
+          <div className="image-fallback hidden w-full h-48 bg-gray-200 rounded-md items-center justify-center text-gray-500">
+            <div className="text-center">
+              <Camera className="w-8 h-8 mx-auto mb-2" />
+              <span className="text-sm">Frame image unavailable</span>
+            </div>
+          </div>
           {finding.frame_timestamp && (
             <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
               {Math.floor(finding.frame_timestamp / 60)}:{String(Math.floor(finding.frame_timestamp % 60)).padStart(2, '0')}
@@ -120,6 +133,18 @@ function FindingCard({ finding }: { finding: Finding }) {
               }}
             />
           )}
+        </div>
+      ) : (
+        <div className="w-full h-48 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
+          <div className="text-center">
+            <Camera className="w-8 h-8 mx-auto mb-2" />
+            <span className="text-sm">Frame image not available</span>
+            {finding.bounding_box && (
+              <div className="text-xs text-gray-400 mt-1">
+                Detection at {Math.floor((finding.bounding_box.timestamp || 0) / 60)}:{String(Math.floor((finding.bounding_box.timestamp || 0) % 60)).padStart(2, '0')}
+              </div>
+            )}
+          </div>
         </div>
       )}
       
@@ -200,14 +225,18 @@ export default function InspectionDetailPage() {
   const { data: inspection, isLoading, error } = useQuery(
     ['inspection', id],
     () => inspectionsAPI.getInspection(Number(id)),
-    { enabled: !!id }
+    { 
+      enabled: !!id,
+      retry: (failureCount, error: any) => {
+        // Don't retry on 404 errors
+        if (error?.response?.status === 404) return false;
+        return failureCount < 2;
+      }
+    }
   );
   
-  const { data: findings } = useQuery(
-    ['findings', id],
-    () => inspectionsAPI.getFindings(Number(id)),
-    { enabled: !!id }
-  );
+  // Use findings from inspection response instead of separate API call
+  const findings = inspection?.findings || [];
 
   if (isLoading) {
     return (
@@ -230,11 +259,11 @@ export default function InspectionDetailPage() {
   }
 
   const StatusIcon = statusIcons[inspection.status];
-  const findingsByCategory = findings?.reduce((acc, finding) => {
+  const findingsByCategory = findings.reduce((acc, finding) => {
     if (!acc[finding.category]) acc[finding.category] = [];
     acc[finding.category].push(finding);
     return acc;
-  }, {} as Record<string, Finding[]>) || {};
+  }, {} as Record<string, Finding[]>);
 
   return (
     <div className="space-y-6">
@@ -316,7 +345,7 @@ export default function InspectionDetailPage() {
       </div>
 
       {/* Findings */}
-      {findings && findings.length > 0 && (
+      {findings.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Findings</h2>
           
@@ -349,7 +378,7 @@ export default function InspectionDetailPage() {
       )}
 
       {/* Empty State */}
-      {(!findings || findings.length === 0) && (!inspection.action_items || inspection.action_items.length === 0) && inspection.status === 'COMPLETED' && (
+      {findings.length === 0 && (!inspection.action_items || inspection.action_items.length === 0) && inspection.status === 'COMPLETED' && (
         <div className="text-center py-12">
           <CheckCircle className="mx-auto h-12 w-12 text-green-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No Issues Found</h3>
