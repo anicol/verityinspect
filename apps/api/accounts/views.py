@@ -181,6 +181,145 @@ class BehaviorTrackingViewSet(viewsets.GenericViewSet):
             session_id=request.data.get('session_id')
         )
         return Response({'id': event.id, 'status': 'tracked'})
+    
+    @action(detail=False, methods=['post'])
+    def validate_clicks(self, request):
+        """Validate user clicks against demo video violations"""
+        from videos.models import Video
+        
+        data = request.data
+        video_id = data.get('video_id')
+        clicks = data.get('clicks', [])
+        
+        if not video_id or not clicks:
+            return Response(
+                {'error': 'video_id and clicks are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            video = Video.objects.get(id=video_id, is_demo=True, demo_type='TRY')
+        except Video.DoesNotExist:
+            return Response(
+                {'error': 'Demo video not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        violations = video.demo_violations or []
+        found_violations = []
+        missed_violations = []
+        
+        # Validate each click against violations
+        for violation in violations:
+            violation_found = False
+            
+            for click in clicks:
+                if self._is_click_valid(click, violation):
+                    found_violations.append({
+                        'id': violation['id'],
+                        'title': violation['title'],
+                        'category': violation['category'],
+                        'severity': violation['severity']
+                    })
+                    violation_found = True
+                    break
+            
+            if not violation_found:
+                missed_violations.append({
+                    'id': violation['id'],
+                    'title': violation['title'],
+                    'category': violation['category'],
+                    'severity': violation['severity'],
+                    'bbox': violation['bbox'],
+                    'timestamp': violation['timestamp'],
+                    'why_missed': self._get_miss_reason(violation)
+                })
+        
+        # Calculate performance score
+        total_violations = len(violations)
+        found_count = len(found_violations)
+        score_percentage = (found_count / total_violations * 100) if total_violations > 0 else 0
+        
+        # Generate feedback message
+        feedback = self._generate_feedback(found_count, total_violations)
+        
+        # Track the attempt
+        BehaviorTracker.track(
+            user=request.user,
+            event_type='DEMO_TRY_COMPLETED',
+            metadata={
+                'video_id': video_id,
+                'clicks_count': len(clicks),
+                'violations_found': found_count,
+                'total_violations': total_violations,
+                'score': score_percentage,
+                'performance': 'good' if score_percentage >= 50 else 'needs_improvement'
+            },
+            session_id=data.get('session_id')
+        )
+        
+        return Response({
+            'found_violations': found_violations,
+            'missed_violations': missed_violations,
+            'score': found_count,
+            'total': total_violations,
+            'score_percentage': round(score_percentage, 1),
+            'feedback': feedback
+        })
+    
+    def _is_click_valid(self, click, violation):
+        """Check if a click is valid for a violation"""
+        # Time tolerance: ±2 seconds
+        time_diff = abs(click.get('timestamp', 0) - violation.get('timestamp', 0))
+        if time_diff > 2.0:
+            return False
+        
+        # Spatial tolerance: 5% of video dimensions
+        tolerance = 0.05
+        click_x = click.get('x', 0)  # Normalized coordinates (0-1)
+        click_y = click.get('y', 0)
+        
+        bbox = violation.get('bbox', {})
+        bbox_x = bbox.get('x', 0) / 100  # Convert percentage to normalized
+        bbox_y = bbox.get('y', 0) / 100
+        bbox_w = bbox.get('width', 0) / 100
+        bbox_h = bbox.get('height', 0) / 100
+        
+        # Check if click is within bounding box + tolerance
+        return (
+            bbox_x - tolerance <= click_x <= bbox_x + bbox_w + tolerance and
+            bbox_y - tolerance <= click_y <= bbox_y + bbox_h + tolerance
+        )
+    
+    def _get_miss_reason(self, violation):
+        """Generate reason why violation was missed"""
+        severity = violation.get('severity', 'LOW')
+        category = violation.get('category', 'OTHER')
+        
+        reasons = {
+            'PPE': "PPE violations can be subtle - look for missing gloves, hair nets, or protective equipment",
+            'SAFETY': "Safety hazards often blend into the background - check for wet floors, blocked exits, or improper storage",
+            'CLEANLINESS': "Cleanliness issues may be small details - look for spills, dirty surfaces, or improper sanitization",
+            'UNIFORM': "Uniform violations might seem minor but are important for compliance"
+        }
+        
+        if severity in ['CRITICAL', 'HIGH']:
+            return f"This {severity.lower()} {category.lower()} issue requires immediate attention. " + reasons.get(category, "Look more carefully in this area.")
+        
+        return reasons.get(category, "Small details matter in food safety compliance.")
+    
+    def _generate_feedback(self, found, total):
+        """Generate encouraging feedback based on performance"""
+        percentage = (found / total * 100) if total > 0 else 0
+        
+        if percentage >= 80:
+            return f"Excellent eye! You found {found} of {total} violations. You'd make a great inspector!"
+        elif percentage >= 60:
+            return f"Good job! You spotted {found} of {total} violations. The AI found {total - found} additional subtle issues."
+        elif percentage >= 40:
+            return f"Nice work! You caught {found} of {total} violations. The AI's trained eye spotted {total - found} more that are easy to miss."
+        else:
+            return f"You found {found} of {total} violations - a good start! The AI caught {total - found} additional issues that even experienced inspectors might miss."
 
 
 @api_view(['GET'])

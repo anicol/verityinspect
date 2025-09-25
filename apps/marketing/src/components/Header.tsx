@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Shield, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { APP_URLS } from '../config/urls';
 
 export default function Header() {
   const [showProductDropdown, setShowProductDropdown] = useState(false);
@@ -148,6 +149,12 @@ export default function Header() {
             </Link>
 
             <div className="flex items-center space-x-3">
+              <a
+                href={`${APP_URLS.webApp}/login`}
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 transition-colors"
+              >
+                Log In
+              </a>
               <Link
                 to="/coaching-mode"
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"

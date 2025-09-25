@@ -1,16 +1,24 @@
 interface DemoProgressProps {
-  currentStage: 'watch' | 'try' | 'do';
-  watchCompleted?: boolean;
-  tryCompleted?: boolean;
+  currentStage: 'welcome' | 'how-it-works' | 'why-managers' | 'first-run';
+  welcomeCompleted?: boolean;
+  howItWorksCompleted?: boolean;
+  whyManagersCompleted?: boolean;
   className?: string;
 }
 
-export default function DemoProgress({ currentStage, watchCompleted = false, tryCompleted = false, className = '' }: DemoProgressProps) {
-  const stages = ['watch', 'try', 'do'];
+export default function DemoProgress({ 
+  currentStage, 
+  welcomeCompleted = false, 
+  howItWorksCompleted = false, 
+  whyManagersCompleted = false, 
+  className = '' 
+}: DemoProgressProps) {
+  const stages = ['welcome', 'how-it-works', 'why-managers', 'first-run'];
   
   const getStageStatus = (stageId: string) => {
-    if (stageId === 'watch' && watchCompleted) return 'completed';
-    if (stageId === 'try' && tryCompleted) return 'completed';
+    if (stageId === 'welcome' && welcomeCompleted) return 'completed';
+    if (stageId === 'how-it-works' && howItWorksCompleted) return 'completed';
+    if (stageId === 'why-managers' && whyManagersCompleted) return 'completed';
     if (stageId === currentStage) return 'active';
     
     const currentIndex = stages.indexOf(currentStage);

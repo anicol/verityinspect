@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useProgressiveNavigation } from '@/hooks/useProgressiveNavigation';
 import {
   LayoutDashboard,
   Video,
@@ -12,29 +13,31 @@ import {
   Menu,
   LogOut,
   User,
+  ArrowRight,
 } from 'lucide-react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Videos', href: '/videos', icon: Video },
-  { name: 'Inspections', href: '/inspections', icon: FileSearch },
-  { name: 'Inspector Queue', href: '/inspector-queue', icon: CheckSquare, inspectorOnly: true },
-  { name: 'Action Items', href: '/actions', icon: CheckSquare },
-  { name: 'Brands', href: '/brands', icon: Building2, adminOnly: true },
-  { name: 'Stores', href: '/stores', icon: Store },
-  { name: 'Users', href: '/users', icon: Users, adminOnly: true },
-];
+  { name: 'Dashboard', href: '/', icon: LayoutDashboard, key: 'dashboard' },
+  { name: 'Videos', href: '/videos', icon: Video, key: 'videos' },
+  { name: 'Inspections', href: '/inspections', icon: FileSearch, key: 'inspections' },
+  { name: 'Inspector Queue', href: '/inspector-queue', icon: CheckSquare, key: 'inspectorQueue' },
+  { name: 'Action Items', href: '/actions', icon: CheckSquare, key: 'actionItems' },
+  { name: 'Brands', href: '/brands', icon: Building2, key: 'brands' },
+  { name: 'Stores', href: '/stores', icon: Store, key: 'stores' },
+  { name: 'Users', href: '/users', icon: Users, key: 'users' },
+] as const;
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
+  const navState = useProgressiveNavigation();
 
-  const filteredNavigation = navigation.filter(
-    (item) => 
-      (!item.adminOnly || user?.role === 'ADMIN') &&
-      (!item.inspectorOnly || user?.role === 'INSPECTOR' || user?.role === 'ADMIN')
-  );
+  const filteredNavigation = navigation.filter((item) => {
+    const state = navState[item.key as keyof typeof navState];
+    return state !== 'hidden';
+  });
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -48,19 +51,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">VerityInspect</h1>
+            {navState.showLogo && (
+              <h1 className="text-xl font-semibold text-gray-900">VerityInspect</h1>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full">
-                <User className="w-4 h-4 text-gray-600" />
+            {/* Skip to Dashboard for trial users */}
+            {navState.showSkipToDashboard && (
+              <button
+                onClick={() => navigate('/')}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center"
+              >
+                Skip to Dashboard
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
+            )}
+            
+            {navState.showUserEmail && (
+              <div className="flex items-center">
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <div className="ml-3 hidden sm:block">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.email}
+                  </p>
+                  {!user?.is_trial_user && (
+                    <p className="text-xs text-gray-500">{user?.role}</p>
+                  )}
+                </div>
               </div>
-              <div className="ml-3 hidden sm:block">
-                <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
-                <p className="text-xs text-gray-500">{user?.role}</p>
-              </div>
-            </div>
+            )}
+            
             <button
               onClick={logout}
               className="p-2 text-gray-600 hover:text-gray-900"
@@ -79,21 +102,43 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
             <div className="relative flex flex-col w-64 max-w-xs bg-white shadow-xl h-full">
               <nav className="flex-1 px-3 py-4 space-y-1">
-                {filteredNavigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                      location.pathname === item.href
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="w-4 h-4 mr-3" />
-                    {item.name}
-                  </Link>
-                ))}
+                {filteredNavigation.map((item) => {
+                  const state = navState[item.key as keyof typeof navState];
+                  const isDisabled = state === 'visible-disabled';
+                  const isActive = location.pathname === item.href;
+                  
+                  const baseClasses = 'group flex items-center px-3 py-2 text-sm font-medium rounded-md';
+                  const stateClasses = isDisabled
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : isActive
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
+                  
+                  if (isDisabled) {
+                    return (
+                      <div
+                        key={item.name}
+                        className={`${baseClasses} ${stateClasses}`}
+                        title="Complete previous steps to unlock"
+                      >
+                        <item.icon className="w-4 h-4 mr-3" />
+                        {item.name}
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`${baseClasses} ${stateClasses}`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon className="w-4 h-4 mr-3" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
           </div>
@@ -103,20 +148,42 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <aside className="hidden lg:flex lg:flex-shrink-0">
           <div className="flex flex-col w-64 bg-white border-r border-gray-200">
             <nav className="flex-1 px-3 py-4 space-y-1">
-              {filteredNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                    location.pathname === item.href
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <item.icon className="w-4 h-4 mr-3" />
-                  {item.name}
-                </Link>
-              ))}
+              {filteredNavigation.map((item) => {
+                const state = navState[item.key as keyof typeof navState];
+                const isDisabled = state === 'visible-disabled';
+                const isActive = location.pathname === item.href;
+                
+                const baseClasses = 'group flex items-center px-3 py-2 text-sm font-medium rounded-md';
+                const stateClasses = isDisabled
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : isActive
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
+                
+                if (isDisabled) {
+                  return (
+                    <div
+                      key={item.name}
+                      className={`${baseClasses} ${stateClasses}`}
+                      title="Complete previous steps to unlock"
+                    >
+                      <item.icon className="w-4 h-4 mr-3" />
+                      {item.name}
+                    </div>
+                  );
+                }
+                
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`${baseClasses} ${stateClasses}`}
+                  >
+                    <item.icon className="w-4 h-4 mr-3" />
+                    {item.name}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
         </aside>

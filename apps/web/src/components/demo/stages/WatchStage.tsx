@@ -58,7 +58,7 @@ export default function WatchStage({
   return (
     <div className="bg-white min-h-screen">
       {/* Progress indicator */}
-      <DemoProgress currentStage="watch" watchCompleted={videoEnded} />
+      <DemoProgress currentStage="how-it-works" welcomeCompleted={true} howItWorksCompleted={videoEnded} />
       
       {/* Header */}
       <div className="text-center py-6 md:py-8 px-4">

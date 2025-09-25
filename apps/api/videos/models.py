@@ -8,6 +8,10 @@ class Video(models.Model):
         PROCESSING = 'PROCESSING', 'Processing'
         COMPLETED = 'COMPLETED', 'Completed'
         FAILED = 'FAILED', 'Failed'
+    
+    class DemoType(models.TextChoices):
+        WATCH = 'WATCH', 'Watch Stage'
+        TRY = 'TRY', 'Try Stage'
 
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     store = models.ForeignKey('brands.Store', on_delete=models.CASCADE)
@@ -20,6 +24,21 @@ class Video(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.UPLOADED)
     error_message = models.TextField(blank=True)
     metadata = models.JSONField(default=dict, help_text="Video metadata from FFmpeg")
+    
+    # Demo functionality fields
+    is_demo = models.BooleanField(default=False, help_text="Whether this is a demo video")
+    demo_type = models.CharField(
+        max_length=10, 
+        choices=DemoType.choices, 
+        null=True, 
+        blank=True,
+        help_text="Type of demo stage this video is used for"
+    )
+    demo_violations = models.JSONField(
+        default=list, 
+        help_text="Demo violation data with bbox coordinates and metadata"
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
