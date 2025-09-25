@@ -1,3 +1,4 @@
-export { default as WatchStage } from './WatchStage';
-export { default as TryStage } from './TryStage';
-export { default as DoStage } from './DoStage';
+export { default as WelcomeStage } from './WelcomeStage';
+export { default as HowItWorksStage } from './HowItWorksStage';
+export { default as WhyManagersLoveItStage } from './WhyManagersLoveItStage';
+export { default as DemoDetectionStage } from './FirstRunPromptStage';
