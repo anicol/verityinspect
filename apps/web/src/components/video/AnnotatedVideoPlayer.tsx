@@ -68,19 +68,21 @@ export default function AnnotatedVideoPlayer({
       // Handle time updates for violation overlays
       player.on('timeupdate', () => {
         const time = player.currentTime();
-        setCurrentTime(time);
-        
-        // Check for violations to reveal
-        violations.forEach(violation => {
-          if (
-            time >= violation.timestamp &&
-            time <= violation.timestamp + (violation.duration || 3) &&
-            !revealedViolations.has(violation.id)
-          ) {
-            setRevealedViolations(prev => new Set(prev).add(violation.id));
-            onViolationRevealed?.(violation);
-          }
-        });
+        if (time !== undefined) {
+          setCurrentTime(time);
+          
+          // Check for violations to reveal
+          violations.forEach(violation => {
+            if (
+              time >= violation.timestamp &&
+              time <= violation.timestamp + (violation.duration || 3) &&
+              !revealedViolations.has(violation.id)
+            ) {
+              setRevealedViolations(prev => new Set(prev).add(violation.id));
+              onViolationRevealed?.(violation);
+            }
+          });
+        }
       });
 
       // Handle video end
@@ -89,7 +91,7 @@ export default function AnnotatedVideoPlayer({
       });
 
       // Handle errors
-      player.on('error', (error) => {
+      player.on('error', (error: any) => {
         console.error('Video.js error:', error);
       });
 

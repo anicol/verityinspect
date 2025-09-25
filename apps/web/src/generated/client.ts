@@ -1,5 +1,5 @@
 // Generated API client for VerityInspect
-// Generated at: 2025-09-24T17:59:53.711Z
+// Generated at: 2025-09-25T15:07:18.299Z
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { ApiResponse, PaginatedResponse, ApiError } from './types';
@@ -46,7 +46,7 @@ export class VerityInspectClient {
   }
 
   async auth_profile_retrieve(): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/auth/profile/', { params });
+    return this.client.get('/api/auth/profile/');
   }
 
   async auth_refresh_create(data: any): Promise<AxiosResponse<any>> {
@@ -62,7 +62,7 @@ export class VerityInspectClient {
   }
 
   async auth_users_retrieve(id: number): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/auth/users/${id}/', { params });
+    return this.client.get('/api/auth/users/${id}/');
   }
 
   async auth_users_update(id: number, data: any): Promise<AxiosResponse<any>> {
@@ -74,7 +74,7 @@ export class VerityInspectClient {
   }
 
   async auth_users_destroy(id: number): Promise<AxiosResponse<any>> {
-    return this.client.delete('/api/auth/users/${id}/', { params });
+    return this.client.delete('/api/auth/users/${id}/');
   }
 
   async brands_list(params?: Record<string, any>): Promise<AxiosResponse<any>> {
@@ -86,7 +86,7 @@ export class VerityInspectClient {
   }
 
   async brands_retrieve(id: number): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/brands/${id}/', { params });
+    return this.client.get('/api/brands/${id}/');
   }
 
   async brands_update(id: number, data: any): Promise<AxiosResponse<any>> {
@@ -98,7 +98,7 @@ export class VerityInspectClient {
   }
 
   async brands_destroy(id: number): Promise<AxiosResponse<any>> {
-    return this.client.delete('/api/brands/${id}/', { params });
+    return this.client.delete('/api/brands/${id}/');
   }
 
   async brands_stores_list(params?: Record<string, any>): Promise<AxiosResponse<any>> {
@@ -110,7 +110,7 @@ export class VerityInspectClient {
   }
 
   async brands_stores_retrieve(id: number): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/brands/stores/${id}/', { params });
+    return this.client.get('/api/brands/stores/${id}/');
   }
 
   async brands_stores_update(id: number, data: any): Promise<AxiosResponse<any>> {
@@ -122,7 +122,7 @@ export class VerityInspectClient {
   }
 
   async brands_stores_destroy(id: number): Promise<AxiosResponse<any>> {
-    return this.client.delete('/api/brands/stores/${id}/', { params });
+    return this.client.delete('/api/brands/stores/${id}/');
   }
 
   async inspections_list(params?: Record<string, any>): Promise<AxiosResponse<any>> {
@@ -134,7 +134,7 @@ export class VerityInspectClient {
   }
 
   async inspections_retrieve(id: number): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/inspections/${id}/', { params });
+    return this.client.get('/api/inspections/${id}/');
   }
 
   async inspections_update(id: number, data: any): Promise<AxiosResponse<any>> {
@@ -154,7 +154,7 @@ export class VerityInspectClient {
   }
 
   async inspections_actions_retrieve(id: number): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/inspections/actions/${id}/', { params });
+    return this.client.get('/api/inspections/actions/${id}/');
   }
 
   async inspections_actions_update(id: number, data: any): Promise<AxiosResponse<any>> {
@@ -170,7 +170,7 @@ export class VerityInspectClient {
   }
 
   async inspections_stats_retrieve(): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/inspections/stats/', { params });
+    return this.client.get('/api/inspections/stats/');
   }
 
   async marketing_contact_create(data: any): Promise<AxiosResponse<any>> {
@@ -186,7 +186,7 @@ export class VerityInspectClient {
   }
 
   async uploads_retrieve(id: number): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/uploads/${id}/', { params });
+    return this.client.get('/api/uploads/${id}/');
   }
 
   async uploads_confirm_create(upload_id: number): Promise<AxiosResponse<any>> {
@@ -194,7 +194,7 @@ export class VerityInspectClient {
   }
 
   async uploads_health_retrieve(): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/uploads/health/', { params });
+    return this.client.get('/api/uploads/health/');
   }
 
   async uploads_request_presigned_url_create(): Promise<AxiosResponse<any>> {
@@ -206,7 +206,7 @@ export class VerityInspectClient {
   }
 
   async uploads_retention_status_retrieve(): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/uploads/retention/status/', { params });
+    return this.client.get('/api/uploads/retention/status/');
   }
 
   async videos_list(params?: Record<string, any>): Promise<AxiosResponse<any>> {
@@ -218,7 +218,7 @@ export class VerityInspectClient {
   }
 
   async videos_retrieve(id: number): Promise<AxiosResponse<any>> {
-    return this.client.get('/api/videos/${id}/', { params });
+    return this.client.get('/api/videos/${id}/');
   }
 
   async videos_update(id: number, data: any): Promise<AxiosResponse<any>> {
@@ -230,7 +230,7 @@ export class VerityInspectClient {
   }
 
   async videos_destroy(id: number): Promise<AxiosResponse<any>> {
-    return this.client.delete('/api/videos/${id}/', { params });
+    return this.client.delete('/api/videos/${id}/');
   }
 
   async videos_reprocess_create(id: number): Promise<AxiosResponse<any>> {
@@ -242,15 +242,15 @@ export class VerityInspectClient {
   }
 
   async health_retrieve(): Promise<AxiosResponse<any>> {
-    return this.client.get('/health/', { params });
+    return this.client.get('/health/');
   }
 
   async live_retrieve(): Promise<AxiosResponse<any>> {
-    return this.client.get('/live/', { params });
+    return this.client.get('/live/');
   }
 
   async ready_retrieve(): Promise<AxiosResponse<any>> {
-    return this.client.get('/ready/', { params });
+    return this.client.get('/ready/');
   }
 
 }

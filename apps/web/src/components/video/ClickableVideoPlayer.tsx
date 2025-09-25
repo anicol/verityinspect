@@ -64,7 +64,7 @@ export default function ClickableVideoPlayer({
 
 
       // Handle errors
-      player.on('error', (error) => {
+      player.on('error', (error: any) => {
         console.error('ClickableVideoPlayer error:', error);
       });
 

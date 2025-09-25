@@ -163,7 +163,17 @@ export default function InteractiveTwoVideoDemoContainer({
       {/* Stage Content */}
       {currentStage === 'watch' && watchVideoData && (
         <WatchStage
-          videoData={watchVideoData}
+          videoData={{
+            ...watchVideoData,
+            violations: watchVideoData.violations || [],
+            overall_score: watchVideoData.overall_score || 0,
+            category_scores: watchVideoData.category_scores || {
+              ppe: 0,
+              safety: 0,
+              cleanliness: 0,
+              uniform: 0
+            }
+          }}
           onComplete={handleWatchComplete}
           onViolationRevealed={(violation) => {
             // Track individual violations being revealed
@@ -174,7 +184,10 @@ export default function InteractiveTwoVideoDemoContainer({
 
       {currentStage === 'try' && tryVideoData && (
         <TryStage
-          videoData={tryVideoData}
+          videoData={{
+            ...tryVideoData,
+            total_violations: tryVideoData.total_violations || 0
+          }}
           onComplete={handleTryComplete}
           onValidateClicks={async (clicks) => {
             // This is called if we want to show intermediate validation
