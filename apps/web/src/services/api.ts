@@ -196,6 +196,17 @@ export const videosAPI = {
     const response = await api.get(`/videos/${videoId}/frames/`);
     return response.data.results || response.data;
   },
+
+  getVideoInspection: async (videoId: number): Promise<Inspection | null> => {
+    try {
+      // Try to find an inspection for this video
+      const inspections = await inspectionsAPI.getInspections({ video: videoId });
+      return inspections.length > 0 ? inspections[0] : null;
+    } catch (error) {
+      console.error('Error fetching video inspection:', error);
+      return null;
+    }
+  },
 };
 
 // Inspections API
