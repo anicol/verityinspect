@@ -4,6 +4,7 @@ import { Play, CheckCircle, Shield, TrendingUp, Clock, Users } from 'lucide-reac
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ROICalculator from '../components/ROICalculator';
+import { TRIAL_SIGNUP_URL } from '../config/urls';
 
 export default function HomePage() {
   return (
@@ -23,14 +24,14 @@ export default function HomePage() {
               Empower managers with private, fast feedback — and give brands scalable, consistent compliance when they need it.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/coaching"
+              <a
+                href={TRIAL_SIGNUP_URL}
                 className="px-8 py-4 bg-teal-500 text-white rounded-lg hover:bg-teal-400 transition-colors font-semibold text-lg shadow-lg"
               >
                 Start Free Trial →
-              </Link>
+              </a>
               <Link
-                to="/enterprise"
+                to="/demo"
                 className="px-8 py-4 border-2 border-white text-white rounded-lg hover:bg-white hover:text-blue-600 transition-colors font-semibold text-lg"
               >
                 Get Demo
@@ -80,12 +81,12 @@ export default function HomePage() {
                   <span className="text-gray-700">No surprise audits or stress</span>
                 </li>
               </ul>
-              <Link
-                to="/coaching"
+              <a
+                href={TRIAL_SIGNUP_URL}
                 className="block w-full text-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
               >
                 Start Free Trial
-              </Link>
+              </a>
             </div>
 
             {/* Enterprise Mode */}
@@ -116,7 +117,7 @@ export default function HomePage() {
                 </li>
               </ul>
               <Link
-                to="/enterprise"
+                to="/demo"
                 className="block w-full text-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Get Demo
@@ -327,14 +328,14 @@ export default function HomePage() {
             Start with coaching today and upgrade to enterprise when you're ready for full-scale compliance management.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/coaching"
+            <a
+              href={TRIAL_SIGNUP_URL}
               className="px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-lg shadow-lg"
             >
               Try Coaching Free
-            </Link>
+            </a>
             <Link
-              to="/enterprise"
+              to="/demo"
               className="px-8 py-4 border-2 border-white text-white rounded-lg hover:bg-white hover:text-blue-600 transition-colors font-semibold text-lg"
             >
               Schedule Enterprise Demo

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
+import { TRIAL_SIGNUP_URL } from '../config/urls';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,7 +36,7 @@ const Header = () => {
               {isProductOpen && (
                 <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
                   <Link
-                    to="/coaching"
+                    to="/coaching-mode"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                     onClick={() => setIsProductOpen(false)}
                   >
@@ -53,9 +54,9 @@ const Header = () => {
             </div>
             
             <Link
-              to="/roi"
+              to="/roi-calculator"
               className={`transition-colors ${
-                isActive('/roi') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+                isActive('/roi-calculator') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
               }`}
             >
               ROI Calculator
@@ -91,14 +92,14 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/login"
+            <a
+              href={TRIAL_SIGNUP_URL}
               className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
             >
               Start Free Trial
-            </Link>
+            </a>
             <Link
-              to="/login"
+              to="/demo"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Get Demo
@@ -119,7 +120,7 @@ const Header = () => {
           <div className="md:hidden border-t border-gray-200 py-4">
             <div className="space-y-4">
               <Link
-                to="/coaching"
+                to="/coaching-mode"
                 className="block text-gray-700 hover:text-blue-600"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -133,7 +134,7 @@ const Header = () => {
                 Enterprise
               </Link>
               <Link
-                to="/roi"
+                to="/roi-calculator"
                 className="block text-gray-700 hover:text-blue-600"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -161,15 +162,15 @@ const Header = () => {
                 Contact
               </Link>
               <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
-                <Link
-                  to="/login"
+                <a
+                  href={TRIAL_SIGNUP_URL}
                   className="px-4 py-2 text-center text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Start Free Trial
-                </Link>
+                </a>
                 <Link
-                  to="/login"
+                  to="/demo"
                   className="px-4 py-2 text-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >

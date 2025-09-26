@@ -1,348 +1,467 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Play, CheckCircle, ArrowRight, Smartphone, Clock, Eye, Star, Users, TrendingUp, AlertCircle } from 'lucide-react';
+import { Play, CheckCircle, X, Clock, Shield, Star, ArrowRight } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { TRIAL_SIGNUP_URL } from '../config/urls';
 
 export default function CoachingModePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       <Header />
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-gray-900 mb-6">
-              Better inspections start with coaching, 
-              <span className="text-blue-600">not surprise audits.</span>
+      <section className="relative bg-gradient-to-br from-teal-600 via-teal-700 to-blue-800 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+              Better inspections start with <span className="text-teal-300">a quick video</span>, not surprise audits
             </h1>
-            <p className="text-xl text-gray-600 mb-4 max-w-3xl mx-auto">
-              Run quick, private AI-powered store checks in minutes. No inspectors. No travel. No stress.
+            <p className="text-xl md:text-2xl text-teal-100 mb-8 leading-relaxed">
+              Run quick, private AI-powered video checks in minutes. No inspectors. No travel. No stress.
             </p>
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 max-w-2xl mx-auto mb-8">
-              <div className="flex items-center justify-center space-x-6 text-sm">
-                <div className="flex items-center text-green-600">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  2 minute videos
-                </div>
-                <div className="flex items-center text-green-600">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Instant results
-                </div>
-                <div className="flex items-center text-green-600">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  100% private
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
+            <div className="mb-8">
+              <a
                 href={TRIAL_SIGNUP_URL}
-                className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 hover:scale-105 transition-all duration-200 inline-flex items-center justify-center shadow-lg hover:shadow-xl"
+                className="inline-block px-8 py-4 bg-teal-400 text-teal-900 rounded-lg hover:bg-teal-300 transition-colors font-semibold text-lg shadow-lg"
               >
-                <ArrowRight className="mr-2 h-5 w-5" />
                 Start Free Trial
-                <span className="ml-2 text-sm opacity-90">(no credit card required)</span>
+                <span className="text-sm block font-normal">No credit card required</span>
               </a>
             </div>
-            
+            <p className="text-teal-200 text-sm">
+              ✅ 7 days unlimited • ✅ Complete privacy • ✅ Instant results
+            </p>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-20">
+      {/* How It Works */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              How It Works (3 Steps)
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              How Coaching Mode Works
             </h2>
+            <p className="text-xl text-gray-600">
+              Three simple steps to proactive compliance
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* Step 1 */}
             <div className="text-center">
-              <div className="bg-blue-100 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                <Smartphone className="h-8 w-8 text-blue-600" />
+              <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Play className="w-10 h-10 text-teal-600" />
               </div>
-              <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mx-auto mb-4">1</div>
-              <h3 className="text-xl font-semibold mb-3">Record a quick walkthrough</h3>
+              <div className="bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-4 text-sm font-bold">
+                1
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Record Walkthrough Video
+              </h3>
               <p className="text-gray-600">
-                Use your phone to capture a short 2 to 3 minute video (guided prompts included).
+                Capture a 2-3 minute video walkthrough of your store using any smartphone. Focus on key areas like cleanliness, safety, and compliance.
               </p>
             </div>
 
             {/* Step 2 */}
             <div className="text-center">
-              <div className="bg-green-100 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                <Eye className="h-8 w-8 text-green-600" />
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Clock className="w-10 h-10 text-blue-600" />
               </div>
-              <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mx-auto mb-4">2</div>
-              <h3 className="text-xl font-semibold mb-3">AI reviews instantly</h3>
+              <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-4 text-sm font-bold">
+                2
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                AI Reviews Instantly
+              </h3>
               <p className="text-gray-600">
-                Our system checks brand basics like safety, cleanliness, uniforms, and signage, then highlights what needs fixing.
+                Our AI analyzes your video in minutes, identifying compliance issues and opportunities for improvement with detailed timestamps.
               </p>
             </div>
 
             {/* Step 3 */}
             <div className="text-center">
-              <div className="bg-purple-100 rounded-full p-6 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                <CheckCircle className="h-8 w-8 text-purple-600" />
+              <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-10 h-10 text-orange-600" />
               </div>
-              <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mx-auto mb-4">3</div>
-              <h3 className="text-xl font-semibold mb-3">Get your private scorecard</h3>
+              <div className="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-4 text-sm font-bold">
+                3
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Private Scorecard Generated
+              </h3>
               <p className="text-gray-600">
-                You see the results, with clear tasks to act on. Videos are deleted after processing so nothing goes to corporate.
+                Get your private scorecard with actionable recommendations. Video is permanently deleted after processing for complete privacy.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-
-      {/* Pain Point Section */}
-      <section className="py-16 bg-red-50 border-l-4 border-red-400">
+      {/* Pain Callout */}
+      <section className="py-20 bg-red-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <AlertCircle className="h-8 w-8 text-red-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-red-900 mb-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
               Are you tired of getting blindsided by inspection failures?
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-red-800 max-w-4xl mx-auto items-start">
-              <div className="text-left">
-                <p className="mb-2 flex items-center justify-start">❌ District manager shows up unannounced</p>
-                <p className="mb-2 flex items-center justify-start">❌ Critical issues you never saw coming</p>
-                <p className="mb-2 flex items-center justify-start">❌ Team morale drops after surprise audits</p>
+            </h2>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                  <X className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Unannounced visits</h3>
+                <p className="text-gray-600 text-sm">Surprise inspections catch you off-guard with no time to prepare</p>
               </div>
-              <div className="text-left">
-                <p className="mb-2 flex items-center justify-start">❌ Weeks between feedback and actual problems</p>
-                <p className="mb-2 flex items-center justify-start">❌ Playing defense instead of staying ahead</p>
-                <p className="mb-2 flex items-center justify-start">❌ Feeling like you're always behind</p>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                  <X className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Critical issues missed</h3>
+                <p className="text-gray-600 text-sm">Small problems become big failures during formal audits</p>
               </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                  <X className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Morale drops</h3>
+                <p className="text-gray-600 text-sm">Team stress increases when audits become adversarial</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                  <X className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Delayed feedback</h3>
+                <p className="text-gray-600 text-sm">Wait weeks for inspection results when issues need immediate attention</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                  <X className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Always playing defense</h3>
+                <p className="text-gray-600 text-sm">Reactive management instead of proactive improvement</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-red-200">
+                <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                  <X className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Inconsistent standards</h3>
+                <p className="text-gray-600 text-sm">Different inspectors focus on different priorities</p>
+              </div>
+            </div>
+
+            <div className="bg-teal-600 text-white p-8 rounded-2xl">
+              <h3 className="text-2xl font-bold mb-4">
+                There's a better way: Coaching Mode
+              </h3>
+              <p className="text-teal-100 text-lg">
+                Get ahead of problems before they become failures. Build confidence, not stress.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why Managers Love Coaching Mode */}
-      <section className="py-20">
+      {/* Why Managers Love It */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Why Managers Love Coaching Mode
             </h2>
+            <p className="text-xl text-gray-600">
+              Built for busy managers who want to stay ahead, not behind
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500 mt-1" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold mb-2">Private</h3>
-                  <p className="text-gray-600">Results stay at your store.</p>
-                </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Shield className="w-8 h-8 text-teal-600" />
               </div>
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500 mt-1" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold mb-2">Fast</h3>
-                  <p className="text-gray-600">Feedback in minutes, not months.</p>
-                </div>
-              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Private
+              </h3>
+              <p className="text-gray-600">
+                Results stay at your store level. No corporate visibility during the coaching phase. Build confidence privately.
+              </p>
             </div>
-            <div className="space-y-6">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500 mt-1" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold mb-2">Actionable</h3>
-                  <p className="text-gray-600">Scorecards come with a to do list you can act on today.</p>
-                </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Clock className="w-8 h-8 text-blue-600" />
               </div>
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-500 mt-1" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold mb-2">Lightweight</h3>
-                  <p className="text-gray-600">Just a few minutes per run with no inspectors, no scheduling.</p>
-                </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Fast
+              </h3>
+              <p className="text-gray-600">
+                Get feedback in minutes, not weeks. Address issues immediately while they're still fresh and fixable.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-8 h-8 text-orange-600" />
               </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Actionable
+              </h3>
+              <p className="text-gray-600">
+                Detailed scorecards with specific tasks, timestamps, and priority levels. Know exactly what to fix first.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Star className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Lightweight
+              </h3>
+              <p className="text-gray-600">
+                Just a quick video, a few minutes per run. No scheduling, no travel, no disruption to daily operations. Do it when convenient.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Sample Coaching Report */}
+      {/* Example Coaching Report */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">See What You Get</h2>
-            <p className="text-xl text-gray-600">Quick, actionable feedback with specific tasks to improve</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden border max-w-4xl mx-auto">
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white">
-              <h3 className="text-2xl font-semibold mb-2">Private Coaching Report</h3>
-              <p className="opacity-90">Your Store • Today • 2:30pm</p>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">88%</div>
-                  <div className="text-sm text-gray-600">Overall Score</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">92%</div>
-                  <div className="text-sm text-gray-600">Uniforms</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-yellow-600 mb-2">78%</div>
-                  <div className="text-sm text-gray-600">Cleanliness</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">95%</div>
-                  <div className="text-sm text-gray-600">Safety</div>
-                </div>
-              </div>
-              <div className="border-t pt-6">
-                <h4 className="font-semibold mb-4 flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  Your Action Items
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-                    <div className="flex items-start">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3 mt-2"></div>
-                      <div>
-                        <div className="font-medium">Wipe down prep counter</div>
-                        <div className="text-sm text-gray-600 mt-1">Visible residue on main prep surface</div>
-                      </div>
-                    </div>
-                    <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded">0:32</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-                    <div className="flex items-start">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3 mt-2"></div>
-                      <div>
-                        <div className="font-medium">Replace missing floor mat</div>
-                        <div className="text-sm text-gray-600 mt-1">Anti slip mat missing at fryer station</div>
-                      </div>
-                    </div>
-                    <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded">1:15</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
-                    <div className="flex items-start">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mr-3 mt-2"></div>
-                      <div>
-                        <div className="font-medium">Great job on uniform compliance!</div>
-                        <div className="text-sm text-gray-600 mt-1">All team members wearing proper hats and aprons</div>
-                      </div>
-                    </div>
-                    <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded">All</span>
-                  </div>
-                </div>
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-start">
-                    <Eye className="h-5 w-5 text-blue-600 mr-3 mt-1" />
-                    <div>
-                      <div className="font-medium text-blue-900">Private & Secure</div>
-                      <div className="text-sm text-blue-700 mt-1">This report stays at your location. Source video deleted after processing.</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Free Trial Offer */}
-      <section className="py-20 bg-blue-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl p-12 text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              Start Your 7-Day Free Trial
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Example Coaching Report
             </h2>
-            <div className="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6 text-left max-w-2xl mx-auto">
-              <div className="flex items-center">
-                <Clock className="h-5 w-5 text-blue-600 mr-2" />
-                <p className="text-blue-800 text-sm">
-                  <strong>Be among the first</strong> to experience private AI coaching. Start building better habits today.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-blue-600 mb-2">7</div>
-                <p className="text-gray-600">Days unlimited coaching runs</p>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-blue-600 mb-2">$0</div>
-                <p className="text-gray-600">No cost, no obligation</p>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-blue-600 mb-2">📱</div>
-                <p className="text-gray-600">Works on any smartphone</p>
-              </div>
-            </div>
-            <a 
-              href={TRIAL_SIGNUP_URL}
-              className="bg-blue-600 text-white px-10 py-4 rounded-lg text-xl font-semibold hover:bg-blue-700 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl pulse inline-block"
-            >
-              Start My Free Trial
-            </a>
-            <p className="text-sm text-gray-500 mt-4">No special hardware required</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Future Upgrade */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Future Upgrade (Optional)
-            </h2>
-            <p className="text-xl text-gray-600 mb-8">
-              When you're ready, your brand can unlock:
+            <p className="text-xl text-gray-600">
+              See what your private coaching scorecard looks like
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-gray-50 rounded-lg p-8">
-              <div className="flex items-center mb-4">
-                <Shield className="h-8 w-8 text-blue-600 mr-3" />
-                <h3 className="text-xl font-semibold">Inspection Mode</h3>
+          
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-teal-600 to-blue-600 text-white p-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-2xl font-bold">Store Coaching Report</h3>
+                    <p className="text-teal-100">Generated: March 15, 2024 at 2:30 PM</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-4xl font-bold">88%</div>
+                    <div className="text-teal-100">Overall Score</div>
+                  </div>
+                </div>
               </div>
-              <p className="text-gray-600">Official, auditable records with full compliance tracking.</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-8">
-              <div className="flex items-center mb-4">
-                <Eye className="h-8 w-8 text-purple-600 mr-3" />
-                <h3 className="text-xl font-semibold">Corporate Dashboards</h3>
+
+              {/* Scores */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">92%</div>
+                    <div className="text-gray-600">Uniforms</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div className="bg-green-600 h-2 rounded-full" style={{ width: '92%' }}></div>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-600">78%</div>
+                    <div className="text-gray-600">Cleanliness</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '78%' }}></div>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">95%</div>
+                    <div className="text-gray-600">Safety</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div className="bg-green-600 h-2 rounded-full" style={{ width: '95%' }}></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="text-gray-600">Region wide trends, heatmaps, and compliance reporting.</p>
+
+              {/* Action Items */}
+              <div className="p-6">
+                <h4 className="text-xl font-semibold text-gray-900 mb-4">Priority Action Items</h4>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                      1
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Clean drink station area</div>
+                      <div className="text-sm text-gray-600">Timestamp: 1:23 - Visible spills and sticky surfaces detected</div>
+                      <div className="text-sm text-yellow-700 mt-1">Medium Priority</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                      2
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Straighten uniform name tags</div>
+                      <div className="text-sm text-gray-600">Timestamp: 0:45 - Two team members have crooked/missing tags</div>
+                      <div className="text-sm text-blue-700 mt-1">Low Priority</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                      ✓
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Excellent safety compliance</div>
+                      <div className="text-sm text-gray-600">All safety equipment visible and accessible</div>
+                      <div className="text-sm text-green-700 mt-1">Keep up the great work!</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Privacy Notice */}
+              <div className="bg-gray-50 p-4 border-t border-gray-200">
+                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                  <Shield className="w-4 h-4" />
+                  <span>This report stays at your location. The video is deleted after processing for complete privacy.</span>
+                </div>
+              </div>
+              
             </div>
           </div>
         </div>
       </section>
 
-      {/* Closing Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Free Trial Details */}
+      <section id="trial" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
+              Free Trial Details
+            </h2>
+            
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              <div className="bg-teal-50 p-8 rounded-2xl border border-teal-200">
+                <div className="text-4xl font-bold text-teal-600 mb-4">7</div>
+                <div className="font-semibold text-gray-900 mb-2">Days Unlimited</div>
+                <p className="text-gray-600">Run as many coaching sessions as you want during your trial period</p>
+              </div>
+
+              <div className="bg-blue-50 p-8 rounded-2xl border border-blue-200">
+                <div className="text-4xl font-bold text-blue-600 mb-4">$0</div>
+                <div className="font-semibold text-gray-900 mb-2">Cost, No Obligation</div>
+                <p className="text-gray-600">No credit card required. No hidden fees. No automatic billing.</p>
+              </div>
+
+              <div className="bg-orange-50 p-8 rounded-2xl border border-orange-200">
+                <div className="text-4xl font-bold text-orange-600 mb-4">📱</div>
+                <div className="font-semibold text-gray-900 mb-2">Works on Any Smartphone</div>
+                <p className="text-gray-600">Record a quick video on iOS or Android. No special equipment or apps to download.</p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-teal-600 to-blue-600 text-white p-8 rounded-2xl">
+              <h3 className="text-2xl font-bold mb-4">Ready to start coaching?</h3>
+              <p className="text-teal-100 mb-6">Join hundreds of managers who are already using VerityInspect to stay ahead of compliance issues.</p>
+              <a 
+                href={TRIAL_SIGNUP_URL}
+                className="inline-block px-8 py-4 bg-white text-teal-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-lg shadow-lg"
+              >
+                Start Free Trial Now
+              </a>
+              <p className="text-teal-200 text-sm mt-4">
+                Takes less than 2 minutes to get started
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Future Upgrade Teaser */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
+              When You're Ready for More
+            </h2>
+            
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+              <div className="grid md:grid-cols-2 gap-8 items-center">
+                <div className="text-left">
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                    Upgrade to Enterprise Mode
+                  </h3>
+                  <ul className="space-y-3">
+                    <li className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
+                      <span className="text-gray-700">Official, auditable inspection records</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
+                      <span className="text-gray-700">Corporate dashboards with regional trends</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
+                      <span className="text-gray-700">Compliance reporting and heatmaps</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
+                      <span className="text-gray-700">Integration with task management systems</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="bg-gray-100 p-6 rounded-lg">
+                  <img
+                    src="https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?auto=compress&cs=tinysrgb&w=800"
+                    alt="Corporate dashboard preview"
+                    className="w-full h-40 object-cover rounded-lg"
+                  />
+                  <p className="text-sm text-gray-600 mt-3 text-center">
+                    Enterprise dashboard preview
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-8">
+                <Link
+                  to="/enterprise"
+                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Learn About Enterprise
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 bg-gradient-to-r from-teal-600 to-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Coaching today. Confidence tomorrow.
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            "Coaching today. Confidence tomorrow."
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Start building better habits with quick, private AI checks. See your store the way an inspector would without waiting for one to show up.
+          <p className="text-xl text-teal-100 mb-8 max-w-3xl mx-auto">
+            Stop getting surprised by inspection failures. Start building confidence with private, instant feedback that helps you improve every day.
           </p>
-          <button className="bg-blue-600 text-white px-10 py-4 rounded-lg text-xl font-semibold hover:bg-blue-700 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl inline-flex items-center">
-            <ArrowRight className="mr-2 h-5 w-5" />
+          <button className="px-8 py-4 bg-white text-teal-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-lg shadow-lg">
             Try Coaching Mode Free
           </button>
+          <p className="text-teal-200 text-sm mt-4">
+            7 days unlimited • No credit card • Complete privacy
+          </p>
         </div>
       </section>
 

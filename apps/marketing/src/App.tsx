@@ -19,11 +19,13 @@ function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/roi-calculator" element={<ROICalculatorPage />} />
         <Route path="/coaching-mode" element={<CoachingModePage />} />
+        <Route path="/coaching" element={<CoachingModePage />} />
         <Route path="/enterprise" element={<CorporatePage />} />
         <Route path="/demo" element={<DemoPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/roi" element={<ROICalculatorPage />} />
         {/* Placeholder routes for future pages */}
         <Route path="/terms" element={<div>Terms page coming soon</div>} />
       </Routes>

@@ -18,5 +18,5 @@ export const APP_URLS = {
     : 'https://api.verityinspect.com/api',
 };
 
-// Trial signup URL specifically
+// Trial signup URL specifically  
 export const TRIAL_SIGNUP_URL = `${APP_URLS.webApp}/trial-signup`;
