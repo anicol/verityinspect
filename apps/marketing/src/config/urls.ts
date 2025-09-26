@@ -1,5 +1,5 @@
 // URL configuration for different environments
-const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
+const isDevelopment = import.meta.env.DEV;
 
 export const APP_URLS = {
   // Web app URLs

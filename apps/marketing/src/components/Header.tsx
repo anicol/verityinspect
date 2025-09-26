@@ -1,185 +1,187 @@
-import { Link } from 'react-router-dom';
-import { Shield, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
-import { APP_URLS } from '../config/urls';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ChevronDown } from 'lucide-react';
 
-export default function Header() {
-  const [showProductDropdown, setShowProductDropdown] = useState(false);
-  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
-  const [showSupportDropdown, setShowSupportDropdown] = useState(false);
+const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProductOpen, setIsProductOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="bg-white border-b sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <Link to="/" className="flex items-center">
-            <Shield className="h-8 w-8 text-blue-600" />
-            <span className="ml-2 text-2xl font-bold text-gray-900">VerityInspect</span>
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">V</span>
+            </div>
+            <span className="text-xl font-bold text-gray-900">VerityInspect</span>
           </Link>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {/* Product Dropdown */}
-            <div 
-              className="relative group"
-              onMouseEnter={() => setShowProductDropdown(true)}
-              onMouseLeave={() => setShowProductDropdown(false)}
-            >
-              <button className="flex items-center text-gray-600 hover:text-gray-900 py-2">
+            <div className="relative">
+              <button
+                onClick={() => setIsProductOpen(!isProductOpen)}
+                className="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
+              >
                 Product
-                <ChevronDown className="ml-1 h-4 w-4" />
+                <ChevronDown className="ml-1 w-4 h-4" />
               </button>
-              {showProductDropdown && (
-                <div className="absolute top-full left-0 w-48 bg-white rounded-md shadow-lg border z-50">
-                  <div className="py-1">
-                    <Link
-                      to="/coaching-mode"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setShowProductDropdown(false)}
-                    >
-                      Coaching Mode
-                    </Link>
-                    <Link
-                      to="/enterprise"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setShowProductDropdown(false)}
-                    >
-                      Corporate / Enterprise
-                    </Link>
-                    <Link
-                      to="/pricing"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setShowProductDropdown(false)}
-                    >
-                      Pricing
-                    </Link>
-                    <Link
-                      to="/demo"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setShowProductDropdown(false)}
-                    >
-                      Demo
-                    </Link>
-                  </div>
+              {isProductOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                  <Link
+                    to="/coaching"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+                    onClick={() => setIsProductOpen(false)}
+                  >
+                    Coaching Mode
+                  </Link>
+                  <Link
+                    to="/enterprise"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+                    onClick={() => setIsProductOpen(false)}
+                  >
+                    Enterprise
+                  </Link>
                 </div>
               )}
             </div>
-
-            {/* Company Dropdown */}
-            <div 
-              className="relative group"
-              onMouseEnter={() => setShowCompanyDropdown(true)}
-              onMouseLeave={() => setShowCompanyDropdown(false)}
+            
+            <Link
+              to="/roi"
+              className={`transition-colors ${
+                isActive('/roi') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+              }`}
             >
-              <button className="flex items-center text-gray-600 hover:text-gray-900 py-2">
-                Company
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </button>
-              {showCompanyDropdown && (
-                <div className="absolute top-full left-0 w-48 bg-white rounded-md shadow-lg border z-50">
-                  <div className="py-1">
-                    <Link
-                      to="/about"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setShowCompanyDropdown(false)}
-                    >
-                      About
-                    </Link>
-                    <Link
-                      to="/contact"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setShowCompanyDropdown(false)}
-                    >
-                      Contact
-                    </Link>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-400"
-                    >
-                      Careers
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Support Dropdown */}
-            <div 
-              className="relative group"
-              onMouseEnter={() => setShowSupportDropdown(true)}
-              onMouseLeave={() => setShowSupportDropdown(false)}
-            >
-              <button className="flex items-center text-gray-600 hover:text-gray-900 py-2">
-                Support
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </button>
-              {showSupportDropdown && (
-                <div className="absolute top-full left-0 w-48 bg-white rounded-md shadow-lg border z-50">
-                  <div className="py-1">
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-400"
-                    >
-                      Help Center
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-400"
-                    >
-                      Status
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-400"
-                    >
-                      API
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-400"
-                    >
-                      Documentation
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <Link to="/roi-calculator" className="text-gray-600 hover:text-gray-900">
               ROI Calculator
             </Link>
-
-            <div className="flex items-center space-x-3">
-              <a
-                href={`${APP_URLS.webApp}/login`}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 transition-colors"
-              >
-                Log In
-              </a>
-              <Link
-                to="/coaching-mode"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Start Free Trial
-              </Link>
-              <Link
-                to="/demo"
-                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Get Demo
-              </Link>
-            </div>
+            
+            <Link
+              to="/pricing"
+              className={`transition-colors ${
+                isActive('/pricing') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+              }`}
+            >
+              Pricing
+            </Link>
+            
+            <Link
+              to="/about"
+              className={`transition-colors ${
+                isActive('/about') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+              }`}
+            >
+              About
+            </Link>
+            
+            <Link
+              to="/contact"
+              className={`transition-colors ${
+                isActive('/contact') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+              }`}
+            >
+              Contact
+            </Link>
           </nav>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button className="text-gray-600 hover:text-gray-900">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+          {/* CTA Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link
+              to="/login"
+              className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              Start Free Trial
+            </Link>
+            <Link
+              to="/login"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Get Demo
+            </Link>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2"
+          >
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 py-4">
+            <div className="space-y-4">
+              <Link
+                to="/coaching"
+                className="block text-gray-700 hover:text-blue-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Coaching Mode
+              </Link>
+              <Link
+                to="/enterprise"
+                className="block text-gray-700 hover:text-blue-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Enterprise
+              </Link>
+              <Link
+                to="/roi"
+                className="block text-gray-700 hover:text-blue-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ROI Calculator
+              </Link>
+              <Link
+                to="/pricing"
+                className="block text-gray-700 hover:text-blue-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Link
+                to="/about"
+                className="block text-gray-700 hover:text-blue-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link
+                to="/contact"
+                className="block text-gray-700 hover:text-blue-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact
+              </Link>
+              <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-center text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Start Free Trial
+                </Link>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Get Demo
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
-}
+};
+
+export default Header;
