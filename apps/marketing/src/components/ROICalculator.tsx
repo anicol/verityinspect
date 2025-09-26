@@ -1,230 +1,239 @@
-import { useState } from 'react';
-import { Card } from './ui/card';
+import React, { useState, useEffect } from 'react';
+import * as Slider from '@radix-ui/react-slider';
 
-interface CalculationResults {
-  annualVisits: number;
-  travelCostLow: number;
-  travelCostHigh: number;
-  travelSavingsLow: number;
-  travelSavingsHigh: number;
-  softwareCost: number;
-  netSavingsLow: number;
-  netSavingsHigh: number;
+interface ROICalculatorProps {
+  isPreview?: boolean;
 }
 
-export default function ROICalculator() {
-  const [stores, setStores] = useState(100);
+const ROICalculator: React.FC<ROICalculatorProps> = ({ isPreview = false }) => {
+  const [storeCount, setStoreCount] = useState(50);
   const [visitsPerYear, setVisitsPerYear] = useState(4);
-  const [costPerVisitMin, setCostPerVisitMin] = useState(500);
-  const [costPerVisitMax, setCostPerVisitMax] = useState(1000);
-  const [travelReductionPct, setTravelReductionPct] = useState(60);
+  const [costPerVisit, setCostPerVisit] = useState(750);
+  const [travelReduction, setTravelReduction] = useState(60);
   const [pricePerStore, setPricePerStore] = useState(65);
 
-  const calculateROI = (): CalculationResults => {
-    const annualVisits = stores * visitsPerYear;
-    const travelCostLow = annualVisits * costPerVisitMin;
-    const travelCostHigh = annualVisits * costPerVisitMax;
-    const travelSavingsLow = travelCostLow * (travelReductionPct / 100);
-    const travelSavingsHigh = travelCostHigh * (travelReductionPct / 100);
-    const softwareCost = stores * pricePerStore * 12;
-    const netSavingsLow = travelSavingsLow - softwareCost;
-    const netSavingsHigh = travelSavingsHigh - softwareCost;
+  const [results, setResults] = useState({
+    annualTravelCost: 0,
+    travelSavings: 0,
+    softwareCost: 0,
+    netROI: 0,
+  });
 
-    return {
-      annualVisits,
-      travelCostLow,
-      travelCostHigh,
-      travelSavingsLow,
-      travelSavingsHigh,
+  useEffect(() => {
+    const annualTravelCost = storeCount * visitsPerYear * costPerVisit;
+    const travelSavings = (annualTravelCost * travelReduction) / 100;
+    const softwareCost = storeCount * pricePerStore * 12;
+    const netROI = travelSavings - softwareCost;
+
+    setResults({
+      annualTravelCost,
+      travelSavings,
       softwareCost,
-      netSavingsLow,
-      netSavingsHigh,
-    };
+      netROI,
+    });
+  }, [storeCount, visitsPerYear, costPerVisit, travelReduction, pricePerStore]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
-  const results = calculateROI();
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  if (isPreview) {
+    return (
+      <div className="bg-gradient-to-br from-blue-50 to-teal-50 p-6 rounded-xl border border-blue-200">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Quick ROI Preview
+          </h3>
+          <div className="flex items-center justify-center space-x-2">
+            <input
+              type="number"
+              value={storeCount}
+              onChange={(e) => setStoreCount(Number(e.target.value))}
+              className="w-20 px-2 py-1 text-center border border-gray-300 rounded"
+              min="1"
+              max="1000"
+            />
+            <span className="text-gray-600">stores</span>
+          </div>
+        </div>
+        
+        <div className="text-center space-y-2">
+          <div className="text-2xl font-bold text-green-600">
+            {formatCurrency(results.netROI)}
+          </div>
+          <div className="text-sm text-gray-600">Annual net savings</div>
+          <a
+            href="/roi"
+            className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          >
+            Full Calculator →
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">ROI Calculator</h2>
-        <p className="text-lg text-gray-600">
-          Calculate your potential savings with AI video inspections
-        </p>
-      </div>
-
+    <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Inputs */}
-        <Card className="p-6">
-          <h3 className="text-xl font-semibold mb-6">Your Business</h3>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Number of Stores
-              </label>
-              <input
-                type="number"
-                value={stores}
-                onChange={(e) => setStores(parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min="1"
-                max="10000"
-              />
-            </div>
+        <div className="space-y-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-6">
+            Your Current Operations
+          </h3>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Site Visits per Store per Year
-              </label>
-              <input
-                type="number"
-                value={visitsPerYear}
-                onChange={(e) => setVisitsPerYear(parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min="1"
-                max="52"
-              />
-            </div>
+          {/* Store Count */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Number of Stores
+            </label>
+            <input
+              type="number"
+              value={storeCount}
+              onChange={(e) => setStoreCount(Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              min="1"
+              max="10000"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cost per Site Visit (Low Estimate)
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={costPerVisitMin}
-                  onChange={(e) => setCostPerVisitMin(parseInt(e.target.value) || 0)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
-                  max="5000"
-                />
-              </div>
-            </div>
+          {/* Visits Per Year */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Visits Per Store Per Year
+            </label>
+            <input
+              type="number"
+              value={visitsPerYear}
+              onChange={(e) => setVisitsPerYear(Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              min="1"
+              max="52"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cost per Site Visit (High Estimate)
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={costPerVisitMax}
-                  onChange={(e) => setCostPerVisitMax(parseInt(e.target.value) || 0)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
-                  max="5000"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Expected Travel Reduction: {travelReductionPct}%
-              </label>
-              <input
-                type="range"
-                value={travelReductionPct}
-                onChange={(e) => setTravelReductionPct(parseInt(e.target.value))}
-                className="w-full"
-                min="30"
-                max="80"
-                step="5"
-              />
-              <div className="flex justify-between text-sm text-gray-500 mt-1">
-                <span>30%</span>
-                <span>80%</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                VerityInspect Price per Store per Month
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={pricePerStore}
-                  onChange={(e) => setPricePerStore(parseInt(e.target.value) || 0)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
-                  max="200"
-                />
-              </div>
+          {/* Cost Per Visit */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Cost Per Visit: {formatCurrency(costPerVisit)}
+            </label>
+            <Slider.Root
+              className="relative flex items-center select-none touch-none w-full h-5"
+              value={[costPerVisit]}
+              onValueChange={(value) => setCostPerVisit(value[0])}
+              max={1500}
+              min={200}
+              step={50}
+            >
+              <Slider.Track className="bg-gray-200 relative grow rounded-full h-2">
+                <Slider.Range className="absolute bg-blue-600 rounded-full h-full" />
+              </Slider.Track>
+              <Slider.Thumb className="block w-5 h-5 bg-blue-600 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </Slider.Root>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>$200</span>
+              <span>$1,500</span>
             </div>
           </div>
-        </Card>
+
+          {/* Travel Reduction */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Expected Travel Reduction: {travelReduction}%
+            </label>
+            <Slider.Root
+              className="relative flex items-center select-none touch-none w-full h-5"
+              value={[travelReduction]}
+              onValueChange={(value) => setTravelReduction(value[0])}
+              max={80}
+              min={30}
+              step={5}
+            >
+              <Slider.Track className="bg-gray-200 relative grow rounded-full h-2">
+                <Slider.Range className="absolute bg-teal-600 rounded-full h-full" />
+              </Slider.Track>
+              <Slider.Thumb className="block w-5 h-5 bg-teal-600 rounded-full hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            </Slider.Root>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>30%</span>
+              <span>80%</span>
+            </div>
+          </div>
+
+          {/* Price Per Store */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              VerityInspect Cost Per Store/Month
+            </label>
+            <input
+              type="number"
+              value={pricePerStore}
+              onChange={(e) => setPricePerStore(Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              min="1"
+              max="500"
+            />
+          </div>
+        </div>
 
         {/* Results */}
-        <Card className="p-6">
-          <h3 className="text-xl font-semibold mb-6">Annual Savings Projection</h3>
+        <div className="bg-gradient-to-br from-blue-50 to-teal-50 p-6 rounded-xl">
+          <h3 className="text-xl font-semibold text-gray-900 mb-6">
+            Your ROI Analysis
+          </h3>
+
           <div className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-gray-600">Annual site visits</span>
-              <span className="font-medium">{results.annualVisits.toLocaleString()}</span>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-gray-600">Current travel costs</span>
-              <span className="font-medium">
-                {formatCurrency(results.travelCostLow)} - {formatCurrency(results.travelCostHigh)}
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-600">Annual Travel Cost</span>
+              <span className="font-semibold text-gray-900">
+                {formatCurrency(results.annualTravelCost)}
               </span>
             </div>
 
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-gray-600">Travel savings ({travelReductionPct}% reduction)</span>
-              <span className="font-medium text-green-600">
-                {formatCurrency(results.travelSavingsLow)} - {formatCurrency(results.travelSavingsHigh)}
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-600">Travel Savings ({travelReduction}%)</span>
+              <span className="font-semibold text-green-600">
+                {formatCurrency(results.travelSavings)}
               </span>
             </div>
 
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-gray-600">VerityInspect annual cost</span>
-              <span className="font-medium text-red-600">
-                -{formatCurrency(results.softwareCost)}
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-600">Annual Software Cost</span>
+              <span className="font-semibold text-gray-900">
+                {formatCurrency(results.softwareCost)}
               </span>
             </div>
 
-            <div className="flex justify-between items-center py-3 border-t-2 bg-gray-50 px-4 rounded">
-              <span className="text-lg font-semibold">Net Annual Savings</span>
-              <span className={`text-xl font-bold ${results.netSavingsLow > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(results.netSavingsLow)} - {formatCurrency(results.netSavingsHigh)}
+            <div className="flex justify-between items-center py-3 bg-white rounded-lg px-4 border-2 border-blue-200">
+              <span className="font-semibold text-gray-900">Net Annual ROI</span>
+              <span className={`text-2xl font-bold ${results.netROI > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(results.netROI)}
               </span>
             </div>
 
-            {results.netSavingsLow > 0 && (
-              <div className="mt-6 p-4 bg-green-50 rounded-lg">
-                <h4 className="font-semibold text-green-800 mb-2">Additional Benefits</h4>
-                <ul className="text-sm text-green-700 space-y-1">
-                  <li>• 3-5× increase in inspection coverage</li>
-                  <li>• Consistent, objective evaluation criteria</li>
-                  <li>• Faster issue identification and resolution</li>
-                  <li>• Improved compliance and guest satisfaction</li>
-                  <li>• Reduced inspector travel time and fatigue</li>
-                </ul>
+            {results.netROI > 0 && (
+              <div className="mt-6 text-center">
+                <p className="text-green-600 font-medium mb-4">
+                  Positive ROI! See how this works for your brand.
+                </p>
+                <a
+                  href="/enterprise"
+                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Request Demo
+                </a>
               </div>
             )}
           </div>
-        </Card>
-      </div>
-
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-500 mb-4">
-          * Calculations are estimates based on industry averages. Actual results may vary.
-        </p>
-        <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-          Get Started with VerityInspect
-        </button>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default ROICalculator;

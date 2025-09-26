@@ -272,7 +272,7 @@ export default function HomePage() {
           </div>
           
           <div className="max-w-md mx-auto">
-            <ROICalculator />
+            <ROICalculator isPreview={true} />
           </div>
         </div>
       </section>
