@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
-import { TRIAL_SIGNUP_URL } from '../config/urls';
+import { TRIAL_SIGNUP_URL, LOGIN_URL } from '../config/urls';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -93,6 +93,12 @@ const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <a
+              href={LOGIN_URL}
+              className="px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors font-medium"
+            >
+              Log In
+            </a>
+            <a
               href={TRIAL_SIGNUP_URL}
               className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
             >
@@ -162,6 +168,13 @@ const Header = () => {
                 Contact
               </Link>
               <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                <a
+                  href={LOGIN_URL}
+                  className="px-4 py-2 text-center text-gray-700 hover:text-blue-600 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Log In
+                </a>
                 <a
                   href={TRIAL_SIGNUP_URL}
                   className="px-4 py-2 text-center text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"

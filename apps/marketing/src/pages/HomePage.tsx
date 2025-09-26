@@ -81,12 +81,12 @@ export default function HomePage() {
                   <span className="text-gray-700">No surprise audits or stress</span>
                 </li>
               </ul>
-              <a
-                href={TRIAL_SIGNUP_URL}
+              <Link
+                to="/coaching-mode"
                 className="block w-full text-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
               >
-                Start Free Trial
-              </a>
+                Learn More
+              </Link>
             </div>
 
             {/* Enterprise Mode */}
@@ -117,10 +117,10 @@ export default function HomePage() {
                 </li>
               </ul>
               <Link
-                to="/demo"
+                to="/enterprise"
                 className="block w-full text-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                Get Demo
+                Learn More
               </Link>
             </div>
           </div>

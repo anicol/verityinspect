@@ -18,5 +18,8 @@ export const APP_URLS = {
     : 'https://api.verityinspect.com/api',
 };
 
-// Trial signup URL specifically  
-export const TRIAL_SIGNUP_URL = `${APP_URLS.webApp}/trial-signup`;
+// Login URL (handles both login and trial signup)
+export const LOGIN_URL = `${APP_URLS.webApp}/login`;
+
+// Trial signup URL (same as login page with trial mode)
+export const TRIAL_SIGNUP_URL = `${APP_URLS.webApp}/login`;
