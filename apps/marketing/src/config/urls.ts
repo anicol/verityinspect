@@ -1,5 +1,5 @@
 // URL configuration for different environments
-const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
+const isDevelopment = import.meta.env.DEV;
 
 export const APP_URLS = {
   // Web app URLs
@@ -18,5 +18,5 @@ export const APP_URLS = {
     : 'https://api.verityinspect.com/api',
 };
 
-// Trial signup URL specifically
+// Trial signup URL specifically  
 export const TRIAL_SIGNUP_URL = `${APP_URLS.webApp}/trial-signup`;
