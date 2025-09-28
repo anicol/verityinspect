@@ -5,7 +5,7 @@ export const APP_URLS = {
   // Web app URLs
   webApp: isDevelopment 
     ? 'http://localhost:3000' 
-    : 'https://app.getpeakops.com',
+    : 'https://peakops-web.onrender.com',
   
   // Marketing site URLs  
   marketing: isDevelopment 
@@ -15,7 +15,7 @@ export const APP_URLS = {
   // API URLs
   api: isDevelopment 
     ? 'http://localhost:8000/api'
-    : 'https://api.getpeakops.com/api',
+    : 'https://peakops-api.onrender.com/api',
 };
 
 // Login URL (handles both login and trial signup)
