@@ -37,7 +37,7 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
-    command: celery -A verityinspect worker -l info
+    command: celery -A peakops worker -l info
     volumes:
       - ./apps/api:/app
     environment:
@@ -53,7 +53,7 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
-    command: celery -A verityinspect beat -l info
+    command: celery -A peakops beat -l info
     volumes:
       - ./apps/api:/app
     environment:
