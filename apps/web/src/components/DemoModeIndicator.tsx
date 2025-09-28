@@ -85,7 +85,7 @@ export default function DemoModeIndicator() {
                   <Info className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">VerityInspect Demo</h3>
+                  <h3 className="font-semibold text-lg">PeakOps Demo</h3>
                   <p className="text-sm text-blue-100">
                     Explore our AI-powered restaurant inspection platform
                   </p>
@@ -111,7 +111,7 @@ export default function DemoModeIndicator() {
               </button>
               
               <a
-                href="https://verityinspect.com/contact"
+                href="https://getpeakops.com/contact"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center space-x-1 px-4 py-2 bg-white text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium transition-all duration-200"

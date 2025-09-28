@@ -46,7 +46,7 @@ export default function Dashboard() {
   );
 
   // MVP Demo Experience Logic
-  const shouldShowDemo = user && (
+  const shouldShowDemo = user && !user.demo_completed_at && (
     (user.is_trial_user && (stats?.total_inspections || 0) < 3) ||  // Trial users with <3 real inspections
     (user.created_at && getHoursSinceSignup(user.created_at) < 48) || // Brand new users (including admins)
     user.requested_demo ||                                            // Explicit demo request from backend

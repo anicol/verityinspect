@@ -13,10 +13,10 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0').s
 # Add Render and custom domain hosts for production
 if not DEBUG:
     ALLOWED_HOSTS.extend([
-        'verityinspect-api.onrender.com',
-        'api.verityinspect.com', 
-        'verityinspect.com',
-        '.verityinspect.com',  # Allow all subdomains
+        'peakops-api.onrender.com',
+        'api.getpeakops.com', 
+        'getpeakops.com',
+        '.getpeakops.com',  # Allow all subdomains
     ])
 
 # Production security settings
@@ -72,7 +72,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'verityinspect.urls'
+ROOT_URLCONF = 'peakops.urls'
 
 TEMPLATES = [
     {
@@ -90,7 +90,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'verityinspect.wsgi.application'
+WSGI_APPLICATION = 'peakops.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
@@ -149,7 +149,7 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'VerityInspect API',
+    'TITLE': 'PeakOps API',
     'DESCRIPTION': 'AI-powered video inspection platform for restaurant safety and compliance',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
@@ -157,7 +157,7 @@ SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': '/api/',
     'SERVERS': [
         {
-            'url': 'https://verityinspect-api.onrender.com',
+            'url': 'https://peakops-api.onrender.com',
             'description': 'Production server'
         },
         {
@@ -174,21 +174,21 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Core', 'description': 'Health checks and system status'},
     ],
     'EXTERNAL_DOCS': {
-        'description': 'VerityInspect Documentation',
-        'url': 'https://docs.verityinspect.com'
+        'description': 'PeakOps Documentation',
+        'url': 'https://docs.getpeakops.com'
     },
     'CONTACT': {
-        'name': 'VerityInspect Support',
-        'email': 'support@verityinspect.com'
+        'name': 'PeakOps Support',
+        'email': 'support@getpeakops.com'
     },
     'LICENSE': {
         'name': 'Proprietary'
     },
     'PREPROCESSING_HOOKS': [
-        'verityinspect.schema.custom_preprocessing_hook',
+        'peakops.schema.custom_preprocessing_hook',
     ],
     'POSTPROCESSING_HOOKS': [
-        'verityinspect.schema.custom_postprocessing_hook',
+        'peakops.schema.custom_postprocessing_hook',
     ],
 }
 
@@ -202,14 +202,14 @@ if DEBUG:
 else:
     CORS_ALLOWED_ORIGINS = [
         # Render default URLs
-        'https://verityinspect-web.onrender.com',
-        'https://verityinspect-marketing.onrender.com',
+        'https://peakops-web.onrender.com',
+        'https://peakops-marketing.onrender.com',
         # Custom subdomains for production
-        'https://verityinspect.com',
-        'https://www.verityinspect.com', 
-        'https://app.verityinspect.com',
+        'https://getpeakops.com',
+        'https://www.getpeakops.com', 
+        'https://app.getpeakops.com',
         # Allow other subdomains if configured
-        'https://marketing.verityinspect.com',
+        'https://marketing.getpeakops.com',
     ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -296,8 +296,8 @@ if USE_SES and not DEBUG:
     EMAIL_BACKEND = 'django_ses.SESBackend'
     AWS_SES_REGION_NAME = config('AWS_SES_REGION_NAME', default='us-east-1')
     AWS_SES_REGION_ENDPOINT = f'email.{AWS_SES_REGION_NAME}.amazonaws.com'
-    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@verityinspect.com')
-    SERVER_EMAIL = config('SERVER_EMAIL', default='admin@verityinspect.com')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@getpeakops.com')
+    SERVER_EMAIL = config('SERVER_EMAIL', default='admin@getpeakops.com')
     
     # Use existing AWS credentials from your setup
     # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are already configured above
@@ -311,8 +311,8 @@ else:
     EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@verityinspect.com')
-    SERVER_EMAIL = config('SERVER_EMAIL', default='admin@verityinspect.com')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@getpeakops.com')
+    SERVER_EMAIL = config('SERVER_EMAIL', default='admin@getpeakops.com')
 
 # Email timeout settings
 EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=30, cast=int)

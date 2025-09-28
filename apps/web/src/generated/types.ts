@@ -1,4 +1,4 @@
-// Generated TypeScript types for VerityInspect API
+// Generated TypeScript types for PeakOps API
 // Generated at: 2025-09-25T15:07:18.298Z
 
 export interface ActionItem {

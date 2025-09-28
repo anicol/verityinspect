@@ -52,7 +52,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Menu className="w-6 h-6" />
             </button>
             {navState.showLogo && (
-              <h1 className="text-xl font-semibold text-gray-900">VerityInspect</h1>
+              <h1 className="text-xl font-semibold text-gray-900">PeakOps</h1>
             )}
           </div>
           

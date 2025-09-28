@@ -1,5 +1,5 @@
 {
-  "name": "verityinspect-frontend",
+  "name": "peakops-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,7 +11,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "generate-client": "node ../../scripts/generate-client.js",
-    "generate-client:prod": "API_URL=https://verityinspect-api.onrender.com node ../../scripts/generate-client.js"
+    "generate-client:prod": "API_URL=https://peakops-api.onrender.com node ../../scripts/generate-client.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.0.4",

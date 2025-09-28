@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * TypeScript API client generator for VerityInspect
+ * TypeScript API client generator for PeakOps
  * 
  * This script:
  * 1. Fetches the OpenAPI schema from the Django backend
@@ -14,7 +14,7 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
-const API_BASE_URL = process.env.API_URL || process.env.VITE_API_URL || 'https://verityinspect-api.onrender.com';
+const API_BASE_URL = process.env.API_URL || process.env.VITE_API_URL || 'https://peakops-api.onrender.com';
 const OUTPUT_DIR = path.join(__dirname, '../apps/web/src/generated');
 
 async function fetchSchema() {
@@ -51,7 +51,7 @@ function generateTypes(schema) {
   const components = schema.components || {};
   const schemas = components.schemas || {};
   
-  let output = `// Generated TypeScript types for VerityInspect API
+  let output = `// Generated TypeScript types for PeakOps API
 // Generated at: ${new Date().toISOString()}
 
 `;
@@ -157,13 +157,13 @@ function generateClient(schema) {
   
   const paths = schema.paths || {};
   
-  let output = `// Generated API client for VerityInspect
+  let output = `// Generated API client for PeakOps
 // Generated at: ${new Date().toISOString()}
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { ApiResponse, PaginatedResponse, ApiError } from './types';
 
-export class VerityInspectClient {
+export class PeakOpsClient {
   private client: AxiosInstance;
   
   constructor(baseURL: string = '${API_BASE_URL}/api', token?: string) {
@@ -214,7 +214,7 @@ export class VerityInspectClient {
   }
   
   output += '}\n\n';
-  output += 'export default VerityInspectClient;\n';
+  output += 'export default PeakOpsClient;\n';
   
   return output;
 }
@@ -311,7 +311,7 @@ function mapParameterType(param) {
 
 async function main() {
   try {
-    console.log('Starting VerityInspect TypeScript client generation...');
+    console.log('Starting PeakOps TypeScript client generation...');
     
     // Create output directory
     if (!fs.existsSync(OUTPUT_DIR)) {
@@ -333,8 +333,8 @@ async function main() {
     
     // Generate index file
     const index = `export * from './types';
-export { default as VerityInspectClient } from './client';
-export { VerityInspectClient as Client } from './client';
+export { default as PeakOpsClient } from './client';
+export { PeakOpsClient as Client } from './client';
 `;
     fs.writeFileSync(path.join(OUTPUT_DIR, 'index.ts'), index);
     console.log('✓ Index file generated');
@@ -342,9 +342,9 @@ export { VerityInspectClient as Client } from './client';
     console.log(`\nTypeScript client generated successfully in ${OUTPUT_DIR}`);
     console.log('\nUsage example:');
     console.log(`
-import { VerityInspectClient } from './generated';
+import { PeakOpsClient } from './generated';
 
-const client = new VerityInspectClient();
+const client = new PeakOpsClient();
 client.setAuthToken('your-jwt-token');
 
 // Use the client

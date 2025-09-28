@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-echo "Starting VerityInspect API server..."
+echo "Starting PeakOps API server..."
 
 # Run any pending migrations on startup
-python manage.py migrate --settings=verityinspect.settings --noinput
+python manage.py migrate --settings=peakops.settings --noinput
 
 # Start Gunicorn server
 exec gunicorn --bind 0.0.0.0:${PORT:-8000} \
@@ -12,4 +12,4 @@ exec gunicorn --bind 0.0.0.0:${PORT:-8000} \
     --timeout ${WEB_TIMEOUT:-120} \
     --access-logfile - \
     --error-logfile - \
-    verityinspect.wsgi:application
+    peakops.wsgi:application

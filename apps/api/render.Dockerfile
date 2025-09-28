@@ -31,7 +31,7 @@ COPY . .
 RUN chmod +x render_build.sh render_start.sh
 
 # Collect static files
-RUN python manage.py collectstatic --noinput --settings=verityinspect.settings
+RUN python manage.py collectstatic --noinput --settings=peakops.settings
 
 # Expose port
 EXPOSE $PORT

@@ -43,7 +43,7 @@ Message:
 {data['message']}
 
 ---
-Sent from VerityInspect Marketing Website
+Sent from PeakOps Marketing Website
     """.strip()
     
     try:
@@ -51,7 +51,7 @@ Sent from VerityInspect Marketing Website
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['alistair@verityinspect.com'],
+            recipient_list=['alistair@getpeakops.com'],
             fail_silently=False,
         )
         
@@ -98,7 +98,7 @@ Additional Information:
 {data.get('message', 'No additional information provided')}
 
 ---
-Sent from VerityInspect Marketing Website
+Sent from PeakOps Marketing Website
     """.strip()
     
     try:
@@ -106,7 +106,7 @@ Sent from VerityInspect Marketing Website
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['alistair@verityinspect.com'],
+            recipient_list=['alistair@getpeakops.com'],
             fail_silently=False,
         )
         
