@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://verityinspect-api.onrender.com'
+  ? 'https://peakops-api.onrender.com'
   : 'http://localhost:8000';
 
 export interface ContactFormData {

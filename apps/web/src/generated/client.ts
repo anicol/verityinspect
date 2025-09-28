@@ -1,13 +1,13 @@
-// Generated API client for VerityInspect
+// Generated API client for PeakOps
 // Generated at: 2025-09-25T15:07:18.299Z
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { ApiResponse, PaginatedResponse, ApiError } from './types';
 
-export class VerityInspectClient {
+export class PeakOpsClient {
   private client: AxiosInstance;
   
-  constructor(baseURL: string = 'https://verityinspect-api.onrender.com/api', token?: string) {
+  constructor(baseURL: string = 'https://peakops-api.onrender.com/api', token?: string) {
     this.client = axios.create({
       baseURL,
       headers: {
@@ -255,4 +255,4 @@ export class VerityInspectClient {
 
 }
 
-export default VerityInspectClient;
+export default PeakOpsClient;

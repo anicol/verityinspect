@@ -13,7 +13,8 @@ import {
   Download, 
   Share2,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { videosAPI } from '@/services/api';
@@ -26,6 +27,7 @@ export default function VideoDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
+  const [isReprocessing, setIsReprocessing] = useState(false);
 
   // Fetch video details
   const { data: video, isLoading: videoLoading, error: videoError } = useQuery<Video>(
@@ -47,6 +49,22 @@ export default function VideoDetailPage() {
     const videoElement = document.getElementById('video-player');
     if (videoElement) {
       videoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleReprocess = async () => {
+    if (!id) return;
+    
+    setIsReprocessing(true);
+    try {
+      await videosAPI.reprocessVideo(Number(id));
+      // Optionally show a success message or redirect
+      alert('Video reprocessing started. Results will be updated shortly.');
+    } catch (error) {
+      console.error('Failed to reprocess video:', error);
+      alert('Failed to start reprocessing. Please try again.');
+    } finally {
+      setIsReprocessing(false);
     }
   };
 
@@ -172,6 +190,14 @@ export default function VideoDetailPage() {
               </button>
             </div>
             <div className="flex items-center space-x-3">
+              <button 
+                onClick={handleReprocess}
+                disabled={isReprocessing}
+                className="flex items-center px-4 py-2 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isReprocessing ? 'animate-spin' : ''}`} />
+                {isReprocessing ? 'Reprocessing...' : 'Reprocess'}
+              </button>
               <button className="flex items-center px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                 <Share2 className="w-4 h-4 mr-2" />
                 Share

@@ -1,5 +1,5 @@
 """
-OpenAPI schema customization for VerityInspect API
+OpenAPI schema customization for PeakOps API
 """
 from drf_spectacular.openapi import AutoSchema
 from drf_spectacular.utils import extend_schema_view

@@ -66,7 +66,7 @@ function App() {
   // Check if demo mode is enabled (could be from env variable or API)
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || 
                      window.location.hostname.includes('demo') ||
-                     window.location.hostname.includes('verityinspect');
+                     window.location.hostname.includes('getpeakops');
 
   return (
     <AuthProvider>

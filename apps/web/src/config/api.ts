@@ -4,7 +4,7 @@ const isDevelopment = import.meta.env.DEV || window.location.hostname === 'local
 export const API_CONFIG = {
   baseURL: isDevelopment 
     ? 'http://localhost:8000/api' 
-    : 'https://api.verityinspect.com/api',
+    : 'https://api.getpeakops.com/api',
     
   // Timeout in milliseconds
   timeout: 10000,

@@ -1,7 +1,7 @@
 services:
   # Django API Backend
   - type: web
-    name: verityinspect-api
+    name: peakops-api
     env: python
     rootDir: apps/api
     region: oregon
@@ -9,11 +9,11 @@ services:
       python3.11 -m pip install --upgrade pip --break-system-packages
       python3.11 -m pip install -r requirements.txt --break-system-packages
     startCommand: |
-      python3.11 manage.py migrate --settings=verityinspect.settings --verbosity=2
-      python3.11 manage.py collectstatic --noinput --settings=verityinspect.settings
-      python3.11 manage.py create_demo_data --settings=verityinspect.settings || echo "Skipping demo data - may already exist"
-      python3.11 manage.py check --settings=verityinspect.settings
-      gunicorn verityinspect.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+      python3.11 manage.py migrate --settings=peakops.settings --verbosity=2
+      python3.11 manage.py collectstatic --noinput --settings=peakops.settings
+      python3.11 manage.py create_demo_data --settings=peakops.settings || echo "Skipping demo data - may already exist"
+      python3.11 manage.py check --settings=peakops.settings
+      gunicorn peakops.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     plan: starter
     envVars:
       - key: PYTHON_VERSION
@@ -23,32 +23,32 @@ services:
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
-        value: ".onrender.com,verityinspect.com,*.verityinspect.com"
+        value: ".onrender.com,getpeakops.com,*.getpeakops.com"
       - key: DATABASE_URL
         fromDatabase:
-          name: verityinspect-db
+          name: peakops-db
           property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: AWS_ACCESS_KEY_ID
         sync: false
       - key: AWS_SECRET_ACCESS_KEY
         sync: false
       - key: AWS_STORAGE_BUCKET_NAME
-        value: verityinspect-media
+        value: peakops-media
       - key: AWS_S3_REGION_NAME
         value: us-east-1
       - key: JWT_SECRET_KEY
@@ -77,14 +77,14 @@ services:
       - key: AWS_SES_REGION_NAME
         value: us-east-1
       - key: DEFAULT_FROM_EMAIL
-        value: noreply@verityinspect.com
+        value: noreply@getpeakops.com
       - key: SERVER_EMAIL
-        value: admin@verityinspect.com
+        value: admin@getpeakops.com
     healthCheckPath: /health/
 
   # Celery Worker
   - type: worker
-    name: verityinspect-celery
+    name: peakops-celery
     env: python
     rootDir: apps/api
     buildCommand: |
@@ -106,53 +106,53 @@ services:
       }
       
       echo "Starting Celery worker..."
-      python3.11 -m celery -A verityinspect worker -l info
+      python3.11 -m celery -A peakops worker -l info
     plan: starter
     envVars:
       - key: DJANGO_SETTINGS_MODULE
-        value: verityinspect.settings
+        value: peakops.settings
       - key: SECRET_KEY
         fromService:
           type: web
-          name: verityinspect-api
+          name: peakops-api
           envVarKey: SECRET_KEY
       - key: DATABASE_URL
         fromDatabase:
-          name: verityinspect-db
+          name: peakops-db
           property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: AWS_ACCESS_KEY_ID
         fromService:
           type: web
-          name: verityinspect-api
+          name: peakops-api
           envVarKey: AWS_ACCESS_KEY_ID
       - key: AWS_SECRET_ACCESS_KEY
         fromService:
           type: web
-          name: verityinspect-api
+          name: peakops-api
           envVarKey: AWS_SECRET_ACCESS_KEY
       - key: AWS_STORAGE_BUCKET_NAME
-        value: verityinspect-media
+        value: peakops-media
       - key: AWS_S3_REGION_NAME
         value: us-east-1
 
   # Celery Beat Scheduler
   - type: worker
-    name: verityinspect-celery-beat
+    name: peakops-celery-beat
     env: python
     rootDir: apps/api
     buildCommand: |
@@ -174,53 +174,53 @@ services:
       }
       
       echo "Starting Celery beat scheduler..."
-      python3.11 -m celery -A verityinspect beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+      python3.11 -m celery -A peakops beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     plan: starter
     envVars:
       - key: DJANGO_SETTINGS_MODULE
-        value: verityinspect.settings
+        value: peakops.settings
       - key: SECRET_KEY
         fromService:
           type: web
-          name: verityinspect-api
+          name: peakops-api
           envVarKey: SECRET_KEY
       - key: DATABASE_URL
         fromDatabase:
-          name: verityinspect-db
+          name: peakops-db
           property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: CELERY_BROKER_URL
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: CELERY_RESULT_BACKEND
         fromService:
           type: redis
-          name: verityinspect-redis
+          name: peakops-redis
           property: connectionString
       - key: AWS_ACCESS_KEY_ID
         fromService:
           type: web
-          name: verityinspect-api
+          name: peakops-api
           envVarKey: AWS_ACCESS_KEY_ID
       - key: AWS_SECRET_ACCESS_KEY
         fromService:
           type: web
-          name: verityinspect-api
+          name: peakops-api
           envVarKey: AWS_SECRET_ACCESS_KEY
       - key: AWS_STORAGE_BUCKET_NAME
-        value: verityinspect-media
+        value: peakops-media
       - key: AWS_S3_REGION_NAME
         value: us-east-1
 
   # React Web App
   - type: web
-    name: verityinspect-web
+    name: peakops-web
     env: static
     buildCommand: |
       cd apps/web &&
@@ -229,11 +229,11 @@ services:
     staticPublishPath: ./apps/web/dist
     envVars:
       - key: VITE_API_URL
-        value: https://verityinspect-api.onrender.com
+        value: https://peakops-api.onrender.com
 
   # Marketing Site
   - type: web
-    name: verityinspect-marketing
+    name: peakops-marketing
     env: static
     buildCommand: |
       cd apps/marketing &&
@@ -247,13 +247,13 @@ services:
 
   # Redis Cache/Queue
   - type: redis
-    name: verityinspect-redis
+    name: peakops-redis
     plan: starter
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
 
 databases:
-  - name: verityinspect-db
-    databaseName: verityinspect
-    user: verityinspect_user
+  - name: peakops-db
+    databaseName: peakops
+    user: peakops_user
     plan: Basic-256mb
