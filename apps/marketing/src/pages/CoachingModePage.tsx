@@ -372,7 +372,7 @@ export default function CoachingModePage() {
 
             <div className="bg-gradient-to-r from-teal-600 to-blue-600 text-white p-8 rounded-2xl">
               <h3 className="text-2xl font-bold mb-4">Ready to start coaching?</h3>
-              <p className="text-teal-100 mb-6">Join hundreds of managers who are already using VerityInspect to stay ahead of compliance issues.</p>
+              <p className="text-teal-100 mb-6">Join hundreds of managers who are already using PeakOps to stay ahead of compliance issues.</p>
               <a 
                 href={TRIAL_SIGNUP_URL}
                 className="inline-block px-8 py-4 bg-white text-teal-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-lg shadow-lg"

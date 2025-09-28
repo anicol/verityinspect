@@ -349,7 +349,7 @@ export default function CorporatePage() {
               Seamless Enterprise Integrations
             </h2>
             <p className="text-xl text-gray-600">
-              Connect VerityInspect to your existing workflow and systems
+              Connect PeakOps to your existing workflow and systems
             </p>
           </div>
           
@@ -476,7 +476,7 @@ export default function CorporatePage() {
             Ready to Transform Your Brand's Video Inspection Process?
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Schedule a demo to see how VerityInspect can deliver measurable ROI, consistent standards, and scalable compliance for your brand.
+            Schedule a demo to see how PeakOps can deliver measurable ROI, consistent standards, and scalable compliance for your brand.
           </p>
           <Link
             to="/demo"

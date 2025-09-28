@@ -54,7 +54,7 @@ export default function ROICalculatorPage() {
               ROI Calculator
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
-              Calculate your potential travel savings with VerityInspect
+              Calculate your potential travel savings with PeakOps
             </p>
             <div className="flex flex-wrap justify-center gap-6 text-sm">
               <div className="flex items-center">
@@ -145,7 +145,7 @@ export default function ROICalculatorPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        VerityInspect Cost Per Store/Month
+                        PeakOps Cost Per Store/Month
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -231,7 +231,7 @@ export default function ROICalculatorPage() {
             Ready to Start Saving?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            Get a personalized demo to see exactly how VerityInspect can transform your inspection process and deliver the ROI you calculated above.
+            Get a personalized demo to see exactly how PeakOps can transform your inspection process and deliver the ROI you calculated above.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

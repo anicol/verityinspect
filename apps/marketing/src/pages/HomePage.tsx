@@ -268,7 +268,7 @@ export default function HomePage() {
               Calculate Your ROI
             </h2>
             <p className="text-xl text-gray-600">
-              See how much you could save with VerityInspect
+              See how much you could save with PeakOps
             </p>
           </div>
           
