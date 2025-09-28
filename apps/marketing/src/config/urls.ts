@@ -22,4 +22,4 @@ export const APP_URLS = {
 export const LOGIN_URL = `${APP_URLS.webApp}/login`;
 
 // Trial signup URL (same as login page with trial mode)
-export const TRIAL_SIGNUP_URL = `${APP_URLS.webApp}/login`;
+export const TRIAL_SIGNUP_URL = `${APP_URLS.webApp}/login?mode=trial`;

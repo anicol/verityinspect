@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { API_CONFIG, API_ENDPOINTS } from '@/config/api';
@@ -12,6 +12,7 @@ interface TrialSignupData {
 }
 
 const Login = () => {
+  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +22,14 @@ const Login = () => {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Check for trial mode from URL parameters
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    if (mode === 'trial') {
+      setIsSignUp(true);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
