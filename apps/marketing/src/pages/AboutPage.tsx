@@ -18,7 +18,7 @@ export default function AboutPage() {
               Transforming Inspections with <span className="text-teal-300">AI</span>
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
-              We believe inspections should empower managers and brands, not stress them out. That's why we built VerityInspect to start with coaching, not compliance.
+              We believe inspections should empower managers and brands, not stress them out. That's why we built PeakOps to start with coaching, not compliance.
             </p>
           </div>
         </div>
@@ -36,7 +36,7 @@ export default function AboutPage() {
                 Traditional inspections create stress, surprise managers with issues they didn't know existed, and cost brands thousands in travel expenses. We saw a better way.
               </p>
               <p>
-                VerityInspect transforms the inspection process by putting coaching first. Managers get private, instant feedback to improve before official inspections. Brands get consistent, objective scoring at scale with massive travel savings.
+                PeakOps transforms the inspection process by putting coaching first. Managers get private, instant feedback to improve before official inspections. Brands get consistent, objective scoring at scale with massive travel savings.
               </p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function AboutPage() {
             
             <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
               <p>
-                VerityInspect was born from a simple observation: traditional inspections were broken. Store managers lived in fear of surprise audits, brands spent fortunes on travel costs, and the whole process created more stress than value.
+                PeakOps was born from a simple observation: traditional inspections were broken. Store managers lived in fear of surprise audits, brands spent fortunes on travel costs, and the whole process created more stress than value.
               </p>
               
               <p>
@@ -150,7 +150,7 @@ export default function AboutPage() {
               </p>
               
               <p>
-                The answer became VerityInspect's dual mode approach. Coaching Mode gives managers private, immediate feedback to build confidence and improve standards. Inspection Mode provides brands with official compliance tracking and corporate visibility when needed.
+                The answer became PeakOps' dual mode approach. Coaching Mode gives managers private, immediate feedback to build confidence and improve standards. Inspection Mode provides brands with official compliance tracking and corporate visibility when needed.
               </p>
               
               <p>

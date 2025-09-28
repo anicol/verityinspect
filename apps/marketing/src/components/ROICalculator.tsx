@@ -168,7 +168,7 @@ const ROICalculator: React.FC<ROICalculatorProps> = ({ isPreview = false }) => {
           {/* Price Per Store */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              VerityInspect Cost Per Store/Month
+              PeakOps Cost Per Store/Month
             </label>
             <input
               type="number"

@@ -5,17 +5,17 @@ export const APP_URLS = {
   // Web app URLs
   webApp: isDevelopment 
     ? 'http://localhost:3000' 
-    : 'https://app.verityinspect.com',
+    : 'https://app.getpeakops.com',
   
   // Marketing site URLs  
   marketing: isDevelopment 
     ? 'http://localhost:3001' // adjust if marketing runs on different port
-    : 'https://verityinspect.com',
+    : 'https://getpeakops.com',
     
   // API URLs
   api: isDevelopment 
     ? 'http://localhost:8000/api'
-    : 'https://api.verityinspect.com/api',
+    : 'https://api.getpeakops.com/api',
 };
 
 // Login URL (handles both login and trial signup)

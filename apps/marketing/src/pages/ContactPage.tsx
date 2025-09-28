@@ -31,19 +31,19 @@ export default function ContactPage() {
 
   const faqItems = [
     {
-      question: "How quickly can I get started with VerityInspect?",
+      question: "How quickly can I get started with PeakOps?",
       answer: "You can start with our Coaching Mode immediately with a 7 day free trial. Enterprise deployments typically take 2 to 4 weeks for full setup."
     },
     {
       question: "Do you offer training and support?",
-      answer: "Yes! We provide comprehensive onboarding, training materials, and ongoing support to ensure your team gets the most value from VerityInspect."
+      answer: "Yes! We provide comprehensive onboarding, training materials, and ongoing support to ensure your team gets the most value from PeakOps."
     },
     {
-      question: "What types of businesses use VerityInspect?",
+      question: "What types of businesses use PeakOps?",
       answer: "We primarily serve restaurant chains, franchise operations, and food service businesses of all sizes, from single locations to thousands of stores."
     },
     {
-      question: "Is my data secure with VerityInspect?",
+      question: "Is my data secure with PeakOps?",
       answer: "Absolutely. We use enterprise grade security, encryption, and our Coaching Mode automatically deletes videos after processing for maximum privacy."
     }
   ];
@@ -61,7 +61,7 @@ export default function ContactPage() {
               Get in Touch
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
-              Have questions about VerityInspect? We're here to help. Reach out to learn more about our AI powered inspection solutions.
+              Have questions about PeakOps? We're here to help. Reach out to learn more about our AI powered inspection solutions.
             </p>
           </div>
         </div>
@@ -211,8 +211,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                      <a href="mailto:hello@verityinspect.com" className="text-blue-600 hover:text-blue-700">
-                        hello@verityinspect.com
+                      <a href="mailto:hello@getpeakops.com" className="text-blue-600 hover:text-blue-700">
+                        hello@getpeakops.com
                       </a>
                       <p className="text-sm text-gray-600 mt-1">We'll respond within 24 hours</p>
                     </div>

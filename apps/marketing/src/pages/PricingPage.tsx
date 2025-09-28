@@ -292,7 +292,7 @@ export default function PricingPage() {
               <div className="text-2xl mr-2">📌</div>
               <div className="text-left">
                 <p className="text-gray-700 mb-4">
-                  <strong>Pricing is customized by brand size and program level.</strong> On average, VerityInspect delivers 50–70% travel savings, often saving $650K–$1.8M annually for a 1,300-store brand.
+                  <strong>Pricing is customized by brand size and program level.</strong> On average, PeakOps delivers 50–70% travel savings, often saving $650K–$1.8M annually for a 1,300-store brand.
                 </p>
               </div>
             </div>
@@ -311,7 +311,7 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              VerityInspect Pays for Itself
+              PeakOps Pays for Itself
             </h2>
           </div>
           
@@ -330,7 +330,7 @@ export default function PricingPage() {
                   <Calculator className="w-8 h-8 text-green-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Break Even</h3>
-                <p className="text-gray-700">With VerityInspect, <strong>even one reduced trip per month</strong> covers the investment</p>
+                <p className="text-gray-700">With PeakOps, <strong>even one reduced trip per month</strong> covers the investment</p>
               </div>
 
               <div className="bg-blue-50 p-8 rounded-2xl border border-blue-200 text-center">
