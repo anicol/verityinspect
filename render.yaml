@@ -227,6 +227,10 @@ services:
       npm install &&
       npm run build
     staticPublishPath: ./apps/web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: https://peakops-api.onrender.com
