@@ -123,7 +123,7 @@ const SEO: React.FC<SEOProps> = ({
         ...(tags && { "keywords": tags.join(', ') })
       };
 
-      let scriptTag = document.querySelector('script[type="application/ld+json"]');
+      let scriptTag = document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement;
       if (!scriptTag) {
         scriptTag = document.createElement('script');
         scriptTag.type = 'application/ld+json';

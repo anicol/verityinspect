@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calculator, TrendingUp, CheckCircle } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function ROICalculatorPage() {
   const [inputs, setInputs] = useState({
