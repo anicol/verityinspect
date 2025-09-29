@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Clock, Send, Calculator, Play, Shield, FileText } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -50,6 +51,13 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Contact PeakOps - Get Started with AI Restaurant Inspections"
+        description="Contact PeakOps to learn how AI-powered video inspections can transform your restaurant operations. Get demos, pricing, and implementation support."
+        keywords="contact PeakOps, restaurant inspection demo, AI inspection contact, QSR technology support, restaurant compliance consultation"
+        url="https://getpeakops.com/contact"
+        type="website"
+      />
       <Header />
       
       {/* Hero Section */}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, Calendar, Phone, Mail, Building, CheckCircle } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 import { sendDemoRequest } from '../services/apiService';
 
 export default function DemoPage() {
@@ -61,6 +62,13 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="Request Demo - See PeakOps Restaurant Inspections in Action"
+        description="Schedule a personalized demo of PeakOps AI-powered restaurant inspections. See how video analysis can transform your QSR compliance and operations."
+        keywords="restaurant inspection demo, PeakOps demo, AI inspection demo, QSR technology demo, video inspection demonstration"
+        url="https://getpeakops.com/demo"
+        type="website"
+      />
       <Header />
 
       {/* Hero Section */}

@@ -3,11 +3,19 @@ import { Link } from 'react-router-dom';
 import { Play, CheckCircle, X, Clock, Shield, Star, ArrowRight } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 import { TRIAL_SIGNUP_URL } from '../config/urls';
 
 export default function CoachingModePage() {
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Coaching Mode - Private Restaurant Inspections | PeakOps"
+        description="Get instant AI feedback on restaurant operations with our private coaching mode. Videos deleted after processing. Perfect for training managers and improving standards without compliance pressure."
+        keywords="restaurant coaching, private inspections, restaurant training, manager coaching, food safety training, restaurant operations training, coaching mode"
+        url="https://getpeakops.com/coaching"
+        type="website"
+      />
       <Header />
 
       {/* Hero Section */}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Check, Star, Calculator, Phone, Mail, Shield, Smartphone, Infinity, Play, TrendingUp, Users, BarChart3 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 import { TRIAL_SIGNUP_URL } from '../config/urls';
 
 export default function PricingPage() {
@@ -42,6 +43,13 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Pricing - Restaurant Video Inspections | PeakOps"
+        description="Transparent pricing for AI-powered restaurant inspections. Start free with coaching mode or scale with enterprise plans. Cut inspection costs by 50-70% vs traditional site visits."
+        keywords="restaurant inspection pricing, QSR inspection costs, video inspection pricing, restaurant compliance pricing, AI inspection software cost"
+        url="https://getpeakops.com/pricing"
+        type="website"
+      />
       <Header />
       
       {/* Hero Section */}

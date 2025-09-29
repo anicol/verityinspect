@@ -4,11 +4,19 @@ import { Play, CheckCircle, Shield, TrendingUp, Clock, Users } from 'lucide-reac
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ROICalculator from '../components/ROICalculator';
+import SEO from '../components/SEO';
 import { TRIAL_SIGNUP_URL } from '../config/urls';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      <SEO
+        title="PeakOps - AI-Powered Restaurant Video Inspections | Replace Site Visits with Coaching"
+        description="Transform restaurant inspections with AI-powered video analysis. Cut travel costs by 50-70%, improve compliance, and turn inspections into coaching moments. Start your free trial today."
+        keywords="restaurant inspections, AI video analysis, QSR inspections, restaurant compliance, food safety technology, restaurant management software, video inspections, coaching mode"
+        url="https://getpeakops.com"
+        type="website"
+      />
       <Header />
 
       {/* Hero Section */}

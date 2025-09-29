@@ -38,6 +38,13 @@ export default function ROICalculatorPage() {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="ROI Calculator - Calculate Restaurant Inspection Savings | PeakOps"
+        description="Calculate potential savings from switching to AI-powered video inspections. See how much your restaurant chain can save vs traditional site visits with our ROI calculator."
+        keywords="restaurant inspection ROI, inspection cost calculator, QSR savings calculator, video inspection ROI, restaurant cost savings"
+        url="https://getpeakops.com/roi"
+        type="website"
+      />
       <Header />
       
       {/* Hero Section */}

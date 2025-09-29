@@ -3,10 +3,18 @@ import { Link } from 'react-router-dom';
 import { CheckCircle, TrendingUp, Shield, Users, Target, Heart, Lightbulb } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen">
+      <SEO
+        title="About PeakOps - Transforming Restaurant Inspections with AI"
+        description="Learn how PeakOps is revolutionizing restaurant inspections with AI-powered video analysis. Meet our team and discover our mission to make inspections more effective and less stressful."
+        keywords="about PeakOps, restaurant inspection company, AI video analysis team, restaurant technology company, food safety innovation"
+        url="https://getpeakops.com/about"
+        type="website"
+      />
       <Header />
       
       {/* Hero Section */}

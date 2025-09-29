@@ -2,10 +2,18 @@ import { Link } from 'react-router-dom';
 import { Shield, Eye, Trash2, Clock, Lock } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="Privacy Policy - Data Protection & Security | PeakOps"
+        description="Learn how PeakOps protects your restaurant data. Our privacy policy covers video processing, data retention, security measures, and compliance standards."
+        keywords="PeakOps privacy policy, restaurant data privacy, video data protection, AI inspection privacy, food service data security"
+        url="https://getpeakops.com/privacy"
+        type="website"
+      />
       <Header />
 
       {/* Hero */}

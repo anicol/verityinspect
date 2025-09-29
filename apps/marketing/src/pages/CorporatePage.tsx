@@ -4,10 +4,18 @@ import { CheckCircle, TrendingUp, Shield, Users, BarChart, Zap, Globe, Lock } fr
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ROICalculator from '../components/ROICalculator';
+import SEO from '../components/SEO';
 
 export default function CorporatePage() {
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Enterprise Restaurant Inspections - Scale AI-Powered Compliance | PeakOps"
+        description="Scale restaurant inspections across multiple locations with PeakOps Enterprise. Advanced analytics, custom integrations, and dedicated support for restaurant chains and franchises."
+        keywords="enterprise restaurant inspections, restaurant chain compliance, multi-location inspections, franchise inspections, restaurant analytics, QSR enterprise software"
+        url="https://getpeakops.com/enterprise"
+        type="website"
+      />
       <Header />
       
       {/* Hero Section */}
