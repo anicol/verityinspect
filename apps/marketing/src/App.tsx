@@ -8,6 +8,9 @@ import DemoPage from './pages/DemoPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import PricingPage from './pages/PricingPage';
+import BlogPage from './pages/BlogPage';
+import BlogCoachingOverCompliance from './pages/BlogCoachingOverCompliance';
+import BlogDailyWalkthrough from './pages/BlogDailyWalkthrough';
 import ScrollToTop from './components/ScrollToTop';
 
 function App() {
@@ -26,6 +29,9 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/roi" element={<ROICalculatorPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/coaching-over-compliance" element={<BlogCoachingOverCompliance />} />
+        <Route path="/blog/daily-walkthrough" element={<BlogDailyWalkthrough />} />
         {/* Placeholder routes for future pages */}
         <Route path="/terms" element={<div>Terms page coming soon</div>} />
       </Routes>
