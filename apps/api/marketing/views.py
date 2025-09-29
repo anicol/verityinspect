@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 @extend_schema(
     request=ContactFormSerializer,
     responses={200: None},
-    description="Send contact form email to alistair.nicol@gmail.com",
+    description="Send contact form email to alistair@getpeakops.com",
     tags=['Marketing']
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def send_contact_email(request):
-    """Send contact form email to alistair.nicol@gmail.com"""
+    """Send contact form email to alistair@getpeakops.com"""
     serializer = ContactFormSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -69,13 +69,13 @@ Sent from PeakOps Marketing Website
 @extend_schema(
     request=DemoRequestSerializer,
     responses={200: None},
-    description="Send demo request email to alistair.nicol@gmail.com",
+    description="Send demo request email to alistair@getpeakops.com",
     tags=['Marketing']
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def send_demo_email(request):
-    """Send demo request email to alistair.nicol@gmail.com"""
+    """Send demo request email to alistair@getpeakops.com"""
     serializer = DemoRequestSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

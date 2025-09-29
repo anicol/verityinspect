@@ -219,8 +219,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                      <a href="mailto:hello@getpeakops.com" className="text-blue-600 hover:text-blue-700">
-                        hello@getpeakops.com
+                      <a href="mailto:alistair@getpeakops.com" className="text-blue-600 hover:text-blue-700">
+                        alistair@getpeakops.com
                       </a>
                       <p className="text-sm text-gray-600 mt-1">We'll respond within 24 hours</p>
                     </div>
