@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://peakops-api.onrender.com'
+  ? 'https://api.getpeakops.com'
   : 'http://localhost:8000';
 
 export interface ContactFormData {
