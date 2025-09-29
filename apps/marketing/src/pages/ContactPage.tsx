@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Clock, Send, Calculator, Play, Shield, FileText } from 'lucide-react';
+import { Send } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
@@ -38,16 +38,23 @@ export default function ContactPage() {
       await sendContactForm(formData);
       setIsSubmitted(true);
       
-      // Reset form
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        company: '',
-        phone: '',
-        subject: '',
-        message: ''
-      });
+      // Reset form after a short delay to show success message
+      setTimeout(() => {
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          company: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+      }, 100);
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setIsSubmitted(false);
+      }, 5000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
     } finally {
@@ -103,7 +110,7 @@ export default function ContactPage() {
       {/* Main Content */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16">
+          <div className="max-w-2xl mx-auto">
             {/* Contact Form */}
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-8">Send Us a Message</h2>
@@ -277,102 +284,6 @@ export default function ContactPage() {
                   )}
                 </button>
               </form>
-            </div>
-
-            {/* Contact Information */}
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Contact Information</h2>
-                
-                <div className="space-y-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                      <a href="mailto:alistair@getpeakops.com" className="text-blue-600 hover:text-blue-700">
-                        alistair@getpeakops.com
-                      </a>
-                      <p className="text-sm text-gray-600 mt-1">We'll respond within 24 hours</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                      <a href="tel:+15551234567" className="text-green-600 hover:text-green-700">
-                        (555) 123-4567
-                      </a>
-                      <p className="text-sm text-gray-600 mt-1">Monday - Friday, 9am - 6pm EST</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Office</h3>
-                      <p className="text-gray-700">
-                        123 Innovation Drive<br />
-                        Tech City, CA 94000
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-6 h-6 text-orange-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Business Hours</h3>
-                      <p className="text-gray-700">
-                        Monday - Friday: 9:00 AM - 6:00 PM EST<br />
-                        Saturday - Sunday: Closed
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Links */}
-              <div className="bg-gray-50 p-6 rounded-xl">
-                <h3 className="font-semibold text-gray-900 mb-4">Looking for something specific?</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <Play className="w-4 h-4 text-teal-600 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Free trial: </span>
-                    <Link to="/coaching" className="text-teal-600 hover:text-teal-700 ml-1">
-                      Start with our Coaching Mode
-                    </Link>
-                  </li>
-                  <li className="flex items-center">
-                    <Calculator className="w-4 h-4 text-blue-600 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Enterprise demo: </span>
-                    <Link to="/enterprise" className="text-blue-600 hover:text-blue-700 ml-1">
-                      Request a personalized demo
-                    </Link>
-                  </li>
-                  <li className="flex items-center">
-                    <Calculator className="w-4 h-4 text-green-600 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">ROI questions: </span>
-                    <Link to="/roi" className="text-green-600 hover:text-green-700 ml-1">
-                      Use our ROI calculator
-                    </Link>
-                  </li>
-                  <li className="flex items-center">
-                    <Shield className="w-4 h-4 text-purple-600 mr-3 flex-shrink-0" />
-                    <span className="text-gray-700">Privacy concerns: </span>
-                    <a href="#privacy" className="text-purple-600 hover:text-purple-700 ml-1">
-                      Review our privacy policy
-                    </a>
-                  </li>
-                </ul>
-              </div>
             </div>
           </div>
         </div>
