@@ -1,10 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Clock, User, Calendar, CheckCircle } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const BlogDailyWalkthrough = () => {
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="The Manager's Daily Five-Minute Walkthrough - PeakOps Blog"
+        description="Learn how to prevent inspection surprises with a simple 5-minute daily routine. Catch issues before they become problems and build a culture of consistent readiness."
+        keywords="restaurant daily inspections, management walkthrough, restaurant operations, inspection preparation, daily checks, restaurant management tips"
+        author="PeakOps Team"
+        type="article"
+        url="https://getpeakops.com/blog/daily-walkthrough"
+        publishedTime="2024-03-12T00:00:00Z"
+        section="Operations"
+        tags={['Restaurant Operations', 'Daily Management', 'Inspection Prep', 'QSR Management', 'Best Practices']}
+      />
       {/* Header */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

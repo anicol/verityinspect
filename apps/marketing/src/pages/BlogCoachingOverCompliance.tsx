@@ -1,10 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Clock, User, Calendar } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const BlogCoachingOverCompliance = () => {
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="Coaching Over Compliance: How QSR Managers Can Turn Inspections Into Growth Moments"
+        description="Most QSR managers dread inspections, treating them as pass/fail tests. Learn how to shift from compliance-only thinking to coaching-first approach that builds stronger teams and creates long-term excellence."
+        keywords="restaurant inspections, QSR management, coaching vs compliance, restaurant training, food safety coaching, inspection preparation, restaurant leadership"
+        author="PeakOps Team"
+        type="article"
+        url="https://getpeakops.com/blog/coaching-over-compliance"
+        publishedTime="2024-03-15T00:00:00Z"
+        section="Management"
+        tags={['Restaurant Management', 'Coaching', 'Compliance', 'Leadership', 'QSR Operations']}
+      />
       {/* Header */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

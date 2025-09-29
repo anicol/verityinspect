@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowRight } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Blog = () => {
   const blogPosts = [
@@ -28,6 +29,13 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="PeakOps Blog - Restaurant Inspection Insights & Management Tips"
+        description="Expert insights, tips, and best practices for modern restaurant inspections, management, and compliance. Learn how to transform your QSR operations with AI-powered coaching."
+        keywords="restaurant inspections, QSR management, restaurant compliance, food safety, restaurant operations, AI inspections, coaching mode, restaurant training"
+        url="https://getpeakops.com/blog"
+        type="website"
+      />
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-teal-800 text-white overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-20"></div>
