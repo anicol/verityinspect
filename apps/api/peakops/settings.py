@@ -294,10 +294,10 @@ USE_SES = config('USE_SES', default=True, cast=bool)
 if USE_SES and not DEBUG:
     # AWS SES Configuration (Recommended for AWS/Render)
     EMAIL_BACKEND = 'django_ses.SESBackend'
-    AWS_SES_REGION_NAME = config('AWS_SES_REGION_NAME')
+    AWS_SES_REGION_NAME = config('AWS_SES_REGION_NAME', default='us-east-1')
     AWS_SES_REGION_ENDPOINT = f'email.{AWS_SES_REGION_NAME}.amazonaws.com'
-    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
-    SERVER_EMAIL = config('SERVER_EMAIL')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@getpeakops.com')
+    SERVER_EMAIL = config('SERVER_EMAIL', default='admin@getpeakops.com')
     
     # Use existing AWS credentials from your setup
     # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are already configured above
