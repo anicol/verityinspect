@@ -1,8 +1,8 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from brands.models import Brand, Store
 from videos.models import Video
 from .models import Inspection, Finding, ActionItem
@@ -350,9 +350,186 @@ class InspectorWorkflowTest(TestCase):
         ])
 
 
+class RekognitionIntegrationTest(TestCase):
+    """Test Rekognition integration with inspection workflow"""
+
+    def setUp(self):
+        self.brand = Brand.objects.create(name="Test Brand")
+        self.store = Store.objects.create(
+            brand=self.brand, name="Test Store", code="TS001",
+            address="123 Test St", city="Test City", state="TS", zip_code="12345"
+        )
+        self.user = User.objects.create_user(
+            username="testuser", store=self.store
+        )
+
+    @override_settings(ENABLE_AWS_REKOGNITION=True, AWS_ACCESS_KEY_ID='test_key_id', AWS_SECRET_ACCESS_KEY='test_secret')
+    @patch('ai_services.rekognition.boto3.client')
+    @patch('ai_services.yolo_detector.YOLODetector.detect_objects')
+    @patch('ai_services.yolo_detector.YOLODetector.detect_uniform_compliance')
+    @patch('ai_services.ocr_service.OCRService.analyze_menu_board')
+    def test_inspection_with_rekognition_success(self, mock_ocr, mock_yolo_uniform,
+                                                  mock_yolo_objects, mock_boto3):
+        """Test inspection completes successfully with Rekognition"""
+        from ai_services.analyzer import VideoAnalyzer
+
+        # Mock Rekognition responses
+        mock_client = Mock()
+        mock_boto3.return_value = mock_client
+        mock_client.detect_protective_equipment.return_value = {
+            'Persons': [{
+                'Confidence': 95.0,
+                'BoundingBox': {},
+                'BodyParts': [{
+                    'Name': 'FACE',
+                    'Confidence': 98.0,
+                    'BoundingBox': {},
+                    'EquipmentDetections': [{
+                        'Type': 'FACE_COVER',
+                        'Confidence': 85.0,
+                        'CoversBodyPart': {'Value': False},
+                        'BoundingBox': {}
+                    }]
+                }]
+            }]
+        }
+        mock_client.detect_labels.return_value = {
+            'Labels': [{
+                'Name': 'Fire Extinguisher',
+                'Confidence': 92.3,
+                'Instances': [{'Confidence': 92.3, 'BoundingBox': {}}]
+            }]
+        }
+
+        # Mock other services
+        mock_yolo_objects.return_value = {'safety_objects': [], 'cleanliness_objects': []}
+        mock_yolo_uniform.return_value = {'compliance_score': 95.0}
+        mock_ocr.return_value = {'compliance_score': 90.0, 'compliance_issues': []}
+
+        # Test
+        analyzer = VideoAnalyzer()
+        result = analyzer.analyze_frame('/fake/path.jpg', b'fake_bytes')
+
+        # Verify
+        self.assertTrue(result['rekognition_available'])
+        self.assertEqual(len(result['warnings']), 0)
+        self.assertIn('ppe_analysis', result)
+        self.assertIn('safety_analysis', result)
+        self.assertGreater(result['overall_score'], 0)
+
+    @patch('ai_services.yolo_detector.YOLODetector.detect_objects')
+    @patch('ai_services.yolo_detector.YOLODetector.detect_uniform_compliance')
+    @patch('ai_services.ocr_service.OCRService.analyze_menu_board')
+    def test_inspection_continues_when_rekognition_unavailable(self, mock_ocr,
+                                                                mock_yolo_uniform,
+                                                                mock_yolo_objects):
+        """Test inspection continues with YOLO/OCR when Rekognition is unavailable"""
+        from django.test import override_settings
+        from ai_services.analyzer import VideoAnalyzer
+
+        # Mock other services to succeed
+        mock_yolo_objects.return_value = {'safety_objects': [], 'cleanliness_objects': []}
+        mock_yolo_uniform.return_value = {'compliance_score': 95.0}
+        mock_ocr.return_value = {'compliance_score': 90.0, 'compliance_issues': []}
+
+        # Test with Rekognition disabled
+        with override_settings(ENABLE_AWS_REKOGNITION=False):
+            analyzer = VideoAnalyzer()
+            result = analyzer.analyze_frame('/fake/path.jpg', b'fake_bytes')
+
+        # Verify partial results
+        self.assertFalse(result['rekognition_available'])
+        self.assertGreater(len(result['warnings']), 0)
+        # Other services should still work
+        self.assertIn('uniform_analysis', result)
+        self.assertIn('menu_board_analysis', result)
+        # Score should be calculated from available services
+        self.assertGreaterEqual(result['overall_score'], 0)
+
+    @override_settings(ENABLE_AWS_REKOGNITION=True, AWS_ACCESS_KEY_ID='test_key_id', AWS_SECRET_ACCESS_KEY='test_secret')
+    @patch('ai_services.rekognition.boto3.client')
+    @patch('ai_services.yolo_detector.YOLODetector.detect_objects')
+    @patch('ai_services.yolo_detector.YOLODetector.detect_uniform_compliance')
+    @patch('ai_services.ocr_service.OCRService.analyze_menu_board')
+    def test_inspection_handles_rekognition_api_error(self, mock_ocr, mock_yolo_uniform,
+                                                       mock_yolo_objects, mock_boto3):
+        """Test inspection handles Rekognition API errors gracefully"""
+        from botocore.exceptions import ClientError
+        from ai_services.analyzer import VideoAnalyzer
+
+        # Mock Rekognition to fail
+        mock_client = Mock()
+        mock_boto3.return_value = mock_client
+        mock_client.detect_protective_equipment.side_effect = ClientError(
+            {'Error': {'Code': 'ServiceUnavailable', 'Message': 'Service unavailable'}},
+            'DetectProtectiveEquipment'
+        )
+
+        # Mock other services
+        mock_yolo_objects.return_value = {'safety_objects': [], 'cleanliness_objects': []}
+        mock_yolo_uniform.return_value = {'compliance_score': 95.0}
+        mock_ocr.return_value = {'compliance_score': 90.0, 'compliance_issues': []}
+
+        # Test
+        analyzer = VideoAnalyzer()
+        result = analyzer.analyze_frame('/fake/path.jpg', b'fake_bytes')
+
+        # Verify error is handled gracefully
+        self.assertFalse(result['rekognition_available'])
+        self.assertGreater(len(result['warnings']), 0)
+        self.assertIn('unavailable', result['warnings'][0].lower())
+        # Should still have results from other services
+        self.assertGreaterEqual(result['overall_score'], 0)
+
+    def test_finding_generation_from_rekognition_results(self):
+        """Test findings are correctly generated from Rekognition analysis"""
+        from ai_services.analyzer import VideoAnalyzer
+        from videos.models import Video, VideoFrame
+
+        video = Video.objects.create(
+            uploaded_by=self.user,
+            store=self.store,
+            title="Test Video",
+            file="test.mp4"
+        )
+        frame = VideoFrame.objects.create(
+            video=video,
+            frame_number=1,
+            timestamp=0.0,
+            width=1920,
+            height=1080
+        )
+
+        # Mock frame analysis with PPE violation
+        frame_analysis = {
+            'ppe_analysis': {
+                'summary': {
+                    'total_persons': 2,
+                    'persons_with_face_cover': 1,
+                    'persons_with_hand_cover': 0,
+                    'persons_with_head_cover': 0
+                }
+            },
+            'safety_analysis': [],
+            'cleanliness_analysis': [],
+            'uniform_analysis': {'compliance_score': 95.0},
+            'menu_board_analysis': {'compliance_score': 90.0, 'compliance_issues': []},
+            'overall_score': 85.0,
+            'rekognition_available': True
+        }
+
+        analyzer = VideoAnalyzer()
+        findings = analyzer.generate_findings(frame_analysis, frame)
+
+        # Should generate finding for missing face cover
+        ppe_findings = [f for f in findings if f['category'] == 'PPE']
+        self.assertGreater(len(ppe_findings), 0)
+        self.assertIn('face cover', ppe_findings[0]['title'].lower())
+
+
 class InspectionAnalyticsTest(TestCase):
     """Test inspection analytics and reporting"""
-    
+
     def setUp(self):
         self.client = APIClient()
         self.brand = Brand.objects.create(name="Test Brand")

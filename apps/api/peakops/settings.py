@@ -263,6 +263,11 @@ ENABLE_AWS_REKOGNITION = config('ENABLE_AWS_REKOGNITION', default=True, cast=boo
 ENABLE_YOLO_DETECTION = config('ENABLE_YOLO_DETECTION', default=False, cast=bool)
 ENABLE_OCR_DETECTION = config('ENABLE_OCR_DETECTION', default=False, cast=bool)
 
+# AWS Rekognition Configuration
+REKOGNITION_PPE_MIN_CONFIDENCE = config('REKOGNITION_PPE_MIN_CONFIDENCE', default=80, cast=int)
+REKOGNITION_OBJECTS_MIN_CONFIDENCE = config('REKOGNITION_OBJECTS_MIN_CONFIDENCE', default=70, cast=int)
+REKOGNITION_MAX_LABELS = config('REKOGNITION_MAX_LABELS', default=50, cast=int)
+
 # Demo and Privacy Settings
 DEMO_MODE = config('DEMO_MODE', default=True, cast=bool)
 FACE_BLUR = config('FACE_BLUR', default=False, cast=bool)
