@@ -31,20 +31,17 @@ export default function DemoPage() {
       // Show success message
       setIsSubmitted(true);
       
-      // Reset form after delay
-      setTimeout(() => {
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          company: '',
-          phone: '',
-          stores: '',
-          role: '',
-          message: ''
-        });
-        setIsSubmitted(false);
-      }, 3000);
+      // Clear form immediately
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        company: '',
+        phone: '',
+        stores: '',
+        role: '',
+        message: ''
+      });
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send demo request. Please try again.');
