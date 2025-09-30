@@ -5,6 +5,7 @@ import { inspectionsAPI, videosAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useBehaviorTracking } from '@/hooks/useBehaviorTracking';
 import { useSmartNudges } from '@/hooks/useSmartNudges';
+import { useAnalytics, ANALYTICS_EVENTS } from '@/hooks/useAnalytics';
 import InspectorQueueWidget from '@/components/InspectorQueueWidget';
 import InteractiveTwoVideoDemoContainer from '@/components/demo/InteractiveTwoVideoDemoContainer';
 import { SmartNudgeContainer } from '@/components/nudges/SmartNudgeNotification';
@@ -25,13 +26,17 @@ export default function Dashboard() {
   // Behavior tracking and smart nudges
   const { trackDashboardView } = useBehaviorTracking();
   const { nudges, handleNudgeAction, dismissNudge } = useSmartNudges();
+  const { trackPageView, track } = useAnalytics();
 
   // Track dashboard view on mount
   useEffect(() => {
     if (user) {
       trackDashboardView();
+      trackPageView('Dashboard', {
+        user_role: user.role,
+      });
     }
-  }, [user, trackDashboardView]);
+  }, [user, trackDashboardView, trackPageView]);
 
   const { data: stats } = useQuery('inspection-stats', inspectionsAPI.getStats);
   
