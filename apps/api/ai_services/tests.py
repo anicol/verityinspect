@@ -351,8 +351,9 @@ class VideoAnalyzerTest(TestCase):
         analyzer = VideoAnalyzer()
         result = analyzer.analyze_frame('/fake/path.jpg', b'fake_bytes')
 
-        # Should have partial results
-        self.assertIn('error', result)
+        # Should have partial results with warnings (not error)
+        self.assertFalse(result['rekognition_available'])
+        self.assertGreater(len(result['warnings']), 0)
         self.assertIn('uniform_analysis', result)
         self.assertIn('menu_board_analysis', result)
         # Score should still be calculated from available services

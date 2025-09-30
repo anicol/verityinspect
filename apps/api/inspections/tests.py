@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -363,6 +363,7 @@ class RekognitionIntegrationTest(TestCase):
             username="testuser", store=self.store
         )
 
+    @override_settings(ENABLE_AWS_REKOGNITION=True, AWS_ACCESS_KEY_ID='test_key_id', AWS_SECRET_ACCESS_KEY='test_secret')
     @patch('ai_services.rekognition.boto3.client')
     @patch('ai_services.yolo_detector.YOLODetector.detect_objects')
     @patch('ai_services.yolo_detector.YOLODetector.detect_uniform_compliance')
@@ -445,6 +446,7 @@ class RekognitionIntegrationTest(TestCase):
         # Score should be calculated from available services
         self.assertGreaterEqual(result['overall_score'], 0)
 
+    @override_settings(ENABLE_AWS_REKOGNITION=True, AWS_ACCESS_KEY_ID='test_key_id', AWS_SECRET_ACCESS_KEY='test_secret')
     @patch('ai_services.rekognition.boto3.client')
     @patch('ai_services.yolo_detector.YOLODetector.detect_objects')
     @patch('ai_services.yolo_detector.YOLODetector.detect_uniform_compliance')
