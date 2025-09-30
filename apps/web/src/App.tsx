@@ -17,8 +17,6 @@ import MobileCapturePage from '@/pages/MobileCapturePage';
 import InspectorQueuePage from '@/pages/InspectorQueuePage';
 import { MobileCaptureProvider } from '@/pages/MobileCaptureContext';
 import DemoModeIndicator from '@/components/DemoModeIndicator';
-import { PostHogProvider } from '@/components/PostHogProvider';
-
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
   
@@ -70,12 +68,10 @@ function App() {
                      window.location.hostname.includes('getpeakops');
 
   return (
-    <PostHogProvider>
-      <AuthProvider>
-        {isDemoMode && <DemoModeIndicator />}
-        <AppRoutes />
-      </AuthProvider>
-    </PostHogProvider>
+    <AuthProvider>
+      {isDemoMode && <DemoModeIndicator />}
+      <AppRoutes />
+    </AuthProvider>
   );
 }
 

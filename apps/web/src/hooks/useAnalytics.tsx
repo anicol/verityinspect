@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
-import { usePostHog } from '@/components/PostHogProvider'
+import { usePostHog } from 'posthog-js/react'
 import { useAuth } from './useAuth'
 
 export function useAnalytics() {
-  const { posthog } = usePostHog()
+  const posthog = usePostHog()
   const { user, isAuthenticated } = useAuth()
 
   // Identify user when authenticated
