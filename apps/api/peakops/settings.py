@@ -290,9 +290,10 @@ WEBHOOK_RETRY_ATTEMPTS = config('WEBHOOK_RETRY_ATTEMPTS', default=3, cast=int)
 
 # Email settings - AWS SES Configuration
 USE_SES = config('USE_SES', default=False, cast=bool)
+TESTING = config('TESTING', default=False, cast=bool)
 
 # For development/testing, use console backend unless explicitly overridden
-if DEBUG and not config('EMAIL_BACKEND', default=None):
+if (DEBUG or TESTING) and not config('EMAIL_BACKEND', default=None):
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@getpeakops.com')
     SERVER_EMAIL = config('SERVER_EMAIL', default='admin@getpeakops.com')
