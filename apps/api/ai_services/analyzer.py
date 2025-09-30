@@ -20,21 +20,33 @@ class VideoAnalyzer:
             'cleanliness_analysis': {},
             'uniform_analysis': {},
             'menu_board_analysis': {},
-            'overall_score': 0.0
+            'overall_score': 0.0,
+            'rekognition_available': True,
+            'warnings': []
         }
 
         try:
             # PPE Detection using AWS Rekognition
             if frame_image_bytes:
-                ppe_results = self.rekognition.detect_ppe(frame_image_bytes)
-                results['ppe_analysis'] = ppe_results
-                logger.info(f"PPE analysis completed for frame")
+                try:
+                    ppe_results = self.rekognition.detect_ppe(frame_image_bytes)
+                    results['ppe_analysis'] = ppe_results
+                    logger.info(f"PPE analysis completed for frame")
+                except (RuntimeError, Exception) as e:
+                    logger.warning(f"Rekognition PPE detection unavailable: {e}")
+                    results['rekognition_available'] = False
+                    results['warnings'].append(f"PPE detection unavailable: {str(e)}")
 
             # Object Detection using AWS Rekognition
-            if frame_image_bytes:
-                object_results = self.rekognition.detect_objects(frame_image_bytes)
-                results['safety_analysis'] = object_results.get('safety_objects', [])
-                results['cleanliness_analysis'] = object_results.get('cleanliness_objects', [])
+            if frame_image_bytes and results['rekognition_available']:
+                try:
+                    object_results = self.rekognition.detect_objects(frame_image_bytes)
+                    results['safety_analysis'] = object_results.get('safety_objects', [])
+                    results['cleanliness_analysis'] = object_results.get('cleanliness_objects', [])
+                except (RuntimeError, Exception) as e:
+                    logger.warning(f"Rekognition object detection unavailable: {e}")
+                    results['rekognition_available'] = False
+                    results['warnings'].append(f"Object detection unavailable: {str(e)}")
 
             # Enhanced object detection using YOLO
             yolo_results = self.yolo.detect_objects(frame_path)
@@ -48,11 +60,11 @@ class VideoAnalyzer:
             menu_results = self.ocr.analyze_menu_board(frame_path)
             results['menu_board_analysis'] = menu_results
 
-            # Calculate overall score
+            # Calculate overall score (adjusted for available services)
             results['overall_score'] = self._calculate_overall_score(results)
 
         except Exception as e:
-            logger.error(f"Error analyzing frame {frame_path}: {e}")
+            logger.error(f"Critical error analyzing frame {frame_path}: {e}")
             results['error'] = str(e)
 
         return results
@@ -78,8 +90,13 @@ class VideoAnalyzer:
         results['cleanliness_analysis'].extend(yolo_cleanliness)
 
     def _calculate_overall_score(self, results):
-        """Calculate overall compliance score based on all analyses"""
-        scores = []
+        """Calculate overall compliance score based on all analyses
+
+        If Rekognition is unavailable, redistributes weights to other services.
+        """
+        rekognition_available = results.get('rekognition_available', True)
+
+        # Default weights
         weights = {
             'ppe': 0.25,
             'safety': 0.20,
@@ -88,24 +105,40 @@ class VideoAnalyzer:
             'menu_board': 0.15
         }
 
-        # PPE Score
-        ppe_score = self._calculate_ppe_score(results.get('ppe_analysis', {}))
-        scores.append(ppe_score * weights['ppe'])
+        # Adjust weights if Rekognition is unavailable
+        if not rekognition_available:
+            # Redistribute Rekognition weights (PPE + partial safety/cleanliness) to other services
+            weights = {
+                'ppe': 0.0,
+                'safety': 0.0,  # Will be handled by YOLO only
+                'cleanliness': 0.0,  # Will be handled by YOLO only
+                'uniform': 0.50,  # Increase from 0.20
+                'menu_board': 0.50  # Increase from 0.15
+            }
 
-        # Safety Score
-        safety_score = self._calculate_safety_score(results.get('safety_analysis', []))
-        scores.append(safety_score * weights['safety'])
+        scores = []
 
-        # Cleanliness Score
-        cleanliness_score = self._calculate_cleanliness_score(results.get('cleanliness_analysis', []))
-        scores.append(cleanliness_score * weights['cleanliness'])
+        # PPE Score (Rekognition only)
+        if rekognition_available and weights['ppe'] > 0:
+            ppe_score = self._calculate_ppe_score(results.get('ppe_analysis', {}))
+            scores.append(ppe_score * weights['ppe'])
 
-        # Uniform Score
+        # Safety Score (Rekognition + YOLO)
+        if weights['safety'] > 0:
+            safety_score = self._calculate_safety_score(results.get('safety_analysis', []))
+            scores.append(safety_score * weights['safety'])
+
+        # Cleanliness Score (Rekognition + YOLO)
+        if weights['cleanliness'] > 0:
+            cleanliness_score = self._calculate_cleanliness_score(results.get('cleanliness_analysis', []))
+            scores.append(cleanliness_score * weights['cleanliness'])
+
+        # Uniform Score (YOLO)
         uniform_analysis = results.get('uniform_analysis', {})
         uniform_score = uniform_analysis.get('compliance_score', 100.0)
         scores.append(uniform_score * weights['uniform'])
 
-        # Menu Board Score
+        # Menu Board Score (OCR)
         menu_analysis = results.get('menu_board_analysis', {})
         menu_score = menu_analysis.get('compliance_score', 100.0)
         scores.append(menu_score * weights['menu_board'])
