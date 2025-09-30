@@ -16,8 +16,8 @@ class VideoAnalyzer:
         """Analyze a single video frame for all compliance criteria"""
         results = {
             'ppe_analysis': {},
-            'safety_analysis': {},
-            'cleanliness_analysis': {},
+            'safety_analysis': [],  # List, not dict - for extend() compatibility
+            'cleanliness_analysis': [],  # List, not dict - for extend() compatibility
             'uniform_analysis': {},
             'menu_board_analysis': {},
             'overall_score': 0.0,

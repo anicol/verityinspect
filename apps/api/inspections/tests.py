@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from brands.models import Brand, Store
 from videos.models import Video
 from .models import Inspection, Finding, ActionItem
@@ -354,7 +354,6 @@ class RekognitionIntegrationTest(TestCase):
     """Test Rekognition integration with inspection workflow"""
 
     def setUp(self):
-        from unittest.mock import patch, Mock
         self.brand = Brand.objects.create(name="Test Brand")
         self.store = Store.objects.create(
             brand=self.brand, name="Test Store", code="TS001",
@@ -494,7 +493,9 @@ class RekognitionIntegrationTest(TestCase):
         frame = VideoFrame.objects.create(
             video=video,
             frame_number=1,
-            timestamp=0.0
+            timestamp=0.0,
+            width=1920,
+            height=1080
         )
 
         # Mock frame analysis with PPE violation
