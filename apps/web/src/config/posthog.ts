@@ -7,7 +7,7 @@ export const initPostHog = () => {
   
   if (isProduction || enabledInDev) {
     const apiKey = import.meta.env.VITE_POSTHOG_KEY
-    const host = import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com'
+    const host = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com'
     
     if (!apiKey) {
       console.warn('PostHog API key not found. Analytics will not be initialized.')

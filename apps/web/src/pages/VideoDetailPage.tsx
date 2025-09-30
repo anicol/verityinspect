@@ -14,7 +14,8 @@ import {
   Share2,
   Loader2,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  Bug
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { videosAPI } from '@/services/api';
@@ -28,6 +29,7 @@ export default function VideoDetailPage() {
   const navigate = useNavigate();
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
   const [isReprocessing, setIsReprocessing] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
 
   // Fetch video details
   const { data: video, isLoading: videoLoading, error: videoError } = useQuery<Video>(
@@ -190,6 +192,17 @@ export default function VideoDetailPage() {
               </button>
             </div>
             <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => setDebugMode(!debugMode)}
+                className={`flex items-center px-4 py-2 border rounded-lg transition-colors ${
+                  debugMode 
+                    ? 'text-orange-700 border-orange-300 bg-orange-50' 
+                    : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <Bug className="w-4 h-4 mr-2" />
+                Debug
+              </button>
               <button 
                 onClick={handleReprocess}
                 disabled={isReprocessing}
@@ -470,6 +483,114 @@ export default function VideoDetailPage() {
                 </li>
               </ul>
             </div>
+
+            {/* Debug Panel */}
+            {debugMode && (
+              <div className="bg-gray-900 rounded-2xl border border-gray-700 p-6 text-white">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Bug className="w-5 h-5 mr-2 text-orange-400" />
+                  AI Analysis Debug Data
+                </h3>
+                
+                {inspection?.ai_analysis ? (
+                  <div className="space-y-4">
+                    {/* Analysis Summary */}
+                    <div>
+                      <h4 className="font-medium text-orange-400 mb-2">Analysis Summary</h4>
+                      <pre className="text-xs bg-gray-800 p-3 rounded overflow-x-auto">
+                        {JSON.stringify(inspection.ai_analysis.analysis_summary, null, 2)}
+                      </pre>
+                    </div>
+
+                    {/* Frame Analyses */}
+                    <div>
+                      <h4 className="font-medium text-orange-400 mb-2">
+                        Frame Analyses ({inspection.ai_analysis.frame_analyses?.length || 0} frames)
+                      </h4>
+                      <div className="max-h-96 overflow-y-auto space-y-2">
+                        {inspection.ai_analysis.frame_analyses?.map((frameAnalysis: any, index: number) => (
+                          <details key={index} className="bg-gray-800 rounded p-3">
+                            <summary className="cursor-pointer text-sm font-medium mb-2">
+                              Frame {index + 1} - Score: {frameAnalysis.overall_score?.toFixed(1) || 'N/A'}%
+                            </summary>
+                            <div className="text-xs space-y-2">
+                              {/* PPE Analysis */}
+                              {frameAnalysis.ppe_analysis && (
+                                <div>
+                                  <span className="text-blue-300 font-medium">PPE Detection:</span>
+                                  <pre className="ml-2 mt-1 text-gray-300">
+                                    {JSON.stringify(frameAnalysis.ppe_analysis, null, 2)}
+                                  </pre>
+                                </div>
+                              )}
+
+                              {/* Safety Objects */}
+                              {frameAnalysis.safety_analysis?.length > 0 && (
+                                <div>
+                                  <span className="text-red-300 font-medium">Safety Objects:</span>
+                                  <pre className="ml-2 mt-1 text-gray-300">
+                                    {JSON.stringify(frameAnalysis.safety_analysis, null, 2)}
+                                  </pre>
+                                </div>
+                              )}
+
+                              {/* Cleanliness Objects */}
+                              {frameAnalysis.cleanliness_analysis?.length > 0 && (
+                                <div>
+                                  <span className="text-green-300 font-medium">Cleanliness Objects:</span>
+                                  <pre className="ml-2 mt-1 text-gray-300">
+                                    {JSON.stringify(frameAnalysis.cleanliness_analysis, null, 2)}
+                                  </pre>
+                                </div>
+                              )}
+
+                              {/* Uniform Analysis */}
+                              {frameAnalysis.uniform_analysis && (
+                                <div>
+                                  <span className="text-purple-300 font-medium">Uniform Analysis:</span>
+                                  <pre className="ml-2 mt-1 text-gray-300">
+                                    {JSON.stringify(frameAnalysis.uniform_analysis, null, 2)}
+                                  </pre>
+                                </div>
+                              )}
+
+                              {/* Menu Board Analysis */}
+                              {frameAnalysis.menu_board_analysis && (
+                                <div>
+                                  <span className="text-yellow-300 font-medium">Menu Board Analysis:</span>
+                                  <pre className="ml-2 mt-1 text-gray-300">
+                                    {JSON.stringify(frameAnalysis.menu_board_analysis, null, 2)}
+                                  </pre>
+                                </div>
+                              )}
+                            </div>
+                          </details>
+                        )) || <p className="text-gray-400 text-sm">No frame analyses available</p>}
+                      </div>
+                    </div>
+
+                    {/* Configuration Info */}
+                    <div>
+                      <h4 className="font-medium text-orange-400 mb-2">Detection Configuration</h4>
+                      <div className="text-xs space-y-1 text-gray-300">
+                        <p>• AWS Rekognition: PPE + Object Detection</p>
+                        <p>• YOLO: Enhanced Object Detection</p>
+                        <p>• OCR: Menu Board Analysis</p>
+                        <p>• Confidence Thresholds: PPE 80%, Objects 70%</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Bug className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">No AI analysis data available</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Try reprocessing the video to generate debug data
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
