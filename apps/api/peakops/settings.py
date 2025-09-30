@@ -317,6 +317,6 @@ else:
 # Email timeout settings
 EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=30, cast=int)
 
-# For development/testing, use console backend
-if DEBUG:
+# For development/testing, use console backend unless explicitly overridden
+if DEBUG and not config('EMAIL_BACKEND', default=None):
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
