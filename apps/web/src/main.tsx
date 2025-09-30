@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
-import { PostHogProvider } from 'posthog-js/react'
+import { PostHogProvider } from './providers/PostHogProvider'
 import App from './App.tsx'
 import './index.css'
 
