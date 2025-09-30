@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { usePostHog } from '../providers/PostHogProvider'
+import { usePostHog } from 'posthog-js/react'
 import { useAuth } from './useAuth'
 
 export function useAnalytics() {
