@@ -13,14 +13,24 @@ class BedrockRecommendationService:
     """
 
     def __init__(self):
-        self.client = boto3.client(
-            'bedrock-runtime',
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            region_name=settings.AWS_S3_REGION_NAME
-        )
-        # Using Claude 3 Haiku for fast, cost-effective responses
-        self.model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+        self.enabled = getattr(settings, 'ENABLE_BEDROCK_RECOMMENDATIONS', False)
+
+        if self.enabled:
+            try:
+                self.client = boto3.client(
+                    'bedrock-runtime',
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                    region_name=settings.AWS_S3_REGION_NAME
+                )
+                # Using Claude 3 Haiku for fast, cost-effective responses
+                self.model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+                logger.info("Bedrock recommendation service initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Bedrock client, using fallback recommendations: {e}")
+                self.enabled = False
+        else:
+            logger.info("Bedrock recommendations disabled, using fallback recommendations")
 
     def generate_recommendation(self, category, severity, title, description, is_consolidated=False, frame_count=1):
         """
@@ -40,6 +50,10 @@ class BedrockRecommendationService:
                 'estimated_minutes': int
             }
         """
+        # If Bedrock is disabled, use fallback immediately
+        if not self.enabled:
+            return self._get_fallback_recommendation(category, severity, is_consolidated, frame_count)
+
         try:
             # Build context-aware prompt
             prompt = self._build_prompt(category, severity, title, description, is_consolidated, frame_count)
@@ -50,11 +64,11 @@ class BedrockRecommendationService:
             # Parse and validate response
             result = self._parse_response(response)
 
-            logger.info(f"Generated recommendation for {title}: {result['estimated_minutes']} minutes")
+            logger.info(f"Generated Bedrock recommendation for {title}: {result['estimated_minutes']} minutes")
             return result
 
         except Exception as e:
-            logger.error(f"Error generating Bedrock recommendation: {e}")
+            logger.warning(f"Bedrock recommendation failed, using fallback: {e}")
             # Fallback to basic recommendation
             return self._get_fallback_recommendation(category, severity, is_consolidated, frame_count)
 
@@ -150,6 +164,11 @@ Respond ONLY with a JSON object in this exact format:
             'PPE': 'Ensure all staff wear required personal protective equipment per company policy',
             'SAFETY': 'Address safety hazard immediately and review safety protocols',
             'CLEANLINESS': 'Clean affected area and implement regular cleaning schedule',
+            'FOOD_SAFETY': 'Address food safety issue immediately and review food handling procedures',
+            'EQUIPMENT': 'Inspect and repair equipment as needed, schedule maintenance if required',
+            'OPERATIONAL': 'Review operational procedures and adjust staffing or processes as needed',
+            'FOOD_QUALITY': 'Review food presentation standards with kitchen staff',
+            'STAFF_BEHAVIOR': 'Counsel staff on professional behavior and company policy compliance',
             'UNIFORM': 'Review and correct staff uniform compliance with company standards',
             'MENU_BOARD': 'Update menu board to meet current compliance requirements',
             'OTHER': 'Review and address identified issue according to company standards'
