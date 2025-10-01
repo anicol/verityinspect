@@ -111,6 +111,11 @@ export interface Inspection {
   ppe_score: number | null;
   safety_score: number | null;
   cleanliness_score: number | null;
+  food_safety_score: number | null;
+  equipment_score: number | null;
+  operational_score: number | null;
+  food_quality_score: number | null;
+  staff_behavior_score: number | null;
   uniform_score: number | null;
   menu_board_score: number | null;
   ai_analysis: Record<string, any>;
@@ -139,6 +144,13 @@ export interface Finding {
   bounding_box: Record<string, any> | null;
   recommended_action: string;
   is_resolved: boolean;
+  // Consolidation fields
+  affected_frame_count: number;
+  first_timestamp: number | null;
+  last_timestamp: number | null;
+  average_confidence: number | null;
+  // AI-generated action metadata
+  estimated_minutes: number | null;
   created_at: string;
 }
 
@@ -178,4 +190,18 @@ export interface InspectionStats {
   average_score: number | null;
   critical_findings: number;
   open_action_items: number;
+}
+
+export interface Upload {
+  id: number;
+  store: number;
+  mode: 'inspection' | 'coaching';
+  s3_key: string;
+  status: 'uploaded' | 'processing' | 'complete' | 'failed';
+  duration_s: number | null;
+  original_filename: string;
+  file_type: string;
+  created_at: string;
+  updated_at: string;
+  created_by: number;
 }

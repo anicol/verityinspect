@@ -15,18 +15,31 @@ import StoresPage from '@/pages/StoresPage';
 import UsersPage from '@/pages/UsersPage';
 import MobileCapturePage from '@/pages/MobileCapturePage';
 import InspectorQueuePage from '@/pages/InspectorQueuePage';
+import ProcessingPage from '@/pages/ProcessingPage';
 import { MobileCaptureProvider } from '@/pages/MobileCaptureContext';
 import DemoModeIndicator from '@/components/DemoModeIndicator';
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
-  
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
   if (isAuthenticated) {
     return (
       <MobileCaptureProvider>
         <Routes>
           {/* Mobile capture route - full screen without layout */}
           <Route path="/capture" element={<MobileCapturePage />} />
-          
+
+          {/* Processing page - full screen without layout */}
+          <Route path="/processing/:uploadId" element={<ProcessingPage />} />
+
           {/* Regular routes with layout */}
           <Route path="/*" element={
             <Layout>

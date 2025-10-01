@@ -250,6 +250,10 @@ AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 
+# Signed URLs configuration (more secure than public access)
+AWS_QUERYSTRING_AUTH = True  # Use signed URLs
+AWS_QUERYSTRING_EXPIRE = 3600  # URLs expire after 1 hour (in seconds)
+
 if AWS_STORAGE_BUCKET_NAME:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
@@ -261,12 +265,17 @@ COACHING_MODE_RETENTION_DAYS = config('COACHING_MODE_RETENTION_DAYS', default=7,
 
 ENABLE_AWS_REKOGNITION = config('ENABLE_AWS_REKOGNITION', default=True, cast=bool)
 ENABLE_YOLO_DETECTION = config('ENABLE_YOLO_DETECTION', default=False, cast=bool)
-ENABLE_OCR_DETECTION = config('ENABLE_OCR_DETECTION', default=False, cast=bool)
+ENABLE_OCR_DETECTION = config('ENABLE_OCR_DETECTION', default=True, cast=bool)
 
 # AWS Rekognition Configuration
 REKOGNITION_PPE_MIN_CONFIDENCE = config('REKOGNITION_PPE_MIN_CONFIDENCE', default=80, cast=int)
 REKOGNITION_OBJECTS_MIN_CONFIDENCE = config('REKOGNITION_OBJECTS_MIN_CONFIDENCE', default=70, cast=int)
 REKOGNITION_MAX_LABELS = config('REKOGNITION_MAX_LABELS', default=50, cast=int)
+REKOGNITION_TEXT_MIN_CONFIDENCE = config('REKOGNITION_TEXT_MIN_CONFIDENCE', default=80, cast=int)
+
+# Operational Compliance Settings
+MAX_PEOPLE_IN_KITCHEN = config('MAX_PEOPLE_IN_KITCHEN', default=10, cast=int)
+MAX_PEOPLE_IN_LINE = config('MAX_PEOPLE_IN_LINE', default=15, cast=int)
 
 # Demo and Privacy Settings
 DEMO_MODE = config('DEMO_MODE', default=True, cast=bool)

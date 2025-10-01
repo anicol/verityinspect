@@ -11,7 +11,23 @@ import type {
   LoginCredentials,
   AuthResponse,
   InspectionStats,
+  Upload,
 } from '@/types';
+
+// Upload-specific types
+export interface PresignedUrlRequest {
+  filename: string;
+  file_type: string;
+  store_id: number;
+  mode: 'inspection' | 'coaching';
+}
+
+export interface PresignedUrlResponse {
+  upload_id: number;
+  presigned_url: string;
+  s3_key: string;
+  expires_at: string;
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -198,14 +214,63 @@ export const videosAPI = {
   },
 
   getVideoInspection: async (videoId: number): Promise<Inspection | null> => {
-    try {
-      // Try to find an inspection for this video
-      const inspections = await inspectionsAPI.getInspections({ video: videoId });
-      return inspections.length > 0 ? inspections[0] : null;
-    } catch (error) {
-      console.error('Error fetching video inspection:', error);
-      return null;
-    }
+    // Use the new method that fetches full inspection details with ai_analysis
+    return await inspectionsAPI.getInspectionByVideo(videoId);
+  },
+};
+
+// Uploads API (S3 presigned URL workflow)
+export const uploadsAPI = {
+  requestPresignedUrl: async (request: PresignedUrlRequest): Promise<PresignedUrlResponse> => {
+    const response = await api.post('/uploads/request-presigned-url/', request);
+    return response.data;
+  },
+
+  uploadToS3: async (presignedUrl: string, file: File): Promise<void> => {
+    // Direct upload to S3 using presigned URL
+    await axios.put(presignedUrl, file, {
+      headers: {
+        'Content-Type': file.type,
+      },
+    });
+  },
+
+  confirmUpload: async (uploadId: number): Promise<Upload> => {
+    const response = await api.post(`/uploads/confirm/${uploadId}/`);
+    return response.data;
+  },
+
+  getUploads: async (params?: Record<string, any>): Promise<Upload[]> => {
+    const response = await api.get('/uploads/', { params });
+    return response.data.results || response.data;
+  },
+
+  getUpload: async (id: number): Promise<Upload> => {
+    const response = await api.get(`/uploads/${id}/`);
+    return response.data;
+  },
+
+  // Convenience method that handles the full upload flow
+  uploadVideo: async (
+    file: File,
+    storeId: number,
+    mode: 'inspection' | 'coaching' = 'inspection'
+  ): Promise<Upload> => {
+    // Step 1: Request presigned URL
+    const { upload_id, presigned_url } = await uploadsAPI.requestPresignedUrl({
+      filename: file.name,
+      file_type: file.type,
+      store_id: storeId,
+      mode,
+    });
+
+    // Step 2: Upload directly to S3
+    await uploadsAPI.uploadToS3(presigned_url, file);
+
+    // Step 3: Confirm upload to trigger processing
+    const upload = await uploadsAPI.confirmUpload(upload_id);
+
+    return upload;
   },
 };
 
@@ -220,7 +285,22 @@ export const inspectionsAPI = {
     const response = await api.get(`/inspections/${id}/`);
     return response.data;
   },
-  
+
+  getInspectionByVideo: async (videoId: number): Promise<Inspection | null> => {
+    try {
+      // First get the list to find the inspection ID
+      const inspections = await inspectionsAPI.getInspections({ video: videoId });
+      if (inspections.length === 0) return null;
+
+      // Then fetch the full inspection detail with ai_analysis
+      const fullInspection = await inspectionsAPI.getInspection(inspections[0].id);
+      return fullInspection;
+    } catch (error) {
+      console.error('Error fetching inspection by video:', error);
+      return null;
+    }
+  },
+
   startInspection: async (videoId: number, mode: 'INSPECTION' | 'COACHING'): Promise<Inspection> => {
     const response = await api.post(`/inspections/start/${videoId}/`, { mode });
     return response.data;

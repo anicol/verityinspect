@@ -85,7 +85,17 @@ function ScoreBar({ score, label }: { score: number | null; label: string }) {
 
 function FindingCard({ finding }: { finding: Finding }) {
   const CategoryIcon = categoryIcons[finding.category] || FileText;
-  
+
+  // Format timestamp helper
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  };
+
+  // Check if this is a consolidated finding
+  const isConsolidated = finding.affected_frame_count > 1;
+
   return (
     <div className="bg-white rounded-lg shadow-md p-4 space-y-3">
       <div className="flex items-start justify-between">
@@ -93,15 +103,22 @@ function FindingCard({ finding }: { finding: Finding }) {
           <CategoryIcon className="w-5 h-5 text-gray-600" />
           <h4 className="font-medium text-gray-900">{finding.title}</h4>
         </div>
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${severityColors[finding.severity]}`}>
-          {finding.severity}
-        </span>
+        <div className="flex flex-col items-end space-y-1">
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${severityColors[finding.severity]}`}>
+            {finding.severity}
+          </span>
+          {isConsolidated && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+              {finding.affected_frame_count} frames
+            </span>
+          )}
+        </div>
       </div>
-      
+
       {finding.frame_image ? (
         <div className="relative">
-          <img 
-            src={finding.frame_image} 
+          <img
+            src={finding.frame_image}
             alt="Finding evidence"
             className="w-full h-48 object-cover rounded-md"
             onError={(e) => {
@@ -117,13 +134,18 @@ function FindingCard({ finding }: { finding: Finding }) {
               <span className="text-sm">Frame image unavailable</span>
             </div>
           </div>
-          {finding.frame_timestamp && (
+          {/* Show time range or single timestamp */}
+          {isConsolidated && finding.first_timestamp !== null && finding.last_timestamp !== null ? (
             <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
-              {Math.floor(finding.frame_timestamp / 60)}:{String(Math.floor(finding.frame_timestamp % 60)).padStart(2, '0')}
+              {formatTime(finding.first_timestamp)} - {formatTime(finding.last_timestamp)}
+            </div>
+          ) : finding.frame_timestamp !== null && (
+            <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+              {formatTime(finding.frame_timestamp)}
             </div>
           )}
           {finding.bounding_box && (
-            <div 
+            <div
               className="absolute border-2 border-red-500 bg-red-500 bg-opacity-20"
               style={{
                 left: `${(finding.bounding_box.x || 0) * 100}%`,
@@ -139,25 +161,35 @@ function FindingCard({ finding }: { finding: Finding }) {
           <div className="text-center">
             <Camera className="w-8 h-8 mx-auto mb-2" />
             <span className="text-sm">Frame image not available</span>
-            {finding.bounding_box && (
+            {isConsolidated && finding.first_timestamp !== null && finding.last_timestamp !== null ? (
               <div className="text-xs text-gray-400 mt-1">
-                Detection at {Math.floor((finding.bounding_box.timestamp || 0) / 60)}:{String(Math.floor((finding.bounding_box.timestamp || 0) % 60)).padStart(2, '0')}
+                Detected {formatTime(finding.first_timestamp)} - {formatTime(finding.last_timestamp)}
+              </div>
+            ) : finding.frame_timestamp !== null && (
+              <div className="text-xs text-gray-400 mt-1">
+                Detection at {formatTime(finding.frame_timestamp)}
               </div>
             )}
           </div>
         </div>
       )}
-      
+
       <div className="space-y-2">
         <p className="text-sm text-gray-600">{finding.description}</p>
-        
+
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>Confidence: {Math.round(finding.confidence * 100)}%</span>
-          {finding.frame_timestamp && (
-            <span>@ {Math.floor(finding.frame_timestamp / 60)}:{String(Math.floor(finding.frame_timestamp % 60)).padStart(2, '0')}</span>
+          {isConsolidated && finding.average_confidence ? (
+            <span>Confidence: {Math.round(finding.average_confidence * 100)}% avg, {Math.round(finding.confidence * 100)}% max</span>
+          ) : (
+            <span>Confidence: {Math.round(finding.confidence * 100)}%</span>
+          )}
+          {isConsolidated && finding.first_timestamp !== null && finding.last_timestamp !== null ? (
+            <span>{formatTime(finding.first_timestamp)} - {formatTime(finding.last_timestamp)}</span>
+          ) : finding.frame_timestamp !== null && (
+            <span>@ {formatTime(finding.frame_timestamp)}</span>
           )}
         </div>
-        
+
         {finding.recommended_action && (
           <div className="bg-blue-50 p-3 rounded-md">
             <p className="text-sm text-blue-800">

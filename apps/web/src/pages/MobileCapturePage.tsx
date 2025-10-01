@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileCapture } from './MobileCaptureContext';
 import { useQuery } from 'react-query';
-import { storesAPI, videosAPI } from '@/services/api';
+import { storesAPI, uploadsAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 
@@ -165,7 +165,7 @@ export default function MobileCapturePage() {
     }
 
     let videoToUpload = recordedBlob;
-    
+
     if (useGuidedMode && Object.keys(shotRecordings).length > 0) {
       const shotIds = Object.keys(shotRecordings);
       videoToUpload = shotRecordings[shotIds[shotIds.length - 1]];
@@ -177,28 +177,25 @@ export default function MobileCapturePage() {
     }
 
     setIsUploading(true);
-    
-    try {
-      const formData = new FormData();
-      formData.append('file', videoToUpload, `${title}.webm`);
-      formData.append('title', title);
-      formData.append('store', selectedStore);
-      formData.append('mode', settings.mode);
-      
-      if (useGuidedMode) {
-        formData.append('guided_shots', JSON.stringify(completedShots));
-      }
 
-      await videosAPI.uploadVideo(formData);
-      
+    try {
+      // Create a File object from the Blob
+      const file = new File([videoToUpload], `${title}.webm`, { type: 'video/webm' });
+      const storeId = parseInt(selectedStore);
+      const mode = settings.mode === 'inspection' ? 'inspection' : 'coaching';
+
+      // Use the new uploads API with S3 presigned URL
+      await uploadsAPI.uploadVideo(file, storeId, mode);
+
       // Reset and navigate back
       resetRecording();
       setShotRecordings({});
       setCompletedShots([]);
       setCurrentShotIndex(0);
       navigate('/videos', { replace: true });
-      
+
     } catch (error) {
+      console.error('Upload failed:', error);
       alert('Upload failed. Please try again.');
     } finally {
       setIsUploading(false);

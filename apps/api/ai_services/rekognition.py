@@ -97,6 +97,65 @@ class RekognitionService:
             logger.error(f"Rekognition object detection error: {e}")
             raise
 
+    def detect_text(self, image_bytes):
+        """Detect text in image using AWS Rekognition Text Detection
+
+        Args:
+            image_bytes: Image data as bytes
+
+        Returns:
+            dict: Text detection results with detected text and locations
+
+        Raises:
+            RuntimeError: If Rekognition is not enabled or credentials missing
+            ClientError: If AWS API returns an error
+            BotoCoreError: If boto3 encounters an error
+        """
+        if not self.client:
+            raise RuntimeError(
+                "AWS Rekognition is not enabled or credentials are missing. "
+                "Set ENABLE_AWS_REKOGNITION=True and configure AWS credentials."
+            )
+
+        try:
+            response = self.client.detect_text(Image={'Bytes': image_bytes})
+            return self._process_text_response(response)
+        except (ClientError, BotoCoreError) as e:
+            logger.error(f"Rekognition text detection error: {e}")
+            raise
+
+    def detect_people(self, image_bytes):
+        """Detect and count people in image for occupancy monitoring
+
+        Args:
+            image_bytes: Image data as bytes
+
+        Returns:
+            dict: People detection results with count and locations
+
+        Raises:
+            RuntimeError: If Rekognition is not enabled or credentials missing
+            ClientError: If AWS API returns an error
+            BotoCoreError: If boto3 encounters an error
+        """
+        if not self.client:
+            raise RuntimeError(
+                "AWS Rekognition is not enabled or credentials are missing. "
+                "Set ENABLE_AWS_REKOGNITION=True and configure AWS credentials."
+            )
+
+        try:
+            # Use detect_labels to find people
+            response = self.client.detect_labels(
+                Image={'Bytes': image_bytes},
+                MaxLabels=50,
+                MinConfidence=70
+            )
+            return self._process_people_response(response)
+        except (ClientError, BotoCoreError) as e:
+            logger.error(f"Rekognition people detection error: {e}")
+            raise
+
     def _process_ppe_response(self, response):
         """Process AWS Rekognition PPE response
 
@@ -169,9 +228,23 @@ class RekognitionService:
 
         safety_objects = []
         cleanliness_objects = []
+        food_safety_objects = []
+        equipment_objects = []
+        operational_objects = []
+        food_quality_objects = []
+        staff_behavior_objects = []
 
+        # Expanded keyword lists for comprehensive detection
         safety_keywords = ['fire', 'exit', 'sign', 'door', 'emergency', 'extinguisher', 'blocked', 'obstruction']
         cleanliness_keywords = ['trash', 'garbage', 'spill', 'dirt', 'mess', 'clean', 'floor', 'surface']
+        food_safety_keywords = ['thermometer', 'temperature', 'glove', 'cutting board', 'container', 'cover',
+                                'raw', 'cooked', 'handwash', 'sink', 'soap', 'sanitizer']
+        equipment_keywords = ['rust', 'damage', 'wear', 'grease', 'leak', 'water', 'moisture', 'drip',
+                             'hood', 'filter', 'equipment', 'broken', 'crack']
+        operational_keywords = ['crowd', 'queue', 'line', 'sign', 'label', 'warning', 'notice', 'poster']
+        food_quality_keywords = ['plate', 'food', 'garnish', 'steam', 'presentation', 'plating']
+        staff_behavior_keywords = ['jewelry', 'watch', 'ring', 'bracelet', 'phone', 'mobile', 'cell',
+                                  'eating', 'drinking', 'beverage', 'cup', 'bottle']
 
         for label in labels:
             label_name = label.get('Name', '').lower()
@@ -190,13 +263,88 @@ class RekognitionService:
                 'instances': instances
             }
 
+            # Categorize into multiple categories (object can belong to multiple)
             if any(keyword in label_name for keyword in safety_keywords):
                 safety_objects.append(label_data)
-            elif any(keyword in label_name for keyword in cleanliness_keywords):
+            if any(keyword in label_name for keyword in cleanliness_keywords):
                 cleanliness_objects.append(label_data)
+            if any(keyword in label_name for keyword in food_safety_keywords):
+                food_safety_objects.append(label_data)
+            if any(keyword in label_name for keyword in equipment_keywords):
+                equipment_objects.append(label_data)
+            if any(keyword in label_name for keyword in operational_keywords):
+                operational_objects.append(label_data)
+            if any(keyword in label_name for keyword in food_quality_keywords):
+                food_quality_objects.append(label_data)
+            if any(keyword in label_name for keyword in staff_behavior_keywords):
+                staff_behavior_objects.append(label_data)
 
         return {
             'safety_objects': safety_objects,
             'cleanliness_objects': cleanliness_objects,
+            'food_safety_objects': food_safety_objects,
+            'equipment_objects': equipment_objects,
+            'operational_objects': operational_objects,
+            'food_quality_objects': food_quality_objects,
+            'staff_behavior_objects': staff_behavior_objects,
             'all_labels': labels
+        }
+
+    def _process_text_response(self, response):
+        """Process AWS Rekognition text detection response"""
+        text_detections = response.get('TextDetections', [])
+
+        lines = []
+        words = []
+
+        for detection in text_detections:
+            detection_type = detection.get('Type')
+            text = detection.get('DetectedText', '')
+            confidence = detection.get('Confidence', 0)
+
+            text_data = {
+                'text': text,
+                'confidence': confidence,
+                'type': detection_type,
+                'bounding_box': detection.get('Geometry', {}).get('BoundingBox', {}),
+                'id': detection.get('Id')
+            }
+
+            if detection_type == 'LINE':
+                lines.append(text_data)
+            elif detection_type == 'WORD':
+                words.append(text_data)
+
+        return {
+            'lines': lines,
+            'words': words,
+            'all_text': ' '.join([line['text'] for line in lines]),
+            'total_detections': len(text_detections)
+        }
+
+    def _process_people_response(self, response):
+        """Process people detection from label detection response"""
+        labels = response.get('Labels', [])
+
+        people_count = 0
+        people_instances = []
+
+        for label in labels:
+            label_name = label.get('Name', '').lower()
+
+            if label_name == 'person' or label_name == 'people' or label_name == 'human':
+                instances = label.get('Instances', [])
+                people_count = len(instances)
+
+                for instance in instances:
+                    people_instances.append({
+                        'confidence': instance.get('Confidence', 0),
+                        'bounding_box': instance.get('BoundingBox', {})
+                    })
+                break
+
+        return {
+            'people_count': people_count,
+            'people_instances': people_instances,
+            'detected': people_count > 0
         }

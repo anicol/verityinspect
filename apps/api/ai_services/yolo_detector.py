@@ -145,48 +145,17 @@ class YOLODetector:
         return (compliant_count / total_count) * 100.0
 
     def _mock_detection(self):
-        """Mock object detection for development"""
+        """Return empty results when YOLO detection is disabled"""
         return {
-            'safety_objects': [
-                {
-                    'class': 'fire_extinguisher',
-                    'confidence': 0.92,
-                    'bounding_box': {'x1': 50, 'y1': 100, 'x2': 120, 'y2': 300}
-                }
-            ],
-            'cleanliness_objects': [
-                {
-                    'class': 'trash_can',
-                    'confidence': 0.88,
-                    'bounding_box': {'x1': 200, 'y1': 150, 'x2': 250, 'y2': 400}
-                }
-            ],
-            'other_objects': [
-                {
-                    'class': 'person',
-                    'confidence': 0.95,
-                    'bounding_box': {'x1': 300, 'y1': 50, 'x2': 450, 'y2': 500}
-                }
-            ],
-            'total_detections': 3
+            'safety_objects': [],
+            'cleanliness_objects': [],
+            'other_objects': [],
+            'total_detections': 0
         }
 
     def _mock_uniform_detection(self):
-        """Mock uniform detection for development"""
+        """Return empty results when YOLO detection is disabled"""
         return {
-            'uniform_objects': [
-                {
-                    'class': 'person',
-                    'confidence': 0.95,
-                    'bounding_box': {'x1': 300, 'y1': 50, 'x2': 450, 'y2': 500},
-                    'compliance_status': 'needs_review'
-                },
-                {
-                    'class': 'hat',
-                    'confidence': 0.87,
-                    'bounding_box': {'x1': 350, 'y1': 60, 'x2': 400, 'y2': 120},
-                    'compliance_status': 'compliant'
-                }
-            ],
-            'compliance_score': 75.0
+            'uniform_objects': [],
+            'compliance_score': 100.0  # No detections = no violations
         }

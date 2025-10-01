@@ -1,9 +1,12 @@
 import os
+import tempfile
 from celery import shared_task
 from django.utils import timezone
 from django.conf import settings
+from django.core.files.storage import default_storage
 from .models import Inspection, Finding, ActionItem
 from ai_services.analyzer import VideoAnalyzer
+from ai_services.bedrock_service import BedrockRecommendationService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,28 +33,33 @@ def analyze_video(self, inspection_id):
         
         # Analyze each frame
         for frame in frames:
+            temp_frame_path = None
             try:
-                frame_path = frame.image.path
-                
-                # Read frame image as bytes for Rekognition
-                frame_bytes = None
-                if os.path.exists(frame_path):
-                    with open(frame_path, 'rb') as f:
-                        frame_bytes = f.read()
-                
+                # Download frame from S3 to temp file
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+                    # Read from S3
+                    with default_storage.open(frame.image.name, 'rb') as s3_file:
+                        frame_bytes = s3_file.read()
+                        tmp_file.write(frame_bytes)
+                        temp_frame_path = tmp_file.name
+
                 # Analyze frame
-                frame_analysis = analyzer.analyze_frame(frame_path, frame_bytes)
+                frame_analysis = analyzer.analyze_frame(temp_frame_path, frame_bytes)
                 all_analyses.append(frame_analysis)
-                
+
                 # Generate findings for this frame
                 findings = analyzer.generate_findings(frame_analysis, frame)
                 all_findings.extend(findings)
-                
+
                 logger.info(f"Analyzed frame {frame.frame_number} with score {frame_analysis.get('overall_score', 0)}")
-                
+
             except Exception as e:
                 logger.error(f"Error analyzing frame {frame.frame_number}: {e}")
                 continue
+            finally:
+                # Clean up temp file
+                if temp_frame_path and os.path.exists(temp_frame_path):
+                    os.remove(temp_frame_path)
 
         # Calculate overall scores
         scores = calculate_inspection_scores(all_analyses)
@@ -61,6 +69,11 @@ def analyze_video(self, inspection_id):
         inspection.ppe_score = scores['ppe_score']
         inspection.safety_score = scores['safety_score']
         inspection.cleanliness_score = scores['cleanliness_score']
+        inspection.food_safety_score = scores['food_safety_score']
+        inspection.equipment_score = scores['equipment_score']
+        inspection.operational_score = scores['operational_score']
+        inspection.food_quality_score = scores['food_quality_score']
+        inspection.staff_behavior_score = scores['staff_behavior_score']
         inspection.uniform_score = scores['uniform_score']
         inspection.menu_board_score = scores['menu_board_score']
         inspection.ai_analysis = {
@@ -100,20 +113,30 @@ def calculate_inspection_scores(frame_analyses):
             'ppe_score': 0.0,
             'safety_score': 0.0,
             'cleanliness_score': 0.0,
+            'food_safety_score': 0.0,
+            'equipment_score': 0.0,
+            'operational_score': 0.0,
+            'food_quality_score': 0.0,
+            'staff_behavior_score': 0.0,
             'uniform_score': 0.0,
             'menu_board_score': 0.0
         }
 
     # Calculate averages
     overall_scores = [analysis.get('overall_score', 0) for analysis in frame_analyses]
-    
+
     # For category scores, we need to extract them from the analyzer results
     ppe_scores = []
     safety_scores = []
     cleanliness_scores = []
+    food_safety_scores = []
+    equipment_scores = []
+    operational_scores = []
+    food_quality_scores = []
+    staff_behavior_scores = []
     uniform_scores = []
     menu_scores = []
-    
+
     for analysis in frame_analyses:
         # PPE Score calculation
         ppe_analysis = analysis.get('ppe_analysis', {})
@@ -133,8 +156,8 @@ def calculate_inspection_scores(frame_analyses):
         # Safety Score - basic calculation based on violations
         safety_objects = analysis.get('safety_analysis', [])
         safety_score = 100.0
-        blocked_exits = sum(1 for obj in safety_objects 
-                          if 'blocked' in obj.get('name', '').lower() or 
+        blocked_exits = sum(1 for obj in safety_objects
+                          if 'blocked' in obj.get('name', '').lower() or
                              'blocked' in obj.get('class', '').lower())
         safety_score -= blocked_exits * 30
         safety_scores.append(max(0.0, safety_score))
@@ -142,11 +165,72 @@ def calculate_inspection_scores(frame_analyses):
         # Cleanliness Score
         cleanliness_objects = analysis.get('cleanliness_analysis', [])
         cleanliness_score = 100.0
-        spills = sum(1 for obj in cleanliness_objects 
-                    if 'spill' in obj.get('name', '').lower() or 
+        spills = sum(1 for obj in cleanliness_objects
+                    if 'spill' in obj.get('name', '').lower() or
                        'spill' in obj.get('class', '').lower())
         cleanliness_score -= spills * 20
         cleanliness_scores.append(max(0.0, cleanliness_score))
+
+        # Food Safety Score
+        food_safety_objects = analysis.get('food_safety_analysis', [])
+        food_safety_score = 100.0
+        uncovered_containers = sum(1 for obj in food_safety_objects
+                                   if 'container' in obj.get('name', '').lower())
+        food_safety_score -= uncovered_containers * 15
+        food_safety_scores.append(max(0.0, food_safety_score))
+
+        # Equipment Score
+        equipment_objects = analysis.get('equipment_analysis', [])
+        equipment_score = 100.0
+        damage = sum(1 for obj in equipment_objects
+                    if any(keyword in obj.get('name', '').lower()
+                          for keyword in ['rust', 'damage', 'broken', 'crack']))
+        grease = sum(1 for obj in equipment_objects
+                    if 'grease' in obj.get('name', '').lower())
+        leaks = sum(1 for obj in equipment_objects
+                   if any(keyword in obj.get('name', '').lower()
+                         for keyword in ['leak', 'drip', 'moisture']))
+        equipment_score -= damage * 25
+        equipment_score -= grease * 15
+        equipment_score -= leaks * 15
+        equipment_scores.append(max(0.0, equipment_score))
+
+        # Operational Score
+        operational_objects = analysis.get('operational_analysis', [])
+        people_analysis = analysis.get('people_analysis', {})
+        operational_score = 100.0
+
+        people_count = people_analysis.get('people_count', 0)
+        max_capacity = getattr(settings, 'MAX_PEOPLE_IN_KITCHEN', 10)
+        if people_count > max_capacity:
+            over_capacity = people_count - max_capacity
+            operational_score -= over_capacity * 5
+
+        queues = sum(1 for obj in operational_objects
+                    if any(keyword in obj.get('name', '').lower()
+                          for keyword in ['queue', 'line', 'crowd']))
+        operational_score -= queues * 10
+        operational_scores.append(max(0.0, operational_score))
+
+        # Food Quality Score
+        food_quality_scores.append(100.0)  # Placeholder - can be enhanced later
+
+        # Staff Behavior Score
+        staff_behavior_objects = analysis.get('staff_behavior_analysis', [])
+        staff_behavior_score = 100.0
+        jewelry = sum(1 for obj in staff_behavior_objects
+                     if any(keyword in obj.get('name', '').lower()
+                           for keyword in ['jewelry', 'watch', 'ring', 'bracelet']))
+        phones = sum(1 for obj in staff_behavior_objects
+                    if any(keyword in obj.get('name', '').lower()
+                          for keyword in ['phone', 'mobile', 'cell']))
+        food_beverage = sum(1 for obj in staff_behavior_objects
+                           if any(keyword in obj.get('name', '').lower()
+                                 for keyword in ['eating', 'drinking', 'beverage', 'cup']))
+        staff_behavior_score -= jewelry * 15
+        staff_behavior_score -= phones * 15
+        staff_behavior_score -= food_beverage * 10
+        staff_behavior_scores.append(max(0.0, staff_behavior_score))
 
         # Uniform Score
         uniform_analysis = analysis.get('uniform_analysis', {})
@@ -163,28 +247,104 @@ def calculate_inspection_scores(frame_analyses):
         'ppe_score': sum(ppe_scores) / len(ppe_scores),
         'safety_score': sum(safety_scores) / len(safety_scores),
         'cleanliness_score': sum(cleanliness_scores) / len(cleanliness_scores),
+        'food_safety_score': sum(food_safety_scores) / len(food_safety_scores),
+        'equipment_score': sum(equipment_scores) / len(equipment_scores),
+        'operational_score': sum(operational_scores) / len(operational_scores),
+        'food_quality_score': sum(food_quality_scores) / len(food_quality_scores),
+        'staff_behavior_score': sum(staff_behavior_scores) / len(staff_behavior_scores),
         'uniform_score': sum(uniform_scores) / len(uniform_scores),
         'menu_board_score': sum(menu_scores) / len(menu_scores)
     }
 
 
 def create_findings_from_analysis(inspection, findings_data):
-    """Create Finding objects from analysis results"""
+    """Create consolidated Finding objects from analysis results with AI-generated recommendations"""
+    if not findings_data:
+        return
+
+    # Initialize Bedrock service for generating recommendations
+    bedrock_service = BedrockRecommendationService()
+
+    # Group findings by (category, severity, title) for consolidation
+    grouped_findings = {}
+
     for finding_data in findings_data:
+        category = finding_data.get('category', 'OTHER')
+        severity = finding_data.get('severity', 'LOW')
+        title = finding_data.get('title', 'Unknown Issue')
+
+        # Create unique key for grouping
+        key = (category, severity, title)
+
+        if key not in grouped_findings:
+            grouped_findings[key] = []
+
+        grouped_findings[key].append(finding_data)
+
+    # Create one consolidated finding per group
+    for (category, severity, title), group_findings in grouped_findings.items():
         try:
+            # Extract data from all findings in this group
+            frames = [f.get('frame') for f in group_findings if f.get('frame')]
+            confidences = [f.get('confidence', 0.0) for f in group_findings]
+            timestamps = [f.get('frame').timestamp for f in group_findings if f.get('frame')]
+
+            # Find the finding with highest confidence (representative)
+            max_confidence_idx = confidences.index(max(confidences)) if confidences else 0
+            representative_finding = group_findings[max_confidence_idx]
+            representative_frame = representative_finding.get('frame')
+
+            # Calculate consolidated metrics
+            affected_frame_count = len(group_findings)
+            average_confidence = sum(confidences) / len(confidences) if confidences else 0.0
+            max_confidence = max(confidences) if confidences else 0.0
+            first_timestamp = min(timestamps) if timestamps else None
+            last_timestamp = max(timestamps) if timestamps else None
+
+            # Get base description from representative finding
+            description = representative_finding.get('description', '')
+            bounding_box = representative_finding.get('bounding_box')
+
+            # Generate AI-powered recommendation and time estimate
+            is_consolidated = affected_frame_count > 1
+            recommendation = bedrock_service.generate_recommendation(
+                category=category,
+                severity=severity,
+                title=title,
+                description=description,
+                is_consolidated=is_consolidated,
+                frame_count=affected_frame_count
+            )
+
+            recommended_action = recommendation['recommended_action']
+            estimated_minutes = recommendation['estimated_minutes']
+
+            # Create consolidated finding with AI-generated recommendations
             Finding.objects.create(
                 inspection=inspection,
-                frame=finding_data.get('frame'),
-                category=finding_data.get('category', 'OTHER'),
-                severity=finding_data.get('severity', 'LOW'),
-                title=finding_data.get('title', 'Unknown Issue'),
-                description=finding_data.get('description', ''),
-                confidence=finding_data.get('confidence', 0.0),
-                bounding_box=finding_data.get('bounding_box'),
-                recommended_action=finding_data.get('recommended_action', '')
+                frame=representative_frame,
+                category=category,
+                severity=severity,
+                title=title,
+                description=description,
+                confidence=max_confidence,
+                bounding_box=bounding_box,
+                recommended_action=recommended_action,
+                estimated_minutes=estimated_minutes,
+                affected_frame_count=affected_frame_count,
+                first_timestamp=first_timestamp,
+                last_timestamp=last_timestamp,
+                average_confidence=average_confidence
             )
+
+            logger.info(
+                f"Consolidated {affected_frame_count} findings for '{title}' "
+                f"(confidence: avg={average_confidence:.2f}, max={max_confidence:.2f}, "
+                f"estimated time: {estimated_minutes} minutes)"
+            )
+
         except Exception as e:
-            logger.error(f"Error creating finding: {e}")
+            logger.error(f"Error creating consolidated finding for '{title}': {e}")
 
 
 def generate_action_items(inspection):
