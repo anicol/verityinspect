@@ -696,16 +696,16 @@ export default function VideoDetailPage() {
                         {/* Frame Image */}
                         <div className="mb-4">
                           <img
-                            src={video.frames[selectedFrameIndex]?.image}
+                            src={video.frames?.[selectedFrameIndex]?.image}
                             alt={`Frame ${selectedFrameIndex + 1}`}
                             className="w-full max-h-96 object-contain bg-black rounded cursor-pointer"
-                            onClick={() => window.open(video.frames[selectedFrameIndex]?.image, '_blank')}
+                            onClick={() => window.open(video.frames?.[selectedFrameIndex]?.image, '_blank')}
                             title="Click to open full size in new tab"
                           />
                           <p className="text-xs text-gray-400 mt-2 text-center">
-                            Time: {Math.floor(video.frames[selectedFrameIndex]?.timestamp / 60)}:
-                            {String(Math.floor(video.frames[selectedFrameIndex]?.timestamp % 60)).padStart(2, '0')} |{' '}
-                            Frame #{video.frames[selectedFrameIndex]?.frame_number} |{' '}
+                            Time: {Math.floor(video.frames?.[selectedFrameIndex]?.timestamp / 60)}:
+                            {String(Math.floor(video.frames?.[selectedFrameIndex]?.timestamp % 60)).padStart(2, '0')} |{' '}
+                            Frame #{video.frames?.[selectedFrameIndex]?.frame_number} |{' '}
                             Click image to open full size
                           </p>
                         </div>

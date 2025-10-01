@@ -87,6 +87,10 @@ def analyze_video(self, inspection_id):
         inspection.status = Inspection.Status.COMPLETED
         inspection.save()
 
+        # Update video status
+        video.status = 'COMPLETED'
+        video.save()
+
         # Create findings
         create_findings_from_analysis(inspection, all_findings)
         
@@ -101,6 +105,12 @@ def analyze_video(self, inspection_id):
         inspection.status = Inspection.Status.FAILED
         inspection.error_message = str(exc)
         inspection.save()
+
+        # Update video status to failed
+        video = inspection.video
+        video.status = 'FAILED'
+        video.save()
+
         logger.error(f"Inspection analysis failed: {exc}")
         raise self.retry(exc=exc, countdown=60, max_retries=3)
 

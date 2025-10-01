@@ -136,7 +136,7 @@ export interface Finding {
   frame: number | null;
   frame_image: string | null;
   frame_timestamp: number | null;
-  category: 'PPE' | 'SAFETY' | 'CLEANLINESS' | 'UNIFORM' | 'MENU_BOARD' | 'OTHER';
+  category: 'PPE' | 'SAFETY' | 'CLEANLINESS' | 'UNIFORM' | 'MENU_BOARD' | 'FOOD_SAFETY' | 'EQUIPMENT' | 'OPERATIONAL' | 'FOOD_QUALITY' | 'STAFF_BEHAVIOR' | 'OTHER';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   title: string;
   description: string;
