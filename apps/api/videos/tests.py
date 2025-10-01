@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIClient
 from rest_framework import status
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 from brands.models import Brand, Store
 from .models import Video, VideoFrame
 from .tasks import extract_video_metadata, generate_thumbnail
@@ -73,15 +73,20 @@ class VideoTasksTest(TestCase):
         self.assertEqual(metadata['width'], 1920)
         self.assertEqual(metadata['height'], 1080)
 
+    @patch('videos.tasks.os.remove')
     @patch('videos.tasks.default_storage.save')
     @patch('videos.tasks.subprocess.run')
     @patch('videos.tasks.os.makedirs')
     @patch('videos.tasks.os.path.exists')
-    @patch('builtins.open', new_callable=MagicMock)
-    def test_generate_thumbnail(self, mock_open, mock_exists, mock_makedirs, mock_subprocess, mock_storage_save):
+    @patch('builtins.open', new_callable=mock_open, read_data=b'fake_thumbnail_data')
+    def test_generate_thumbnail(self, mock_file, mock_exists, mock_makedirs, mock_subprocess, mock_storage_save, mock_remove):
+        # Mock subprocess to pretend ffmpeg succeeded
         mock_subprocess.return_value = MagicMock(returncode=0)
-        mock_exists.return_value = True  # Pretend temp file exists after ffmpeg
-        mock_open.return_value.__enter__.return_value.read.return_value = b'fake_thumbnail_data'
+
+        # Mock file existence check to return True
+        mock_exists.return_value = True
+
+        # Mock S3 save to return the expected path
         mock_storage_save.return_value = "thumbnails/video_1_thumb.jpg"
 
         result = generate_thumbnail("/fake/path/video.mp4", 1)
@@ -89,6 +94,7 @@ class VideoTasksTest(TestCase):
         self.assertEqual(result, "thumbnails/video_1_thumb.jpg")
         mock_subprocess.assert_called_once()
         mock_storage_save.assert_called_once()
+        mock_remove.assert_called_once()
 
 
 class VideoAPITest(TestCase):
