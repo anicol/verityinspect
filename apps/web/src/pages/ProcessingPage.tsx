@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { Brain, Eye, CheckCircle, Clock, Shield, Zap } from 'lucide-react';
@@ -67,7 +67,7 @@ export default function ProcessingPage() {
   );
 
   // Calculate current stage and progress based on actual data
-  const getCurrentStage = () => {
+  const getCurrentStage = useCallback(() => {
     if (!upload) return 0;
 
     // Stage 0: Uploading (upload exists but processing hasn't started)
@@ -86,13 +86,13 @@ export default function ProcessingPage() {
     if (inspection?.status === 'COMPLETED') return 4;
 
     return 1; // Default to extracting
-  };
+  }, [upload, video, inspection]);
 
-  const getProgress = () => {
+  const getProgress = useCallback(() => {
     const stage = getCurrentStage();
     // Each stage represents 25% progress
     return Math.min((stage / stages.length) * 100, 95);
-  };
+  }, [getCurrentStage, stages.length]);
 
   // Update progress and stage based on real data
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function ProcessingPage() {
     const prog = getProgress();
     setCurrentStage(stage);
     setProgress(prog);
-  }, [upload, video, inspection]);
+  }, [getCurrentStage, getProgress]);
 
   // Navigate to video detail page when completely done
   useEffect(() => {
