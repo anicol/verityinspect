@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RekognitionDetectionPermissions",
+      "Effect": "Allow",
+      "Action": [
+        "rekognition:DetectProtectiveEquipment",
+        "rekognition:DetectLabels",
+        "rekognition:DetectText",
+        "rekognition:DetectFaces",
+        "rekognition:DetectModerationLabels"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
