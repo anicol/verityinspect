@@ -53,7 +53,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </button>
             {navState.showLogo && (
               <div className="flex items-center space-x-2">
-                <img src="/logo.png" alt="PeakOps" className="w-8 h-8" />
+                <img src="/logo.png" alt="PeakOps" className="w-10 h-10 object-contain" />
                 <h1 className="text-xl font-semibold text-gray-900">PeakOps</h1>
               </div>
             )}
