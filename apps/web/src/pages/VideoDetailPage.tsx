@@ -33,6 +33,7 @@ export default function VideoDetailPage() {
   const [isReprocessing, setIsReprocessing] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
   const [debugFullscreen, setDebugFullscreen] = useState(false);
+  const [selectedFrameIndex, setSelectedFrameIndex] = useState<number | null>(null);
 
   // Fetch video details
   const { data: video, isLoading: videoLoading, error: videoError } = useQuery<Video>(
@@ -640,15 +641,18 @@ export default function VideoDetailPage() {
                         } overflow-y-auto p-2 bg-gray-800 rounded`}>
                           {video.frames.map((frame: any, index: number) => {
                             const hasFindings = inspection.findings?.some((f: any) => f.frame === frame.id);
+                            const isSelected = selectedFrameIndex === index;
                             return (
                               <div
                                 key={frame.id}
                                 className={`relative group cursor-pointer rounded overflow-hidden border-2 transition-all ${
-                                  hasFindings
+                                  isSelected
+                                    ? 'border-blue-500 shadow-lg shadow-blue-500/50 ring-2 ring-blue-400'
+                                    : hasFindings
                                     ? 'border-red-500 shadow-lg shadow-red-500/50'
                                     : 'border-gray-600 hover:border-gray-400'
                                 }`}
-                                onClick={() => window.open(frame.image, '_blank')}
+                                onClick={() => setSelectedFrameIndex(index)}
                               >
                                 <img
                                   src={frame.image}
@@ -668,8 +672,181 @@ export default function VideoDetailPage() {
                           })}
                         </div>
                         <p className="text-xs text-gray-400 mt-2">
-                          <span className="text-red-400">Red border</span> = Frame has findings
+                          <span className="text-red-400">Red border</span> = Frame has findings |{' '}
+                          <span className="text-blue-400">Blue border</span> = Selected frame
                         </p>
+                      </div>
+                    )}
+
+                    {/* Selected Frame Viewer */}
+                    {selectedFrameIndex !== null && video?.frames && inspection?.ai_analysis?.frame_analyses && (
+                      <div className="border-2 border-blue-500 rounded-lg p-4 bg-gray-800">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-blue-400">
+                            Selected Frame {selectedFrameIndex + 1} of {video.frames.length}
+                          </h4>
+                          <button
+                            onClick={() => setSelectedFrameIndex(null)}
+                            className="text-xs text-gray-400 hover:text-white transition-colors"
+                          >
+                            Clear Selection
+                          </button>
+                        </div>
+
+                        {/* Frame Image */}
+                        <div className="mb-4">
+                          <img
+                            src={video.frames[selectedFrameIndex]?.image}
+                            alt={`Frame ${selectedFrameIndex + 1}`}
+                            className="w-full max-h-96 object-contain bg-black rounded cursor-pointer"
+                            onClick={() => window.open(video.frames[selectedFrameIndex]?.image, '_blank')}
+                            title="Click to open full size in new tab"
+                          />
+                          <p className="text-xs text-gray-400 mt-2 text-center">
+                            Time: {Math.floor(video.frames[selectedFrameIndex]?.timestamp / 60)}:
+                            {String(Math.floor(video.frames[selectedFrameIndex]?.timestamp % 60)).padStart(2, '0')} |{' '}
+                            Frame #{video.frames[selectedFrameIndex]?.frame_number} |{' '}
+                            Click image to open full size
+                          </p>
+                        </div>
+
+                        {/* Frame Analysis Data */}
+                        {inspection.ai_analysis.frame_analyses[selectedFrameIndex] && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between pb-2 border-b border-gray-700">
+                              <h5 className="text-sm font-medium text-orange-400">Frame Analysis</h5>
+                              <span className="text-sm">
+                                Score: <span className="text-green-400 font-bold">
+                                  {inspection.ai_analysis.frame_analyses[selectedFrameIndex].overall_score?.toFixed(1) || 'N/A'}%
+                                </span>
+                              </span>
+                            </div>
+
+                            <div className="text-xs space-y-2 max-h-96 overflow-y-auto">
+                              {/* PPE Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].ppe_analysis && (
+                                <details open className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-blue-300 font-medium">PPE Detection</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].ppe_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Safety Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].safety_analysis?.length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-red-300 font-medium">Safety Objects</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].safety_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Cleanliness Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].cleanliness_analysis?.length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-yellow-300 font-medium">Cleanliness Objects</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].cleanliness_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Food Safety Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].food_safety_analysis?.length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-teal-300 font-medium">Food Safety Objects</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].food_safety_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Equipment Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].equipment_analysis?.length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-purple-300 font-medium">Equipment Objects</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].equipment_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Operational Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].operational_analysis?.length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-cyan-300 font-medium">Operational Objects</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].operational_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Food Quality Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].food_quality_analysis?.length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-pink-300 font-medium">Food Quality Objects</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].food_quality_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Staff Behavior Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].staff_behavior_analysis?.length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-orange-300 font-medium">Staff Behavior Objects</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].staff_behavior_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Text Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].text_analysis &&
+                               Object.keys(inspection.ai_analysis.frame_analyses[selectedFrameIndex].text_analysis).length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-green-300 font-medium">Text Detection</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].text_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* People Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].people_analysis &&
+                               Object.keys(inspection.ai_analysis.frame_analyses[selectedFrameIndex].people_analysis).length > 0 && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-indigo-300 font-medium">People Detection</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].people_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Uniform Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].uniform_analysis && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-blue-300 font-medium">Uniform Analysis</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].uniform_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {/* Menu Board Analysis */}
+                              {inspection.ai_analysis.frame_analyses[selectedFrameIndex].menu_board_analysis && (
+                                <details className="bg-gray-900 rounded p-2">
+                                  <summary className="cursor-pointer text-yellow-300 font-medium">Menu Board Analysis</summary>
+                                  <pre className="ml-2 mt-1 text-gray-300 overflow-x-auto">
+                                    {JSON.stringify(inspection.ai_analysis.frame_analyses[selectedFrameIndex].menu_board_analysis, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
