@@ -16,7 +16,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <img src="/logo.svg" alt="PeakOps" className="w-8 h-8" />
+            <img src="/logo.png" alt="PeakOps" className="w-8 h-8" />
             <span className="text-xl font-bold text-gray-900">PeakOps</span>
           </Link>
 
