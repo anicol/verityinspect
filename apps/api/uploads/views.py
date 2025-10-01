@@ -94,29 +94,97 @@ def confirm_upload(request, upload_id):
     """
     try:
         upload = Upload.objects.get(id=upload_id, created_by=request.user)
-        
+
         # Update upload status
         upload.status = Upload.Status.PROCESSING
         upload.save()
-        
+
         # Trigger Celery task for processing
         from videos.tasks import process_video_upload
         process_video_upload.delay(upload.id)
-        
-        return Response({
-            'message': 'Upload confirmed, processing started',
-            'upload_id': upload.id,
-            'status': upload.status
-        })
-        
+
+        # Return the full serialized upload object
+        serializer = UploadSerializer(upload)
+        return Response(serializer.data)
+
     except Upload.DoesNotExist:
         return Response(
-            {'error': 'Upload not found'}, 
+            {'error': 'Upload not found'},
             status=status.HTTP_404_NOT_FOUND
         )
     except Exception as e:
         return Response(
-            {'error': str(e)}, 
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reprocess_upload(request, upload_id):
+    """
+    Reprocess an upload by re-running AI analysis on existing frames.
+    This deletes old inspection results and re-runs Rekognition analysis.
+    """
+    try:
+        from videos.models import Video
+        from inspections.models import Inspection
+        from videos.tasks import apply_inspection_rules, apply_coaching_rules
+
+        upload = Upload.objects.get(id=upload_id, created_by=request.user)
+
+        if upload.status == Upload.Status.PROCESSING:
+            return Response(
+                {'error': 'Upload is already being processed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Find the associated Video
+        video = Video.objects.filter(
+            store=upload.store,
+            title=upload.original_filename
+        ).order_by('-created_at').first()
+
+        if not video:
+            return Response(
+                {'error': 'No video found for this upload. Upload may not have been processed yet.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get existing frames
+        frames = list(video.frames.all())
+
+        if not frames:
+            return Response(
+                {'error': 'No frames found for this video. Video may not have been fully processed.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Delete existing inspections for this video
+        Inspection.objects.filter(video=video).delete()
+
+        # Re-run analysis based on upload mode
+        if upload.mode == Upload.Mode.INSPECTION:
+            inspection = apply_inspection_rules(video, frames)
+        else:
+            inspection = apply_coaching_rules(video, frames)
+
+        return Response({
+            'message': 'Video analysis restarted',
+            'upload_id': upload.id,
+            'video_id': video.id,
+            'inspection_id': inspection.id if inspection else None,
+            'mode': upload.mode
+        })
+
+    except Upload.DoesNotExist:
+        return Response(
+            {'error': 'Upload not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 

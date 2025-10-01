@@ -20,6 +20,11 @@ class Inspection(models.Model):
     ppe_score = models.FloatField(null=True, blank=True)
     safety_score = models.FloatField(null=True, blank=True)
     cleanliness_score = models.FloatField(null=True, blank=True)
+    food_safety_score = models.FloatField(null=True, blank=True)
+    equipment_score = models.FloatField(null=True, blank=True)
+    operational_score = models.FloatField(null=True, blank=True)
+    food_quality_score = models.FloatField(null=True, blank=True)
+    staff_behavior_score = models.FloatField(null=True, blank=True)
     uniform_score = models.FloatField(null=True, blank=True)
     menu_board_score = models.FloatField(null=True, blank=True)
     ai_analysis = models.JSONField(default=dict, help_text="Raw AI analysis results")
@@ -43,6 +48,11 @@ class Finding(models.Model):
         CLEANLINESS = 'CLEANLINESS', 'Cleanliness'
         UNIFORM = 'UNIFORM', 'Uniform Compliance'
         MENU_BOARD = 'MENU_BOARD', 'Menu Board'
+        FOOD_SAFETY = 'FOOD_SAFETY', 'Food Safety & Hygiene'
+        EQUIPMENT = 'EQUIPMENT', 'Equipment & Maintenance'
+        OPERATIONAL = 'OPERATIONAL', 'Operational Compliance'
+        FOOD_QUALITY = 'FOOD_QUALITY', 'Food Quality & Presentation'
+        STAFF_BEHAVIOR = 'STAFF_BEHAVIOR', 'Staff Behavior'
         OTHER = 'OTHER', 'Other'
 
     class Severity(models.TextChoices):
@@ -57,10 +67,20 @@ class Finding(models.Model):
     severity = models.CharField(max_length=20, choices=Severity.choices)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    confidence = models.FloatField(help_text="AI confidence score 0-1")
+    confidence = models.FloatField(help_text="AI confidence score 0-1 (max when consolidated)")
     bounding_box = models.JSONField(null=True, blank=True, help_text="Object detection coordinates")
     recommended_action = models.TextField(blank=True)
     is_resolved = models.BooleanField(default=False)
+
+    # Consolidation fields - track findings across multiple frames
+    affected_frame_count = models.IntegerField(default=1, help_text="Number of frames where this issue was detected")
+    first_timestamp = models.FloatField(null=True, blank=True, help_text="Timestamp (seconds) when issue first appeared")
+    last_timestamp = models.FloatField(null=True, blank=True, help_text="Timestamp (seconds) when issue last appeared")
+    average_confidence = models.FloatField(null=True, blank=True, help_text="Average AI confidence across all occurrences")
+
+    # AI-generated action metadata
+    estimated_minutes = models.IntegerField(null=True, blank=True, help_text="AI-estimated time in minutes to address this issue")
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

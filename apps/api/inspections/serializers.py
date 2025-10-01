@@ -3,12 +3,24 @@ from .models import Inspection, Finding, ActionItem
 
 
 class FindingSerializer(serializers.ModelSerializer):
-    frame_image = serializers.CharField(source='frame.image.url', read_only=True)
-    frame_timestamp = serializers.FloatField(source='frame.timestamp', read_only=True)
+    frame_image = serializers.SerializerMethodField()
+    frame_timestamp = serializers.SerializerMethodField()
 
     class Meta:
         model = Finding
         fields = '__all__'
+
+    def get_frame_image(self, obj):
+        """Safely get frame image URL"""
+        if obj.frame and obj.frame.image:
+            return obj.frame.image.url
+        return None
+
+    def get_frame_timestamp(self, obj):
+        """Safely get frame timestamp"""
+        if obj.frame:
+            return obj.frame.timestamp
+        return None
 
 
 class ActionItemSerializer(serializers.ModelSerializer):

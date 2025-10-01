@@ -82,36 +82,104 @@ class VideoFrameListView(generics.ListAPIView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def reprocess_video(request, pk):
+    """
+    Reprocess a video by re-running AI analysis on existing frames.
+    This deletes old inspection results and re-runs Rekognition analysis.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
     try:
+        from inspections.models import Inspection
+        from uploads.models import Upload
+        from videos.tasks import apply_inspection_rules, apply_coaching_rules
+
         user = request.user
+
+        # Get the video
         if user.role == 'ADMIN':
             video = Video.objects.get(pk=pk)
         else:
             video = Video.objects.get(pk=pk, store=user.store)
-        
-        if video.status == Video.Status.PROCESSING:
-            return Response(
-                {'error': 'Video is already being processed'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Clear previous frames
-        video.frames.all().delete()
-        
-        # Restart processing
-        from .tasks import process_video
-        process_video.delay(video.id)
-        
-        video.status = Video.Status.UPLOADED
-        video.error_message = ''
-        video.save()
-        
-        return Response({'message': 'Video reprocessing started'})
-        
+
+        logger.info(f"Reprocessing video {pk}: {video.title}, status={video.status}")
+
+        # Get existing frames
+        frames = list(video.frames.all())
+        logger.info(f"Found {len(frames)} frames for video {pk}")
+
+        if not frames:
+            # No frames - need full reprocessing (extract frames + analyze)
+            from videos.tasks import reprocess_video_from_s3
+
+            logger.info(f"No frames found for video {pk}, triggering full reprocess")
+
+            # Find Upload record to verify video exists in S3
+            upload = Upload.objects.filter(
+                store=video.store,
+                original_filename=video.title
+            ).order_by('-created_at').first()
+
+            if not upload:
+                return Response(
+                    {
+                        'error': 'Cannot reprocess: No Upload record found for this video. '
+                                 'This video may need to be re-uploaded.'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Trigger full reprocessing
+            reprocess_video_from_s3.delay(video.id)
+
+            return Response({
+                'message': 'Full video reprocessing started (extracting frames and analyzing)',
+                'video_id': video.id,
+                'processing_type': 'full'
+            })
+
+        # Has frames - just re-run analysis on existing frames
+        logger.info(f"Reanalyzing {len(frames)} existing frames for video {pk}")
+
+        # Find the Upload to determine mode (inspection vs coaching)
+        upload = Upload.objects.filter(
+            store=video.store,
+            original_filename=video.title
+        ).order_by('-created_at').first()
+
+        # Determine mode
+        if upload:
+            mode = upload.mode
+        else:
+            # Default to inspection if no Upload found (legacy videos)
+            mode = 'inspection'
+
+        # Delete existing inspections for this video
+        Inspection.objects.filter(video=video).delete()
+
+        # Re-run analysis
+        if mode == 'inspection':
+            inspection = apply_inspection_rules(video, frames)
+        else:
+            inspection = apply_coaching_rules(video, frames)
+
+        return Response({
+            'message': 'Video analysis restarted (using existing frames)',
+            'video_id': video.id,
+            'inspection_id': inspection.id if inspection else None,
+            'mode': mode,
+            'processing_type': 'reanalysis'
+        })
+
     except Video.DoesNotExist:
         return Response(
-            {'error': 'Video not found'}, 
+            {'error': 'Video not found'},
             status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': f'Reprocessing failed: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 

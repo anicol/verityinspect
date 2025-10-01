@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from 'react-query';
-import { videosAPI, storesAPI } from '@/services/api';
+import { uploadsAPI, storesAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { Upload, X, CheckCircle } from 'lucide-react';
 import TrialStatusBanner from '@/components/TrialStatusBanner';
@@ -18,11 +18,25 @@ export default function VideoUploadPage() {
 
   const { data: stores } = useQuery('stores', storesAPI.getStores);
 
-  const uploadMutation = useMutation(videosAPI.uploadVideo, {
-    onSuccess: (video) => {
-      navigate(`/videos/${video.id}`);
-    },
-  });
+  const uploadMutation = useMutation(
+    ({ file, storeId }: { file: File; storeId: number }) =>
+      uploadsAPI.uploadVideo(file, storeId, 'inspection'),
+    {
+      onSuccess: (upload) => {
+        console.log('Upload successful:', upload);
+        // Navigate to processing page with upload ID
+        if (upload && upload.id) {
+          navigate(`/processing/${upload.id}`);
+        } else {
+          console.error('Upload response missing ID:', upload);
+          navigate('/videos');
+        }
+      },
+      onError: (error) => {
+        console.error('Upload error:', error);
+      }
+    }
+  );
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -64,18 +78,14 @@ export default function VideoUploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!file || !title || !storeId) {
+
+    if (!file || !title || typeof storeId !== 'number') {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('store', storeId.toString());
-
-    uploadMutation.mutate(formData);
+    // Note: Title and description are not yet supported in Upload model
+    // They can be added later or stored in Video metadata
+    uploadMutation.mutate({ file, storeId });
   };
 
   const removeFile = () => {

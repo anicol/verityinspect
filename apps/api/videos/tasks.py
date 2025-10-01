@@ -5,6 +5,8 @@ import logging
 import boto3
 from celery import shared_task
 from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from PIL import Image
 from .models import Video, VideoFrame
 from uploads.models import Upload
@@ -36,10 +38,21 @@ def process_video_upload(self, upload_id):
             title=upload.original_filename,
             description=f"Upload from {upload.store.name}",
             store=upload.store,
+            uploaded_by=upload.created_by,
             status=Video.Status.PROCESSING,
             duration=upload.duration_s,
             metadata=metadata
         )
+
+        # Set the file field to point to S3 key for signed URL generation
+        video.file.name = upload.s3_key
+        video.save()
+
+        # Generate thumbnail
+        thumbnail_path = generate_thumbnail(video_path, video.id)
+        if thumbnail_path:
+            video.thumbnail = thumbnail_path
+            video.save()
 
         # Extract frames for analysis
         frames = extract_frames_from_s3_video(video, video_path)
@@ -79,39 +92,75 @@ def process_video_upload(self, upload_id):
 
 
 @shared_task(bind=True)
-def process_video(self, video_id):
+def reprocess_video_from_s3(self, video_id):
+    """
+    Fully reprocess a video that failed initial processing.
+    Downloads from S3, extracts frames, and runs AI analysis.
+    """
     try:
         video = Video.objects.get(id=video_id)
         video.status = Video.Status.PROCESSING
+        video.error_message = ''
         video.save()
 
-        video_path = video.file.path
+        # Find the Upload record to get S3 key
+        upload = Upload.objects.filter(
+            store=video.store,
+            original_filename=video.title
+        ).order_by('-created_at').first()
 
-        # Extract video metadata
+        if not upload:
+            raise Exception("No Upload record found - cannot locate video in S3")
+
+        # Download from S3
+        video_path = download_from_s3(upload.s3_key)
+
+        # Extract metadata
         metadata = extract_video_metadata(video_path)
-        video.duration = float(metadata.get('duration', 0))
+        video.duration = metadata.get('duration', 0)
         video.metadata = metadata
         video.save()
 
         # Generate thumbnail
         thumbnail_path = generate_thumbnail(video_path, video.id)
         if thumbnail_path:
-            video.thumbnail.name = thumbnail_path
+            video.thumbnail = thumbnail_path
             video.save()
 
-        # Extract frames at regular intervals
-        extract_frames(video)
+        # Delete old frames if any
+        video.frames.all().delete()
+
+        # Extract frames
+        frames = extract_frames_from_s3_video(video, video_path)
+
+        # Apply AI analysis
+        if upload.mode == Upload.Mode.INSPECTION:
+            apply_inspection_rules(video, frames)
+        else:
+            apply_coaching_rules(video, frames)
+
+        # Clean up temp file
+        if os.path.exists(video_path):
+            os.remove(video_path)
 
         video.status = Video.Status.COMPLETED
         video.save()
 
-        return f"Video {video_id} processed successfully"
+        return f"Video {video_id} fully reprocessed with {len(frames)} frames"
 
     except Exception as exc:
         video = Video.objects.get(id=video_id)
         video.status = Video.Status.FAILED
         video.error_message = str(exc)
         video.save()
+
+        # Clean up temp file on error
+        try:
+            if 'video_path' in locals() and os.path.exists(video_path):
+                os.remove(video_path)
+        except Exception:
+            pass
+
         raise self.retry(exc=exc, countdown=60, max_retries=3)
 
 
@@ -141,22 +190,40 @@ def extract_video_metadata(video_path):
 
 
 def generate_thumbnail(video_path, video_id):
+    """Generate thumbnail from video and upload to S3"""
     try:
-        thumbnail_dir = os.path.join(settings.MEDIA_ROOT, 'thumbnails')
-        os.makedirs(thumbnail_dir, exist_ok=True)
+        # Create temp file for thumbnail
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+        os.makedirs(temp_dir, exist_ok=True)
 
         thumbnail_filename = f"video_{video_id}_thumb.jpg"
-        thumbnail_path = os.path.join(thumbnail_dir, thumbnail_filename)
+        temp_thumbnail_path = os.path.join(temp_dir, thumbnail_filename)
 
+        # Extract thumbnail at 1 second mark
         cmd = [
             'ffmpeg', '-i', video_path, '-ss', '00:00:01',
-            '-vframes', '1', '-y', thumbnail_path
+            '-vframes', '1', '-y', temp_thumbnail_path
         ]
         subprocess.run(cmd, check=True, capture_output=True)
 
-        # Return relative path for Django
-        return f"thumbnails/{thumbnail_filename}"
-    except Exception:
+        if not os.path.exists(temp_thumbnail_path):
+            return None
+
+        # Read thumbnail file
+        with open(temp_thumbnail_path, 'rb') as f:
+            thumbnail_data = f.read()
+
+        # Save to S3 using Django's storage backend
+        s3_path = f"thumbnails/{thumbnail_filename}"
+        saved_path = default_storage.save(s3_path, ContentFile(thumbnail_data))
+
+        # Clean up temp file
+        os.remove(temp_thumbnail_path)
+
+        return saved_path
+
+    except Exception as e:
+        logger.error(f"Error generating thumbnail: {e}")
         return None
 
 
@@ -192,10 +259,11 @@ def download_from_s3(s3_key):
 
 
 def extract_frames_from_s3_video(video, video_path):
-    """Extract frames from downloaded S3 video"""
+    """Extract frames from downloaded S3 video and upload to S3"""
     try:
-        frames_dir = os.path.join(settings.MEDIA_ROOT, 'frames')
-        os.makedirs(frames_dir, exist_ok=True)
+        # Create temp directory for frames
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+        os.makedirs(temp_dir, exist_ok=True)
 
         duration = video.duration or 0
         if duration <= 0:
@@ -215,40 +283,52 @@ def extract_frames_from_s3_video(video, video_path):
         else:
             # Long video: distribute frames evenly
             interval = duration / max_frames
-        
+
         timestamp = 0
         while timestamp < duration and frame_count < max_frames:
             frame_filename = f"video_{video.id}_frame_{frame_count}.jpg"
-            frame_path = os.path.join(frames_dir, frame_filename)
-            
+            temp_frame_path = os.path.join(temp_dir, frame_filename)
+
             cmd = [
                 'ffmpeg', '-i', video_path, '-ss', str(timestamp),
-                '-vframes', '1', '-y', frame_path
+                '-vframes', '1', '-y', temp_frame_path
             ]
-            
+
             result = subprocess.run(cmd, capture_output=True)
-            if result.returncode == 0 and os.path.exists(frame_path):
+            if result.returncode == 0 and os.path.exists(temp_frame_path):
                 # Get image dimensions
-                with Image.open(frame_path) as img:
+                with Image.open(temp_frame_path) as img:
                     width, height = img.size
-                
+
+                # Read frame data
+                with open(temp_frame_path, 'rb') as f:
+                    frame_data = f.read()
+
+                # Upload to S3 using Django's storage backend
+                s3_path = f"frames/{frame_filename}"
+                saved_path = default_storage.save(s3_path, ContentFile(frame_data))
+
+                # Create VideoFrame record with S3 path
                 frame = VideoFrame.objects.create(
                     video=video,
                     timestamp=timestamp,
                     frame_number=frame_count,
-                    image=f"frames/{frame_filename}",
+                    image=saved_path,
                     width=width,
                     height=height
                 )
                 frames.append(frame)
                 frame_count += 1
-            
+
+                # Clean up temp file
+                os.remove(temp_frame_path)
+
             timestamp += interval
-            
+
         return frames
-        
+
     except Exception as e:
-        print(f"Error extracting frames: {e}")
+        logger.error(f"Error extracting frames: {e}")
         return []
 
 
@@ -402,46 +482,3 @@ def generate_coaching_suggestions(rule, detection_data):
         ]
     
     return suggestions
-
-
-def extract_frames(video, interval_seconds=10):
-    try:
-        video_path = video.file.path
-        frames_dir = os.path.join(settings.MEDIA_ROOT, 'frames')
-        os.makedirs(frames_dir, exist_ok=True)
-        
-        duration = video.duration or 0
-        if duration <= 0:
-            return
-        
-        frame_count = 0
-        for timestamp in range(0, int(duration), interval_seconds):
-            frame_filename = f"video_{video.id}_frame_{frame_count}.jpg"
-            frame_path = os.path.join(frames_dir, frame_filename)
-            
-            cmd = [
-                'ffmpeg', '-i', video_path, '-ss', str(timestamp),
-                '-vframes', '1', '-y', frame_path
-            ]
-            
-            result = subprocess.run(cmd, capture_output=True)
-            if result.returncode == 0 and os.path.exists(frame_path):
-                # Get image dimensions
-                with Image.open(frame_path) as img:
-                    width, height = img.size
-                
-                VideoFrame.objects.create(
-                    video=video,
-                    timestamp=timestamp,
-                    frame_number=frame_count,
-                    image=f"frames/{frame_filename}",
-                    width=width,
-                    height=height
-                )
-                frame_count += 1
-            
-            if frame_count >= 20:  # Limit to 20 frames max
-                break
-                
-    except Exception as e:
-        print(f"Error extracting frames: {e}")

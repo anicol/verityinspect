@@ -144,30 +144,9 @@ class OCRService:
         return issues
 
     def _mock_text_extraction(self):
-        """Mock text extraction for development"""
+        """Return empty results when OCR detection is disabled"""
         return {
-            'text_detections': [
-                {
-                    'text': 'MENU BOARD',
-                    'confidence': 0.95,
-                    'bounding_box': {'x1': 100, 'y1': 50, 'x2': 300, 'y2': 100}
-                },
-                {
-                    'text': 'Burger - $12.99',
-                    'confidence': 0.92,
-                    'bounding_box': {'x1': 50, 'y1': 150, 'x2': 250, 'y2': 180}
-                },
-                {
-                    'text': 'Contains: Gluten, Dairy',
-                    'confidence': 0.88,
-                    'bounding_box': {'x1': 50, 'y1': 200, 'x2': 300, 'y2': 230}
-                },
-                {
-                    'text': '520 Calories',
-                    'confidence': 0.85,
-                    'bounding_box': {'x1': 50, 'y1': 250, 'x2': 180, 'y2': 280}
-                }
-            ],
-            'total_text_blocks': 4,
-            'all_text': 'MENU BOARD Burger - $12.99 Contains: Gluten, Dairy 520 Calories'
+            'text_detections': [],
+            'total_text_blocks': 0,
+            'all_text': ''
         }
