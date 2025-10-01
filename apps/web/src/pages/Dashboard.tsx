@@ -32,11 +32,9 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       trackDashboardView();
-      trackPageView('Dashboard', {
-        user_role: user.role,
-      });
     }
-  }, [user, trackDashboardView, trackPageView]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const { data: stats } = useQuery('inspection-stats', inspectionsAPI.getStats);
   

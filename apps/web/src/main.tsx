@@ -18,8 +18,9 @@ const queryClient = new QueryClient({
 // Initialize PostHog
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY
 const posthogHost = import.meta.env.VITE_POSTHOG_HOST
+const posthogEnabled = import.meta.env.VITE_POSTHOG_ENABLED === 'true'
 
-if (posthogKey) {
+if (posthogKey && posthogEnabled) {
   posthog.init(posthogKey, {
     api_host: posthogHost || 'https://us.i.posthog.com',
     person_profiles: 'identified_only',
