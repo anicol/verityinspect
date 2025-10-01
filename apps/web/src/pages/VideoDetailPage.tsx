@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { 
-  ArrowLeft, 
-  Play, 
-  Clock, 
-  MapPin, 
-  AlertTriangle, 
-  CheckCircle, 
-  XCircle, 
-  Shield, 
-  Download, 
+import {
+  ArrowLeft,
+  Play,
+  Clock,
+  MapPin,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Shield,
+  Download,
   Share2,
   Loader2,
   AlertCircle,
   RefreshCw,
-  Bug
+  Bug,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { videosAPI } from '@/services/api';
@@ -30,6 +32,7 @@ export default function VideoDetailPage() {
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
   const [isReprocessing, setIsReprocessing] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
+  const [debugFullscreen, setDebugFullscreen] = useState(false);
 
   // Fetch video details
   const { data: video, isLoading: videoLoading, error: videoError } = useQuery<Video>(
@@ -596,11 +599,28 @@ export default function VideoDetailPage() {
 
             {/* Debug Panel */}
             {debugMode && (
-              <div className="bg-gray-900 rounded-2xl border border-gray-700 p-6 text-white">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Bug className="w-5 h-5 mr-2 text-orange-400" />
-                  AI Analysis Debug Data
-                </h3>
+              <div className={`bg-gray-900 rounded-2xl border border-gray-700 p-6 text-white ${
+                debugFullscreen
+                  ? 'fixed inset-0 z-50 rounded-none overflow-auto'
+                  : ''
+              }`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold flex items-center">
+                    <Bug className="w-5 h-5 mr-2 text-orange-400" />
+                    AI Analysis Debug Data
+                  </h3>
+                  <button
+                    onClick={() => setDebugFullscreen(!debugFullscreen)}
+                    className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                    title={debugFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                  >
+                    {debugFullscreen ? (
+                      <Minimize2 className="w-5 h-5 text-gray-400" />
+                    ) : (
+                      <Maximize2 className="w-5 h-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
 
                 {inspection?.ai_analysis ? (
                   <div className="space-y-6">
@@ -613,7 +633,11 @@ export default function VideoDetailPage() {
                             Click frame to view full size
                           </span>
                         </h4>
-                        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-96 overflow-y-auto p-2 bg-gray-800 rounded">
+                        <div className={`grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 ${
+                          debugFullscreen ? 'xl:grid-cols-12 2xl:grid-cols-16' : ''
+                        } gap-2 ${
+                          debugFullscreen ? 'max-h-[60vh]' : 'max-h-96'
+                        } overflow-y-auto p-2 bg-gray-800 rounded`}>
                           {video.frames.map((frame: any, index: number) => {
                             const hasFindings = inspection.findings?.some((f: any) => f.frame === frame.id);
                             return (
@@ -662,7 +686,9 @@ export default function VideoDetailPage() {
                       <h4 className="font-medium text-orange-400 mb-2">
                         Frame Analyses ({inspection.ai_analysis.frame_analyses?.length || 0} frames)
                       </h4>
-                      <div className="max-h-96 overflow-y-auto space-y-2">
+                      <div className={`${
+                        debugFullscreen ? 'max-h-[70vh]' : 'max-h-96'
+                      } overflow-y-auto space-y-2`}>
                         {inspection.ai_analysis.frame_analyses?.map((frameAnalysis: any, index: number) => (
                           <details key={index} className="bg-gray-800 rounded p-3">
                             <summary className="cursor-pointer text-sm font-medium mb-2">
