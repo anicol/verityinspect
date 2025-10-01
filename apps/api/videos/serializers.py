@@ -32,7 +32,26 @@ class VideoSerializer(serializers.ModelSerializer):
         # Set file size
         if video.file:
             video.file_size = video.file.size
-            video.save()
+        
+        # Capture guided_shots data from request and store in metadata
+        request = self.context.get('request')
+        if request and hasattr(request, 'data'):
+            guided_shots_data = request.data.get('guided_shots')
+            if guided_shots_data:
+                try:
+                    import json
+                    guided_shots = json.loads(guided_shots_data) if isinstance(guided_shots_data, str) else guided_shots_data
+                    if not video.metadata:
+                        video.metadata = {}
+                    video.metadata['guided_shots_completed'] = guided_shots
+                    video.metadata['guided_mode'] = True
+                except (json.JSONDecodeError, ValueError):
+                    # If parsing fails, just set a flag that guided mode was used
+                    if not video.metadata:
+                        video.metadata = {}
+                    video.metadata['guided_mode'] = True
+        
+        video.save()
         
         # Trigger async processing
         from .tasks import process_video
