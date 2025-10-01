@@ -18,6 +18,11 @@ import {
   FileText,
   Target,
   Camera,
+  UtensilsCrossed,
+  Wrench,
+  Activity,
+  ChefHat,
+  Users,
 } from 'lucide-react';
 import type { Inspection, Finding, ActionItem } from '@/types';
 
@@ -27,6 +32,11 @@ const categoryIcons = {
   CLEANLINESS: Sparkles,
   UNIFORM: Shirt,
   MENU_BOARD: Menu,
+  FOOD_SAFETY: UtensilsCrossed,
+  EQUIPMENT: Wrench,
+  OPERATIONAL: Activity,
+  FOOD_QUALITY: ChefHat,
+  STAFF_BEHAVIOR: Users,
   OTHER: FileText,
 };
 

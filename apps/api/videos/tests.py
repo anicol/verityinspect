@@ -73,15 +73,22 @@ class VideoTasksTest(TestCase):
         self.assertEqual(metadata['width'], 1920)
         self.assertEqual(metadata['height'], 1080)
 
+    @patch('videos.tasks.default_storage.save')
     @patch('videos.tasks.subprocess.run')
     @patch('videos.tasks.os.makedirs')
-    def test_generate_thumbnail(self, mock_makedirs, mock_subprocess):
+    @patch('videos.tasks.os.path.exists')
+    @patch('builtins.open', new_callable=MagicMock)
+    def test_generate_thumbnail(self, mock_open, mock_exists, mock_makedirs, mock_subprocess, mock_storage_save):
         mock_subprocess.return_value = MagicMock(returncode=0)
-        
+        mock_exists.return_value = True  # Pretend temp file exists after ffmpeg
+        mock_open.return_value.__enter__.return_value.read.return_value = b'fake_thumbnail_data'
+        mock_storage_save.return_value = "thumbnails/video_1_thumb.jpg"
+
         result = generate_thumbnail("/fake/path/video.mp4", 1)
-        
+
         self.assertEqual(result, "thumbnails/video_1_thumb.jpg")
         mock_subprocess.assert_called_once()
+        mock_storage_save.assert_called_once()
 
 
 class VideoAPITest(TestCase):
@@ -115,30 +122,30 @@ class VideoAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
-    @patch('videos.tasks.process_video.delay')
     @patch('django.core.files.storage.default_storage.save')
     @patch('django.core.files.storage.default_storage.size')
-    def test_upload_video(self, mock_storage_size, mock_storage_save, mock_process_video):
+    def test_upload_video(self, mock_storage_size, mock_storage_save):
         mock_storage_save.return_value = 'videos/test_video.mp4'
         mock_storage_size.return_value = 1024  # Mock file size in bytes
-        
+
         video_file = SimpleUploadedFile(
             "test_video.mp4",
             b"fake video content",
             content_type="video/mp4"
         )
-        
+
         data = {
             'title': 'Test Upload',
             'description': 'Test description',
             'store': self.store.id,
             'file': video_file
         }
-        
+
         response = self.client.post('/api/videos/', data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['title'], 'Test Upload')
-        mock_process_video.assert_called_once()
+        # NOTE: process_video task is no longer triggered by this endpoint
+        # Use Upload API (/api/uploads/) for actual video processing
 
     def test_get_video_detail(self):
         video = Video.objects.create(

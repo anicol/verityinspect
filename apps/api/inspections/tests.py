@@ -400,6 +400,20 @@ class RekognitionIntegrationTest(TestCase):
                 'Instances': [{'Confidence': 92.3, 'BoundingBox': {}}]
             }]
         }
+        mock_client.detect_text.return_value = {
+            'TextDetections': [{
+                'DetectedText': 'Menu Item',
+                'Type': 'LINE',
+                'Confidence': 95.0,
+                'Geometry': {'BoundingBox': {}}
+            }]
+        }
+        mock_client.detect_faces.return_value = {
+            'FaceDetails': [{
+                'Confidence': 99.0,
+                'BoundingBox': {}
+            }]
+        }
 
         # Mock other services
         mock_yolo_objects.return_value = {'safety_objects': [], 'cleanliness_objects': []}
