@@ -99,9 +99,7 @@ const Login = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="flex items-center justify-center space-x-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">P</span>
-            </div>
+            <img src="/logo.svg" alt="PeakOps" className="w-10 h-10" />
             <span className="text-2xl font-bold text-gray-900">PeakOps</span>
           </Link>
         </div>
