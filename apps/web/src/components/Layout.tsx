@@ -52,10 +52,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Menu className="w-6 h-6" />
             </button>
             {navState.showLogo && (
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-10 h-10">
-                  <img src="/logo.png" alt="PeakOps" className="w-full h-full object-contain" />
-                </div>
+              <div className="flex items-center space-x-2">
+                <img src="/logo.png" alt="PeakOps" className="w-8 h-8" />
                 <h1 className="text-xl font-semibold text-gray-900">PeakOps</h1>
               </div>
             )}

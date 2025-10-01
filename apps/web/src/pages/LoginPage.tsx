@@ -98,10 +98,8 @@ const Login = () => {
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link to="/" className="flex items-center justify-center space-x-3">
-            <div className="flex items-center justify-center w-12 h-12">
-              <img src="/logo.png" alt="PeakOps" className="w-full h-full object-contain" />
-            </div>
+          <Link to="/" className="flex items-center justify-center space-x-2">
+            <img src="/logo.png" alt="PeakOps" className="w-10 h-10" />
             <span className="text-2xl font-bold text-gray-900">PeakOps</span>
           </Link>
         </div>
