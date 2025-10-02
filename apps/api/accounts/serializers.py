@@ -14,14 +14,18 @@ class UserSerializer(serializers.ModelSerializer):
     trial_status = serializers.SerializerMethodField()
     hours_since_signup = serializers.ReadOnlyField()
     total_inspections = serializers.ReadOnlyField()
+    store_name = serializers.CharField(source='store.name', read_only=True)
+    brand_name = serializers.CharField(source='store.brand.name', read_only=True)
+    brand_id = serializers.IntegerField(source='store.brand.id', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'full_name', 
-                 'role', 'store', 'phone', 'is_active', 'is_trial_user', 'trial_status', 
-                 'hours_since_signup', 'total_inspections', 'has_seen_demo', 'demo_completed_at', 'created_at')
-        read_only_fields = ('id', 'created_at', 'is_trial_user', 'trial_status', 'hours_since_signup', 'total_inspections')
-    
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'full_name',
+                 'role', 'store', 'store_name', 'brand_name', 'brand_id', 'phone',
+                 'is_active', 'is_trial_user', 'trial_status', 'hours_since_signup',
+                 'total_inspections', 'has_seen_demo', 'demo_completed_at', 'created_at', 'last_active_at')
+        read_only_fields = ('id', 'created_at', 'is_trial_user', 'trial_status', 'hours_since_signup', 'total_inspections', 'last_active_at')
+
     def get_trial_status(self, obj):
         """Get trial status information"""
         return obj.get_trial_status()

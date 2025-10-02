@@ -7,6 +7,7 @@ from . import views
 router = DefaultRouter()
 router.register(r'nudges', views.NudgeViewSet, basename='nudge')
 router.register(r'behavior', views.BehaviorTrackingViewSet, basename='behavior')
+router.register(r'admin/users', views.AdminUserViewSet, basename='admin-users')
 
 urlpatterns = [
     path('login/', views.login_view, name='login'),

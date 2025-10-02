@@ -23,8 +23,11 @@ export interface User {
   first_name: string;
   last_name: string;
   full_name: string;
-  role: 'ADMIN' | 'GM' | 'INSPECTOR' | 'TRIAL_ADMIN';
+  role: 'ADMIN' | 'OWNER' | 'GM' | 'INSPECTOR' | 'TRIAL_ADMIN';
   store: number | null;
+  store_name?: string;
+  brand_name?: string;
+  brand_id?: number;
   phone: string;
   is_active: boolean;
   is_trial_user?: boolean;
@@ -35,6 +38,7 @@ export interface User {
   hours_since_signup?: number;
   total_inspections?: number;
   created_at: string;
+  last_active_at?: string;
 }
 
 export interface Brand {

@@ -1,11 +1,12 @@
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status, viewsets, filters
 from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import login
 from django.utils import timezone
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from .models import User, SmartNudge, UserBehaviorEvent
 from .serializers import (
@@ -16,8 +17,32 @@ from .nudge_engine import BehaviorTracker, NudgeEngine
 
 
 class UserListCreateView(generics.ListCreateAPIView):
-    queryset = User.objects.all()
-    
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['role', 'is_active', 'store']
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+    ordering_fields = ['username', 'email', 'created_at']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        """Filter users based on role - ADMIN sees all, OWNER/GM/TRIAL_ADMIN see only their brand"""
+        user = self.request.user
+
+        # ADMIN sees all users
+        if user.role == User.Role.ADMIN:
+            return User.objects.all()
+
+        # OWNER, GM, and TRIAL_ADMIN see users in their brand
+        if user.role in [User.Role.OWNER, User.Role.GM, User.Role.TRIAL_ADMIN]:
+            if user.store and user.store.brand:
+                # Get all users whose store belongs to the same brand
+                return User.objects.filter(store__brand=user.store.brand)
+            return User.objects.none()
+
+        # Other roles cannot list users
+        return User.objects.none()
+
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return UserCreateSerializer
@@ -333,11 +358,37 @@ def get_active_nudges(request):
     ).filter(
         Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now())
     )[:3]  # Limit to 3 nudges
-    
+
     # Mark as shown if they were pending
     for nudge in nudges:
         if nudge.status == SmartNudge.Status.PENDING:
             nudge.mark_shown()
-    
+
     serializer = SmartNudgeSerializer(nudges, many=True)
     return Response(serializer.data)
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """Admin-only viewset for managing all users across tenants"""
+    queryset = User.objects.all().select_related('store', 'store__brand')
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['role', 'is_active', 'is_trial_user', 'store__brand']
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+    ordering_fields = ['username', 'email', 'created_at', 'last_active_at']
+    ordering = ['-created_at']
+
+    @action(detail=False, methods=['post'])
+    def bulk_activate(self, request):
+        """Bulk activate users"""
+        user_ids = request.data.get('user_ids', [])
+        User.objects.filter(id__in=user_ids).update(is_active=True)
+        return Response({'status': 'activated', 'count': len(user_ids)})
+
+    @action(detail=False, methods=['post'])
+    def bulk_deactivate(self, request):
+        """Bulk deactivate users"""
+        user_ids = request.data.get('user_ids', [])
+        User.objects.filter(id__in=user_ids).update(is_active=False)
+        return Response({'status': 'deactivated', 'count': len(user_ids)})

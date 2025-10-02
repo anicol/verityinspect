@@ -13,6 +13,7 @@ import ActionItemsPage from '@/pages/ActionItemsPage';
 import BrandsPage from '@/pages/BrandsPage';
 import StoresPage from '@/pages/StoresPage';
 import UsersPage from '@/pages/UsersPage';
+import AdminUsersPage from '@/pages/AdminUsersPage';
 import MobileCapturePage from '@/pages/MobileCapturePage';
 import InspectorQueuePage from '@/pages/InspectorQueuePage';
 import ProcessingPage from '@/pages/ProcessingPage';
@@ -57,6 +58,7 @@ function AppRoutes() {
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/inspector-queue" element={<InspectorQueuePage />} />
                 <Route path="/admin/queue" element={<AdminQueuePage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
                 <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

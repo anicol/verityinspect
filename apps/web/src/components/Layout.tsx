@@ -10,6 +10,7 @@ import {
   Building2,
   Store,
   Users,
+  Shield,
   Menu,
   LogOut,
   User,
@@ -17,16 +18,33 @@ import {
   Settings,
 } from 'lucide-react';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard, key: 'dashboard' },
-  { name: 'Videos', href: '/videos', icon: Video, key: 'videos' },
-  { name: 'Inspections', href: '/inspections', icon: FileSearch, key: 'inspections' },
-  { name: 'Inspector Queue', href: '/inspector-queue', icon: CheckSquare, key: 'inspectorQueue' },
-  { name: 'Action Items', href: '/actions', icon: CheckSquare, key: 'actionItems' },
-  { name: 'Brands', href: '/brands', icon: Building2, key: 'brands' },
-  { name: 'Stores', href: '/stores', icon: Store, key: 'stores' },
-  { name: 'Users', href: '/users', icon: Users, key: 'users' },
-  { name: 'Queue Monitor', href: '/admin/queue', icon: Settings, key: 'adminQueue', adminOnly: true },
+const navigationSections = [
+  {
+    title: null, // Main section (no title)
+    items: [
+      { name: 'Dashboard', href: '/', icon: LayoutDashboard, key: 'dashboard' },
+      { name: 'Videos', href: '/videos', icon: Video, key: 'videos' },
+      { name: 'Inspections', href: '/inspections', icon: FileSearch, key: 'inspections' },
+      { name: 'Inspector Queue', href: '/inspector-queue', icon: CheckSquare, key: 'inspectorQueue' },
+      { name: 'Action Items', href: '/actions', icon: CheckSquare, key: 'actionItems' },
+    ]
+  },
+  {
+    title: 'Management',
+    items: [
+      { name: 'Brands', href: '/brands', icon: Building2, key: 'brands' },
+      { name: 'Stores', href: '/stores', icon: Store, key: 'stores' },
+      { name: 'Users', href: '/users', icon: Users, key: 'users' },
+    ]
+  },
+  {
+    title: 'Administration',
+    adminOnly: true,
+    items: [
+      { name: 'Queue Monitor', href: '/admin/queue', icon: Settings, key: 'adminQueue' },
+      { name: 'User Management', href: '/admin/users', icon: Shield, key: 'adminUsers' },
+    ]
+  }
 ] as const;
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -36,14 +54,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navState = useProgressiveNavigation();
 
-  const filteredNavigation = navigation.filter((item) => {
-    const state = navState[item.key as keyof typeof navState];
-    // Filter out admin-only items for non-admin users
-    if ('adminOnly' in item && item.adminOnly && user?.role !== 'ADMIN') {
-      return false;
-    }
-    return state !== 'hidden';
-  });
+  const filteredSections = navigationSections
+    .map(section => {
+      // Filter out admin-only sections for non-admin users
+      if ('adminOnly' in section && section.adminOnly && user?.role !== 'ADMIN') {
+        return null;
+      }
+
+      const filteredItems = section.items.filter(item => {
+        const state = navState[item.key as keyof typeof navState];
+        return state !== 'hidden';
+      });
+
+      if (filteredItems.length === 0) return null;
+
+      return {
+        ...section,
+        items: filteredItems
+      };
+    })
+    .filter(Boolean);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -110,44 +140,55 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="fixed inset-0 z-40 lg:hidden">
             <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
             <div className="relative flex flex-col w-64 max-w-xs bg-white shadow-xl h-full">
-              <nav className="flex-1 px-3 py-4 space-y-1">
-                {filteredNavigation.map((item) => {
-                  const state = navState[item.key as keyof typeof navState];
-                  const isDisabled = state === 'visible-disabled';
-                  const isActive = location.pathname === item.href;
-                  
-                  const baseClasses = 'group flex items-center px-3 py-2 text-sm font-medium rounded-md';
-                  const stateClasses = isDisabled
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : isActive
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
-                  
-                  if (isDisabled) {
-                    return (
-                      <div
-                        key={item.name}
-                        className={`${baseClasses} ${stateClasses}`}
-                        title="Complete previous steps to unlock"
-                      >
-                        <item.icon className="w-4 h-4 mr-3" />
-                        {item.name}
-                      </div>
-                    );
-                  }
-                  
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`${baseClasses} ${stateClasses}`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <item.icon className="w-4 h-4 mr-3" />
-                      {item.name}
-                    </Link>
-                  );
-                })}
+              <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+                {filteredSections.map((section, sectionIdx) => (
+                  <div key={sectionIdx}>
+                    {section.title && (
+                      <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        {section.title}
+                      </h3>
+                    )}
+                    <div className="space-y-1">
+                      {section.items.map((item) => {
+                        const state = navState[item.key as keyof typeof navState];
+                        const isDisabled = state === 'visible-disabled';
+                        const isActive = location.pathname === item.href;
+
+                        const baseClasses = 'group flex items-center px-3 py-2 text-sm font-medium rounded-md';
+                        const stateClasses = isDisabled
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : isActive
+                            ? 'bg-gray-100 text-gray-900'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
+
+                        if (isDisabled) {
+                          return (
+                            <div
+                              key={item.name}
+                              className={`${baseClasses} ${stateClasses}`}
+                              title="Complete previous steps to unlock"
+                            >
+                              <item.icon className="w-4 h-4 mr-3" />
+                              {item.name}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <Link
+                            key={item.name}
+                            to={item.href}
+                            className={`${baseClasses} ${stateClasses}`}
+                            onClick={() => setSidebarOpen(false)}
+                          >
+                            <item.icon className="w-4 h-4 mr-3" />
+                            {item.name}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </nav>
             </div>
           </div>
@@ -156,43 +197,54 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Desktop sidebar */}
         <aside className="hidden lg:flex lg:flex-shrink-0">
           <div className="flex flex-col w-64 bg-white border-r border-gray-200">
-            <nav className="flex-1 px-3 py-4 space-y-1">
-              {filteredNavigation.map((item) => {
-                const state = navState[item.key as keyof typeof navState];
-                const isDisabled = state === 'visible-disabled';
-                const isActive = location.pathname === item.href;
-                
-                const baseClasses = 'group flex items-center px-3 py-2 text-sm font-medium rounded-md';
-                const stateClasses = isDisabled
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : isActive
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
-                
-                if (isDisabled) {
-                  return (
-                    <div
-                      key={item.name}
-                      className={`${baseClasses} ${stateClasses}`}
-                      title="Complete previous steps to unlock"
-                    >
-                      <item.icon className="w-4 h-4 mr-3" />
-                      {item.name}
-                    </div>
-                  );
-                }
-                
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`${baseClasses} ${stateClasses}`}
-                  >
-                    <item.icon className="w-4 h-4 mr-3" />
-                    {item.name}
-                  </Link>
-                );
-              })}
+            <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+              {filteredSections.map((section, sectionIdx) => (
+                <div key={sectionIdx}>
+                  {section.title && (
+                    <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      {section.title}
+                    </h3>
+                  )}
+                  <div className="space-y-1">
+                    {section.items.map((item) => {
+                      const state = navState[item.key as keyof typeof navState];
+                      const isDisabled = state === 'visible-disabled';
+                      const isActive = location.pathname === item.href;
+
+                      const baseClasses = 'group flex items-center px-3 py-2 text-sm font-medium rounded-md';
+                      const stateClasses = isDisabled
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : isActive
+                          ? 'bg-gray-100 text-gray-900'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
+
+                      if (isDisabled) {
+                        return (
+                          <div
+                            key={item.name}
+                            className={`${baseClasses} ${stateClasses}`}
+                            title="Complete previous steps to unlock"
+                          >
+                            <item.icon className="w-4 h-4 mr-3" />
+                            {item.name}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className={`${baseClasses} ${stateClasses}`}
+                        >
+                          <item.icon className="w-4 h-4 mr-3" />
+                          {item.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </nav>
           </div>
         </aside>

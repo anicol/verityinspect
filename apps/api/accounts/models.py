@@ -7,6 +7,7 @@ from datetime import timedelta
 class User(AbstractUser):
     class Role(models.TextChoices):
         ADMIN = 'ADMIN', 'Admin'
+        OWNER = 'OWNER', 'Owner'
         GM = 'GM', 'General Manager'
         INSPECTOR = 'INSPECTOR', 'Inspector'
         TRIAL_ADMIN = 'TRIAL_ADMIN', 'Trial Admin'
