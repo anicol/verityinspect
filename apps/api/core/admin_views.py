@@ -72,9 +72,19 @@ def admin_queue_status(request):
 
         recent_inspections = Inspection.objects.filter(
             status__in=['PENDING', 'PROCESSING']
-        ).order_by('-created_at')[:20].values(
-            'id', 'video_id', 'video_title', 'status', 'mode', 'created_at', 'updated_at'
-        )
+        ).select_related('video').order_by('-created_at')[:20]
+
+        inspection_data = []
+        for inspection in recent_inspections:
+            inspection_data.append({
+                'id': inspection.id,
+                'video_id': inspection.video_id,
+                'video_title': inspection.video.title if inspection.video else 'N/A',
+                'status': inspection.status,
+                'mode': inspection.mode,
+                'created_at': inspection.created_at.isoformat(),
+                'updated_at': inspection.updated_at.isoformat(),
+            })
 
         # Get stats
         stats = {
@@ -94,7 +104,7 @@ def admin_queue_status(request):
             'reserved_tasks': all_reserved,
             'recent_uploads': list(recent_uploads),
             'recent_videos': list(recent_videos),
-            'recent_inspections': list(recent_inspections),
+            'recent_inspections': inspection_data,
             'timestamp': timezone.now().isoformat(),
         })
 
