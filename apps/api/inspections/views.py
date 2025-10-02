@@ -191,3 +191,128 @@ def inspection_stats(request):
         'critical_findings': critical_findings,
         'open_action_items': open_actions,
     })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def approve_finding(request, finding_id):
+    """Manager approves an AI-detected finding as correct"""
+    try:
+        finding = Finding.objects.get(id=finding_id)
+
+        # Check permission - user must own the inspection or be admin
+        if request.user.role != 'ADMIN' and finding.inspection.store != request.user.store:
+            return Response(
+                {'error': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Approve the finding
+        finding.is_approved = True
+        finding.is_rejected = False  # Clear rejection if previously rejected
+        finding.approved_by = request.user
+        finding.approved_at = timezone.now()
+        finding.rejected_by = None
+        finding.rejected_at = None
+        finding.rejection_reason = ''
+        finding.save()
+
+        return Response(FindingSerializer(finding).data, status=status.HTTP_200_OK)
+
+    except Finding.DoesNotExist:
+        return Response(
+            {'error': 'Finding not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reject_finding(request, finding_id):
+    """Manager rejects an AI-detected finding as false positive"""
+    try:
+        finding = Finding.objects.get(id=finding_id)
+
+        # Check permission
+        if request.user.role != 'ADMIN' and finding.inspection.store != request.user.store:
+            return Response(
+                {'error': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Reject the finding
+        finding.is_rejected = True
+        finding.is_approved = False  # Clear approval if previously approved
+        finding.rejection_reason = request.data.get('reason', '')
+        finding.rejected_by = request.user
+        finding.rejected_at = timezone.now()
+        finding.approved_by = None
+        finding.approved_at = None
+        finding.save()
+
+        return Response(FindingSerializer(finding).data, status=status.HTTP_200_OK)
+
+    except Finding.DoesNotExist:
+        return Response(
+            {'error': 'Finding not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_manual_finding(request, inspection_id):
+    """Manager manually adds a violation they noticed that AI missed"""
+    try:
+        inspection = Inspection.objects.get(id=inspection_id)
+
+        # Check permission
+        if request.user.role != 'ADMIN' and inspection.store != request.user.store:
+            return Response(
+                {'error': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Create manual finding
+        finding = Finding.objects.create(
+            inspection=inspection,
+            frame_id=request.data.get('frame_id'),  # Optional
+            category=request.data['category'],
+            severity=request.data['severity'],
+            title=request.data['title'],
+            description=request.data['description'],
+            confidence=1.0,  # Manual findings have 100% confidence
+            is_manual=True,
+            is_approved=True,  # Auto-approve manual findings
+            created_by=request.user,
+            approved_by=request.user,
+            approved_at=timezone.now()
+        )
+
+        return Response(FindingSerializer(finding).data, status=status.HTTP_201_CREATED)
+
+    except Inspection.DoesNotExist:
+        return Response(
+            {'error': 'Inspection not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except KeyError as e:
+        return Response(
+            {'error': f'Missing required field: {str(e)}'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
