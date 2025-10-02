@@ -12,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
   Search,
+  Briefcase,
 } from 'lucide-react';
 import { brandsAPI } from '@/services/api';
 import type { Brand } from '@/types';
@@ -107,7 +108,7 @@ export default function BrandsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -127,6 +128,18 @@ export default function BrandsPage() {
               </p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Enterprise Brands</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {brands?.filter(b => b.has_enterprise_access).length || 0}
+              </p>
+            </div>
+            <Briefcase className="h-8 w-8 text-blue-600" />
           </div>
         </div>
 
@@ -165,6 +178,9 @@ export default function BrandsPage() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stores
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Plan
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -208,6 +224,22 @@ export default function BrandsPage() {
                         <StoreIcon className="h-4 w-4 mr-1 text-gray-400" />
                         {brand.stores_count}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        brand.has_enterprise_access
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {brand.has_enterprise_access ? (
+                          <>
+                            <Briefcase className="h-3 w-3 mr-1" />
+                            Enterprise
+                          </>
+                        ) : (
+                          'Standard'
+                        )}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
