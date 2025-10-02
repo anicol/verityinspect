@@ -560,7 +560,7 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
           {mutation.error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-700 text-sm">
-                {String((mutation.error as any)?.response?.data?.detail || 'Failed to save user')}
+                {((mutation.error as any)?.response?.data?.detail || 'Failed to save user') as string}
               </p>
             </div>
           )}

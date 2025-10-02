@@ -669,7 +669,7 @@ function StoreFormModal({ store, brands, currentUser, onClose }: StoreFormModalP
           {mutation.error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-700 text-sm">
-                {String((mutation.error as any)?.response?.data?.detail || 'Failed to save store')}
+                {((mutation.error as any)?.response?.data?.detail || 'Failed to save store') as string}
               </p>
             </div>
           )}
