@@ -7,6 +7,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # Health endpoints at root
+    path('api/', include('core.urls')),  # Admin endpoints under /api/
     path('api/auth/', include('accounts.urls')),
     path('api/brands/', include('brands.urls')),
     path('api/inspections/', include('inspections.urls')),

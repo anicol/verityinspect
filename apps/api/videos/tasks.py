@@ -338,12 +338,18 @@ def apply_inspection_rules(video, frames):
         from inspections.models import Inspection
         from inspections.tasks import analyze_video
 
-        # Create inspection record
+        # Create inspection record with metadata from video
         inspection = Inspection.objects.create(
-            video=video,
+            title=video.title,
+            created_by=video.uploaded_by,
+            store=video.store,
             mode=Inspection.Mode.INSPECTION,
             status=Inspection.Status.PENDING
         )
+
+        # Link video to inspection
+        video.inspection = inspection
+        video.save(update_fields=['inspection'])
 
         analyze_video.delay(inspection.id)
 
@@ -363,9 +369,11 @@ def apply_coaching_rules(video, frames):
         from datetime import timedelta
         from django.conf import settings
 
-        # Create inspection record
+        # Create inspection record with metadata from video
         inspection = Inspection.objects.create(
-            video=video,
+            title=video.title,
+            created_by=video.uploaded_by,
+            store=video.store,
             mode=Inspection.Mode.COACHING,
             status=Inspection.Status.PENDING
         )
@@ -373,6 +381,10 @@ def apply_coaching_rules(video, frames):
         retention_days = getattr(settings, 'COACHING_MODE_RETENTION_DAYS', 7)
         inspection.expires_at = timezone.now() + timedelta(days=retention_days)
         inspection.save()
+
+        # Link video to inspection
+        video.inspection = inspection
+        video.save(update_fields=['inspection'])
 
         analyze_video.delay(inspection.id)
 

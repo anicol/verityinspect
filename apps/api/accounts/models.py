@@ -7,6 +7,7 @@ from datetime import timedelta
 class User(AbstractUser):
     class Role(models.TextChoices):
         ADMIN = 'ADMIN', 'Admin'
+        OWNER = 'OWNER', 'Owner'
         GM = 'GM', 'General Manager'
         INSPECTOR = 'INSPECTOR', 'Inspector'
         TRIAL_ADMIN = 'TRIAL_ADMIN', 'Trial Admin'
@@ -155,11 +156,12 @@ class User(AbstractUser):
     def total_inspections(self):
         """Total real inspections (not demo) completed by user"""
         from inspections.models import Inspection
-        # Only count non-demo inspections 
+        # Only count non-demo inspections
         return Inspection.objects.filter(
-            video__uploaded_by=self,
-            status='COMPLETED',
-            video__metadata__demo_mode__isnull=True
+            created_by=self,
+            status='COMPLETED'
+        ).exclude(
+            videos__is_demo=True
         ).count()
     
     def should_show_demo(self):

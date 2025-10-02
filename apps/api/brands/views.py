@@ -22,13 +22,27 @@ class BrandDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class StoreListCreateView(generics.ListCreateAPIView):
-    queryset = Store.objects.filter(is_active=True)
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['brand', 'state', 'city']
     search_fields = ['name', 'code', 'address']
     ordering_fields = ['name', 'code', 'created_at']
     ordering = ['brand__name', 'name']
+
+    def get_queryset(self):
+        """Filter stores based on role - ADMIN sees all, others see only their brand"""
+        from accounts.models import User
+        user = self.request.user
+
+        # ADMIN sees all stores
+        if user.role == User.Role.ADMIN:
+            return Store.objects.filter(is_active=True)
+
+        # Other roles see stores in their brand
+        if user.store and user.store.brand:
+            return Store.objects.filter(brand=user.store.brand, is_active=True)
+
+        return Store.objects.none()
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -37,6 +51,20 @@ class StoreListCreateView(generics.ListCreateAPIView):
 
 
 class StoreDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Store.objects.all()
     serializer_class = StoreSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter stores based on role - ADMIN sees all, others see only their brand"""
+        from accounts.models import User
+        user = self.request.user
+
+        # ADMIN sees all stores
+        if user.role == User.Role.ADMIN:
+            return Store.objects.all()
+
+        # Other roles see stores in their brand
+        if user.store and user.store.brand:
+            return Store.objects.filter(brand=user.store.brand)
+
+        return Store.objects.none()

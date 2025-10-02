@@ -20,9 +20,13 @@ def analyze_video(self, inspection_id):
         inspection.status = Inspection.Status.PROCESSING
         inspection.save()
 
+        # Get first video (backward compatible property - returns inspection.videos.first())
         video = inspection.video
+        if not video:
+            raise Exception("No video found for this inspection")
+
         analyzer = VideoAnalyzer()
-        
+
         # Get video frames
         frames = video.frames.all().order_by('timestamp')
         if not frames.exists():
@@ -106,10 +110,11 @@ def analyze_video(self, inspection_id):
         inspection.error_message = str(exc)
         inspection.save()
 
-        # Update video status to failed
+        # Update video status to failed (if exists)
         video = inspection.video
-        video.status = 'FAILED'
-        video.save()
+        if video:
+            video.status = 'FAILED'
+            video.save()
 
         logger.error(f"Inspection analysis failed: {exc}")
         raise self.retry(exc=exc, countdown=60, max_retries=3)

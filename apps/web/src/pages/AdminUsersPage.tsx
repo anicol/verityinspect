@@ -12,53 +12,99 @@ import {
   AlertCircle,
   Search,
   Mail,
-  Phone,
   Building2,
   Shield,
   UserCheck,
+  Crown,
 } from 'lucide-react';
-import { usersAPI, storesAPI } from '@/services/api';
-import type { User, Store } from '@/types';
-import { useAuth } from '@/hooks/useAuth';
+import { API_CONFIG } from '@/config/api';
+import { brandsAPI, storesAPI } from '@/services/api';
+import type { User, Brand, Store } from '@/types';
 
-export default function UsersPage() {
-  const { user: currentUser } = useAuth();
+// Admin-specific API endpoint
+const adminUsersAPI = {
+  getUsers: async (): Promise<User[]> => {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/admin/users/`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        ...API_CONFIG.headers,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch users');
+    const data = await response.json();
+    // Handle both paginated and non-paginated responses
+    return data.results || data;
+  },
+  
+  createUser: async (userData: Partial<User>): Promise<User> => {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/admin/users/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        ...API_CONFIG.headers,
+      },
+      body: JSON.stringify(userData),
+    });
+    if (!response.ok) throw new Error('Failed to create user');
+    return response.json();
+  },
+  
+  updateUser: async (id: number, userData: Partial<User>): Promise<User> => {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/admin/users/${id}/`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        ...API_CONFIG.headers,
+      },
+      body: JSON.stringify(userData),
+    });
+    if (!response.ok) throw new Error('Failed to update user');
+    return response.json();
+  },
+  
+  deleteUser: async (id: number): Promise<void> => {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/admin/users/${id}/`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        ...API_CONFIG.headers,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to delete user');
+  },
+};
+
+export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [brandFilter, setBrandFilter] = useState<string>('all');
   const queryClient = useQueryClient();
 
   const { data: users, isLoading, error } = useQuery<User[]>(
-    'users',
-    usersAPI.getUsers
+    'admin-users',
+    adminUsersAPI.getUsers
   );
 
-  const { data: stores } = useQuery<Store[]>(
-    'stores',
-    storesAPI.getStores
-  );
+  const { data: brands } = useQuery<Brand[]>('brands', brandsAPI.getBrands);
+  const { data: stores } = useQuery<Store[]>('stores', storesAPI.getStores);
 
   const deleteMutation = useMutation(
-    (id: number) => usersAPI.deleteUser(id),
+    (id: number) => adminUsersAPI.deleteUser(id),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries('users');
+        queryClient.invalidateQueries('admin-users');
       },
     }
   );
 
   const handleDelete = async (user: User) => {
-    if (user.role === 'ADMIN') {
-      alert('Cannot delete admin users');
-      return;
-    }
-
     if (window.confirm(`Are you sure you want to delete ${user.username}?`)) {
       try {
         await deleteMutation.mutateAsync(user.id);
       } catch (error: any) {
-        alert(error.response?.data?.detail || 'Failed to delete user');
+        alert(error.message || 'Failed to delete user');
       }
     }
   };
@@ -68,11 +114,13 @@ export default function UsersPage() {
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.brand_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const matchesBrand = brandFilter === 'all' || user.brand_id?.toString() === brandFilter;
 
-    return matchesSearch && matchesRole;
+    return matchesSearch && matchesRole && matchesBrand;
   }) || [];
 
   const getRoleBadgeColor = (role: string) => {
@@ -81,31 +129,15 @@ export default function UsersPage() {
         return 'bg-purple-100 text-purple-800';
       case 'OWNER':
         return 'bg-blue-100 text-blue-800';
-      case 'TRIAL_ADMIN':
-        return 'bg-indigo-100 text-indigo-800';
       case 'GM':
         return 'bg-green-100 text-green-800';
       case 'INSPECTOR':
         return 'bg-gray-100 text-gray-800';
+      case 'TRIAL_ADMIN':
+        return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
-
-  const canManageRole = (role: string) => {
-    // OWNER can manage OWNER, GM, INSPECTOR
-    // TRIAL_ADMIN can manage TRIAL_ADMIN, GM, INSPECTOR (same as OWNER but for trial)
-    // GM can manage GM, INSPECTOR
-    if (currentUser?.role === 'OWNER') {
-      return ['OWNER', 'GM', 'INSPECTOR'].includes(role);
-    }
-    if (currentUser?.role === 'TRIAL_ADMIN') {
-      return ['TRIAL_ADMIN', 'GM', 'INSPECTOR'].includes(role);
-    }
-    if (currentUser?.role === 'GM') {
-      return ['GM', 'INSPECTOR'].includes(role);
-    }
-    return false;
   };
 
   if (isLoading) {
@@ -131,11 +163,10 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-          <p className="text-gray-600 mt-1">Manage team members and permissions</p>
+          <h1 className="text-2xl font-bold text-gray-900">All Users (Admin)</h1>
+          <p className="text-gray-600 mt-1">Manage users across all tenants</p>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
@@ -146,7 +177,6 @@ export default function UsersPage() {
         </button>
       </div>
 
-      {/* Search and Filters */}
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -159,20 +189,30 @@ export default function UsersPage() {
           />
         </div>
         <select
+          value={brandFilter}
+          onChange={(e) => setBrandFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="all">All Brands</option>
+          {brands?.map(brand => (
+            <option key={brand.id} value={brand.id}>{brand.name}</option>
+          ))}
+        </select>
+        <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         >
           <option value="all">All Roles</option>
-          {currentUser?.role === 'OWNER' && <option value="OWNER">Owner</option>}
-          {currentUser?.role === 'TRIAL_ADMIN' && <option value="TRIAL_ADMIN">Trial Admin</option>}
+          <option value="ADMIN">Admin</option>
+          <option value="OWNER">Owner</option>
           <option value="GM">General Manager</option>
           <option value="INSPECTOR">Inspector</option>
+          <option value="TRIAL_ADMIN">Trial Admin</option>
         </select>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -186,7 +226,7 @@ export default function UsersPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Active Users</p>
+              <p className="text-sm text-gray-600">Active</p>
               <p className="text-2xl font-bold text-green-600">
                 {users?.filter(u => u.is_active).length || 0}
               </p>
@@ -198,29 +238,40 @@ export default function UsersPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Inspectors</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {users?.filter(u => u.role === 'INSPECTOR').length || 0}
+              <p className="text-sm text-gray-600">Trial Users</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {users?.filter(u => u.is_trial_user).length || 0}
               </p>
             </div>
-            <UserCheck className="h-8 w-8 text-purple-600" />
+            <UserCheck className="h-8 w-8 text-yellow-600" />
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Managers</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {users?.filter(u => u.role === 'GM' || u.role === 'OWNER').length || 0}
+              <p className="text-sm text-gray-600">Owners</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {users?.filter(u => u.role === 'OWNER').length || 0}
               </p>
             </div>
-            <Shield className="h-8 w-8 text-blue-600" />
+            <Crown className="h-8 w-8 text-blue-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Admins</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {users?.filter(u => u.role === 'ADMIN').length || 0}
+              </p>
+            </div>
+            <Shield className="h-8 w-8 text-purple-600" />
           </div>
         </div>
       </div>
 
-      {/* Users List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {filteredUsers.length === 0 ? (
           <div className="text-center py-12">
@@ -234,24 +285,13 @@ export default function UsersPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Store
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Store</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -273,21 +313,27 @@ export default function UsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-900">
                         <Building2 className="h-4 w-4 mr-1 text-gray-400" />
-                        {user.store_name || '-'}
+                        {user.brand_name || '-'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
+                        {user.role}
+                      </span>
+                      {user.is_trial_user && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                          Trial
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {user.store_name || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.is_active
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                        user.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                       }`}>
                         {user.is_active ? (
                           <>
@@ -306,23 +352,19 @@ export default function UsersPage() {
                       {format(new Date(user.created_at), 'MMM d, yyyy')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {canManageRole(user.role) && user.role !== 'ADMIN' && (
-                        <>
-                          <button
-                            onClick={() => setEditingUser(user)}
-                            className="text-indigo-600 hover:text-indigo-900 mr-4"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user)}
-                            className="text-red-600 hover:text-red-900"
-                            disabled={deleteMutation.isLoading}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={() => setEditingUser(user)}
+                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user)}
+                        className="text-red-600 hover:text-red-900"
+                        disabled={deleteMutation.isLoading}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -332,12 +374,11 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* Create/Edit Modal */}
       {(isCreateModalOpen || editingUser) && (
-        <UserFormModal
+        <AdminUserFormModal
           user={editingUser}
+          brands={brands || []}
           stores={stores || []}
-          currentUserRole={currentUser?.role || 'INSPECTOR'}
           onClose={() => {
             setIsCreateModalOpen(false);
             setEditingUser(null);
@@ -348,14 +389,14 @@ export default function UsersPage() {
   );
 }
 
-interface UserFormModalProps {
+interface AdminUserFormModalProps {
   user: User | null;
+  brands: Brand[];
   stores: Store[];
-  currentUserRole: string;
   onClose: () => void;
 }
 
-function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModalProps) {
+function AdminUserFormModal({ user, brands, stores, onClose }: AdminUserFormModalProps) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     username: user?.username || '',
@@ -374,13 +415,13 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
     (data: any) => {
       if (user) {
         const { password, password_confirm, ...updateData } = data;
-        return usersAPI.updateUser(user.id, updateData);
+        return adminUsersAPI.updateUser(user.id, updateData);
       }
-      return usersAPI.createUser(data);
+      return adminUsersAPI.createUser(data);
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries('users');
+        queryClient.invalidateQueries('admin-users');
         onClose();
       },
     }
@@ -388,20 +429,12 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!user && formData.password !== formData.password_confirm) {
       alert('Passwords do not match');
       return;
     }
-
     mutation.mutate(formData);
   };
-
-  const availableRoles = currentUserRole === 'OWNER'
-    ? ['OWNER', 'GM', 'INSPECTOR']
-    : currentUserRole === 'TRIAL_ADMIN'
-    ? ['TRIAL_ADMIN', 'GM', 'INSPECTOR']
-    : ['GM', 'INSPECTOR'];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -413,9 +446,7 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                First Name *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
               <input
                 type="text"
                 required
@@ -426,9 +457,7 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Last Name *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
               <input
                 type="text"
                 required
@@ -440,9 +469,7 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Username *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Username *</label>
             <input
               type="text"
               required
@@ -453,9 +480,7 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
             <input
               type="email"
               required
@@ -468,9 +493,7 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
           {!user && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
                 <input
                   type="password"
                   required
@@ -482,9 +505,7 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password *</label>
                 <input
                   type="password"
                   required
@@ -499,25 +520,23 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Role *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
               <select
                 required
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'OWNER' | 'GM' | 'INSPECTOR' | 'TRIAL_ADMIN' })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
-                {availableRoles.map(role => (
-                  <option key={role} value={role}>{role}</option>
-                ))}
+                <option value="ADMIN">Admin</option>
+                <option value="OWNER">Owner</option>
+                <option value="GM">General Manager</option>
+                <option value="INSPECTOR">Inspector</option>
+                <option value="TRIAL_ADMIN">Trial Admin</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Store *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Store *</label>
               <select
                 required
                 value={formData.store || ''}
@@ -526,16 +545,16 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
               >
                 <option value="">Select Store</option>
                 {stores.map(store => (
-                  <option key={store.id} value={store.id}>{store.name}</option>
+                  <option key={store.id} value={store.id}>
+                    {store.name} ({store.brand_name})
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
             <input
               type="tel"
               value={formData.phone}
@@ -560,7 +579,7 @@ function UserFormModal({ user, stores, currentUserRole, onClose }: UserFormModal
           {mutation.error ? (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-700 text-sm">
-                {String((mutation.error as any)?.response?.data?.detail || 'Failed to save user')}
+                {String((mutation.error as any)?.message || 'Failed to save user')}
               </p>
             </div>
           ) : null}

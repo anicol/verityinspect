@@ -13,6 +13,16 @@ class Video(models.Model):
         WATCH = 'WATCH', 'Watch Stage'
         TRY = 'TRY', 'Try Stage'
 
+    # Inspection relationship - videos now belong to inspections (future: many videos per inspection)
+    inspection = models.ForeignKey(
+        'inspections.Inspection',
+        on_delete=models.CASCADE,
+        related_name='videos',
+        null=True,
+        blank=True,
+        help_text="Inspection this video belongs to (null for videos pending inspection creation)"
+    )
+
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     store = models.ForeignKey('brands.Store', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
@@ -45,6 +55,14 @@ class Video(models.Model):
     class Meta:
         db_table = 'videos'
         ordering = ['-created_at']
+        constraints = [
+            # Enforce 1:1 relationship for now (remove later for multi-video support)
+            models.UniqueConstraint(
+                fields=['inspection'],
+                condition=models.Q(inspection__isnull=False),
+                name='one_video_per_inspection_v1'
+            )
+        ]
 
     def __str__(self):
         return f"{self.title} - {self.store.name}"
