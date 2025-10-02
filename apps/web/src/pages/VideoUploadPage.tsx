@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from 'react-query';
-import { uploadsAPI, storesAPI } from '@/services/api';
+import { uploadsAPI, storesAPI, brandsAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
-import { Upload, X, CheckCircle } from 'lucide-react';
+import { Upload, X, CheckCircle, Target, Users } from 'lucide-react';
 import TrialStatusBanner from '@/components/TrialStatusBanner';
 import UploadLimitGuard from '@/components/UploadLimitGuard';
 
@@ -14,9 +14,11 @@ export default function VideoUploadPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [storeId, setStoreId] = useState<number | ''>('');
+  const [mode, setMode] = useState<'coaching' | 'enterprise'>('coaching');
   const [dragActive, setDragActive] = useState(false);
 
   const { data: stores } = useQuery('stores', storesAPI.getStores);
+  const { data: brands } = useQuery('brands', brandsAPI.getBrands);
 
   // Auto-select store if user only has access to one store
   const availableStores = user?.role === 'ADMIN'
@@ -28,9 +30,14 @@ export default function VideoUploadPage() {
     setStoreId(availableStores[0].id);
   }
 
+  // Check if user's brand has enterprise access
+  const selectedStore = availableStores?.find(s => s.id === storeId);
+  const userBrand = brands?.find(b => b.id === selectedStore?.brand);
+  const hasEnterpriseAccess = userBrand?.has_enterprise_access || false;
+
   const uploadMutation = useMutation(
-    ({ file, storeId }: { file: File; storeId: number }) =>
-      uploadsAPI.uploadVideo(file, storeId, 'enterprise'),
+    ({ file, storeId, mode }: { file: File; storeId: number; mode: 'coaching' | 'enterprise' }) =>
+      uploadsAPI.uploadVideo(file, storeId, mode),
     {
       onSuccess: (upload) => {
         console.log('Upload successful:', upload);
@@ -95,7 +102,7 @@ export default function VideoUploadPage() {
 
     // Note: Title and description are not yet supported in Upload model
     // They can be added later or stored in Video metadata
-    uploadMutation.mutate({ file, storeId });
+    uploadMutation.mutate({ file, storeId, mode });
   };
 
   const removeFile = () => {
@@ -256,6 +263,80 @@ export default function VideoUploadPage() {
             <div className="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50 px-3 py-2 text-sm text-gray-900">
               {availableStores[0].brand_name} - {availableStores[0].name}
             </div>
+          </div>
+        )}
+
+        {/* Mode Selector - Show only if enterprise access is available */}
+        {storeId && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Review Type
+            </label>
+            {hasEnterpriseAccess ? (
+              <div className="space-y-3">
+                <label
+                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    mode === 'coaching'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="coaching"
+                    checked={mode === 'coaching'}
+                    onChange={(e) => setMode(e.target.value as 'coaching')}
+                    className="mt-1 mr-3"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <Target className="w-5 h-5 mr-2 text-green-600" />
+                      <span className="font-medium text-gray-900">Self-Review (Coaching)</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Review your own video, approve AI findings, and track your improvement over time
+                    </p>
+                  </div>
+                </label>
+
+                <label
+                  className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    mode === 'enterprise'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="enterprise"
+                    checked={mode === 'enterprise'}
+                    onChange={(e) => setMode(e.target.value as 'enterprise')}
+                    className="mt-1 mr-3"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <Users className="w-5 h-5 mr-2 text-blue-600" />
+                      <span className="font-medium text-gray-900">Inspector Review (Enterprise)</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Professional inspector analyzes video and provides detailed report
+                    </p>
+                  </div>
+                </label>
+              </div>
+            ) : (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center">
+                  <Target className="w-5 h-5 mr-2 text-green-600" />
+                  <span className="font-medium text-gray-900">Self-Review (Coaching)</span>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  Review your own video and track your improvement over time
+                </p>
+              </div>
+            )}
           </div>
         )}
 

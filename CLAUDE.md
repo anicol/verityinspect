@@ -1,1 +1,2 @@
 - Always create a new branch for code changes
+- always run frontend or backend tests after updating code on either side when pushing to a branch
