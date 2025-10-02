@@ -188,11 +188,12 @@ export default function Dashboard() {
                 <div className="flex-1 min-w-0">
                   <Link
                     to={`/videos/${video.id}`}
-                    className="text-sm font-medium text-gray-900 hover:text-indigo-600"
+                    className="text-sm font-medium text-gray-900 hover:text-indigo-600 truncate block"
+                    title={video.title}
                   >
                     {video.title}
                   </Link>
-                  <p className="text-xs text-gray-500">{video.store_name}</p>
+                  <p className="text-xs text-gray-500 truncate" title={video.store_name}>{video.store_name}</p>
                 </div>
                 <div className="flex-shrink-0">
                   <span
@@ -239,11 +240,12 @@ export default function Dashboard() {
                 <div className="flex-1 min-w-0">
                   <Link
                     to={`/inspections/${inspection.id}`}
-                    className="text-sm font-medium text-gray-900 hover:text-indigo-600"
+                    className="text-sm font-medium text-gray-900 hover:text-indigo-600 truncate block"
+                    title={inspection.video_title}
                   >
                     {inspection.video_title}
                   </Link>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 truncate" title={`${inspection.store_name} • ${inspection.mode}`}>
                     {inspection.store_name} • {inspection.mode}
                   </p>
                 </div>
