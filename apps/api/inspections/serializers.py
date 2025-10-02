@@ -35,8 +35,8 @@ class ActionItemSerializer(serializers.ModelSerializer):
 class InspectionSerializer(serializers.ModelSerializer):
     findings = FindingSerializer(many=True, read_only=True)
     action_items = ActionItemSerializer(many=True, read_only=True)
-    video_title = serializers.CharField(source='video.title', read_only=True)
-    store_name = serializers.CharField(source='video.store.name', read_only=True)
+    video_title = serializers.CharField(source='title', read_only=True)
+    store_name = serializers.CharField(source='store.name', read_only=True)
     findings_count = serializers.SerializerMethodField()
     critical_findings_count = serializers.SerializerMethodField()
     open_actions_count = serializers.SerializerMethodField()
@@ -56,8 +56,8 @@ class InspectionSerializer(serializers.ModelSerializer):
 
 
 class InspectionListSerializer(serializers.ModelSerializer):
-    video_title = serializers.CharField(source='video.title', read_only=True)
-    store_name = serializers.CharField(source='video.store.name', read_only=True)
+    video_title = serializers.CharField(source='title', read_only=True)
+    store_name = serializers.CharField(source='store.name', read_only=True)
     findings_count = serializers.SerializerMethodField()
     critical_findings_count = serializers.SerializerMethodField()
 

@@ -16,7 +16,7 @@ class InspectionListView(generics.ListAPIView):
     serializer_class = InspectionListSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['mode', 'status', 'video__store']
+    filterset_fields = ['mode', 'status', 'store']
     ordering_fields = ['created_at', 'overall_score']
     ordering = ['-created_at']
 
@@ -25,7 +25,7 @@ class InspectionListView(generics.ListAPIView):
         if user.role == 'ADMIN':
             return Inspection.objects.all()
         else:
-            return Inspection.objects.filter(video__store=user.store)
+            return Inspection.objects.filter(store=user.store)
 
 
 class InspectionDetailView(generics.RetrieveUpdateAPIView):
@@ -37,7 +37,7 @@ class InspectionDetailView(generics.RetrieveUpdateAPIView):
         if user.role == 'ADMIN':
             return Inspection.objects.all()
         else:
-            return Inspection.objects.filter(video__store=user.store)
+            return Inspection.objects.filter(store=user.store)
 
 
 class FindingListView(generics.ListAPIView):
@@ -51,12 +51,12 @@ class FindingListView(generics.ListAPIView):
     def get_queryset(self):
         inspection_id = self.kwargs['inspection_id']
         user = self.request.user
-        
+
         if user.role == 'ADMIN':
             inspection_filter = {'inspection_id': inspection_id}
         else:
-            inspection_filter = {'inspection_id': inspection_id, 'inspection__video__store': user.store}
-        
+            inspection_filter = {'inspection_id': inspection_id, 'inspection__store': user.store}
+
         return Finding.objects.filter(**inspection_filter)
 
 
@@ -73,7 +73,7 @@ class ActionItemListCreateView(generics.ListCreateAPIView):
         if user.role == 'ADMIN':
             return ActionItem.objects.all()
         else:
-            return ActionItem.objects.filter(inspection__video__store=user.store)
+            return ActionItem.objects.filter(inspection__store=user.store)
 
     def perform_create(self, serializer):
         # Auto-assign high priority items to GM if available
@@ -94,7 +94,7 @@ class ActionItemDetailView(generics.RetrieveUpdateAPIView):
         if user.role == 'ADMIN':
             return ActionItem.objects.all()
         else:
-            return ActionItem.objects.filter(inspection__video__store=user.store)
+            return ActionItem.objects.filter(inspection__store=user.store)
 
     def get_serializer_class(self):
         if self.request.method == 'PATCH':
@@ -108,7 +108,7 @@ def start_inspection(request, video_id):
     try:
         user = request.user
         mode = request.data.get('mode', 'INSPECTION')
-        
+
         # Check if user has access to the video
         if user.role == 'ADMIN':
             from videos.models import Video
@@ -116,21 +116,27 @@ def start_inspection(request, video_id):
         else:
             from videos.models import Video
             video = Video.objects.get(pk=video_id, store=user.store)
-        
+
         # Check if inspection already exists
-        if hasattr(video, 'inspection'):
+        if video.inspection:
             return Response(
-                {'error': 'Inspection already exists for this video'}, 
+                {'error': 'Inspection already exists for this video'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Create inspection
+
+        # Create inspection with metadata from video
         inspection = Inspection.objects.create(
-            video=video,
+            title=video.title,
+            created_by=video.uploaded_by,
+            store=video.store,
             mode=mode,
             status=Inspection.Status.PENDING
         )
-        
+
+        # Link video to inspection
+        video.inspection = inspection
+        video.save(update_fields=['inspection'])
+
         # Set expiration based on mode
         if mode == Inspection.Mode.COACHING:
             from datetime import timedelta
@@ -138,16 +144,16 @@ def start_inspection(request, video_id):
             retention_days = getattr(settings, 'COACHING_MODE_RETENTION_DAYS', 7)
             inspection.expires_at = timezone.now() + timedelta(days=retention_days)
             inspection.save()
-        
+
         # Trigger AI analysis
         from .tasks import analyze_video
         analyze_video.delay(inspection.id)
-        
+
         return Response(InspectionSerializer(inspection).data, status=status.HTTP_201_CREATED)
-        
+
     except Exception as e:
         return Response(
-            {'error': str(e)}, 
+            {'error': str(e)},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -156,11 +162,11 @@ def start_inspection(request, video_id):
 @permission_classes([IsAuthenticated])
 def inspection_stats(request):
     user = request.user
-    
+
     if user.role == 'ADMIN':
         inspections = Inspection.objects.all()
     else:
-        inspections = Inspection.objects.filter(video__store=user.store)
+        inspections = Inspection.objects.filter(store=user.store)
     
     total_inspections = inspections.count()
     completed_inspections = inspections.filter(status=Inspection.Status.COMPLETED).count()
