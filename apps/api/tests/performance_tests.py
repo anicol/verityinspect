@@ -100,7 +100,7 @@ class VideoUploadPerformanceTest(TransactionTestCase):
         for i in range(num_uploads):
             uploads.append(Upload(
                 store=self.store,
-                mode=Upload.Mode.INSPECTION,
+                mode=Upload.Mode.ENTERPRISE,
                 s3_key=f"uploads/bulk_test_{i}.mp4",
                 original_filename=f"bulk_test_{i}.mp4",
                 status=Upload.Status.UPLOADED,
@@ -131,7 +131,7 @@ class VideoUploadPerformanceTest(TransactionTestCase):
         for i in range(num_uploads):
             uploads.append(Upload(
                 store=self.store,
-                mode=Upload.Mode.INSPECTION if i % 2 == 0 else Upload.Mode.COACHING,
+                mode=Upload.Mode.ENTERPRISE if i % 2 == 0 else Upload.Mode.COACHING,
                 s3_key=f"uploads/query_test_{i}.mp4",
                 original_filename=f"query_test_{i}.mp4",
                 status=Upload.Status.COMPLETE if i % 3 == 0 else Upload.Status.PROCESSING,
@@ -143,12 +143,12 @@ class VideoUploadPerformanceTest(TransactionTestCase):
         # Test various query patterns
         queries = [
             ('All uploads', lambda: Upload.objects.all().count()),
-            ('Inspection mode', lambda: Upload.objects.filter(mode=Upload.Mode.INSPECTION).count()),
+            ('Inspection mode', lambda: Upload.objects.filter(mode=Upload.Mode.ENTERPRISE).count()),
             ('Complete status', lambda: Upload.objects.filter(status=Upload.Status.COMPLETE).count()),
             ('Store filter', lambda: Upload.objects.filter(store=self.store).count()),
             ('Complex filter', lambda: Upload.objects.filter(
                 store=self.store,
-                mode=Upload.Mode.INSPECTION, 
+                mode=Upload.Mode.ENTERPRISE, 
                 status=Upload.Status.COMPLETE
             ).count())
         ]
@@ -178,7 +178,7 @@ class DetectionPerformanceTest(TestCase):
             username="detuser", store=self.store
         )
         self.upload = Upload.objects.create(
-            store=self.store, mode=Upload.Mode.INSPECTION,
+            store=self.store, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/detection_test.mp4", original_filename="detection_test.mp4",
             created_by=self.user
         )
@@ -325,7 +325,7 @@ class DatabasePerformanceTest(TestCase):
         for i in range(num_uploads):
             uploads.append(Upload(
                 store=self.store,
-                mode=Upload.Mode.INSPECTION if i % 3 == 0 else Upload.Mode.COACHING,
+                mode=Upload.Mode.ENTERPRISE if i % 3 == 0 else Upload.Mode.COACHING,
                 s3_key=f"uploads/analytics_{i}.mp4",
                 original_filename=f"analytics_{i}.mp4",
                 status=Upload.Status.COMPLETE,
@@ -382,7 +382,7 @@ class DatabasePerformanceTest(TestCase):
         for i in range(num_records):
             uploads.append(Upload(
                 store=self.store,
-                mode=Upload.Mode.INSPECTION,
+                mode=Upload.Mode.ENTERPRISE,
                 s3_key=f"uploads/page_test_{i}.mp4", 
                 original_filename=f"page_test_{i}.mp4",
                 status=Upload.Status.COMPLETE,
@@ -503,7 +503,7 @@ class APIEndpointPerformanceTest(TestCase):
             uploads = []
             for i in range(size):
                 uploads.append(Upload(
-                    store=self.store, mode=Upload.Mode.INSPECTION,
+                    store=self.store, mode=Upload.Mode.ENTERPRISE,
                     s3_key=f"uploads/api_test_{i}.mp4", 
                     original_filename=f"api_test_{i}.mp4",
                     status=Upload.Status.COMPLETE, created_by=self.user
@@ -531,7 +531,7 @@ class APIEndpointPerformanceTest(TestCase):
         uploads = []
         for i in range(50):
             uploads.append(Upload(
-                store=self.store, mode=Upload.Mode.INSPECTION,
+                store=self.store, mode=Upload.Mode.ENTERPRISE,
                 s3_key=f"uploads/concurrent_test_{i}.mp4",
                 original_filename=f"concurrent_test_{i}.mp4", 
                 status=Upload.Status.COMPLETE, created_by=self.user

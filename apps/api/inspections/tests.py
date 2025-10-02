@@ -16,7 +16,7 @@ def create_inspection_with_video(video, mode=None):
         title=video.title,
         created_by=video.uploaded_by,
         store=video.store,
-        mode=mode or Inspection.Mode.INSPECTION
+        mode=mode or Inspection.Mode.ENTERPRISE
     )
     video.inspection = inspection
     video.save()
@@ -49,9 +49,9 @@ class InspectionModelTest(TestCase):
     def test_create_inspection(self):
         inspection = create_inspection_with_video(self.video)
 
-        self.assertEqual(inspection.mode, Inspection.Mode.INSPECTION)
+        self.assertEqual(inspection.mode, Inspection.Mode.ENTERPRISE)
         self.assertEqual(inspection.status, Inspection.Status.PENDING)
-        self.assertEqual(str(inspection), "Test Video - INSPECTION (PENDING)")
+        self.assertEqual(str(inspection), "Test Video - ENTERPRISE (PENDING)")
         self.assertEqual(inspection.video, self.video)  # Test backward-compatible property
 
     def test_create_finding(self):

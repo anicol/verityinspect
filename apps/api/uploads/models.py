@@ -4,7 +4,7 @@ from django.conf import settings
 
 class Upload(models.Model):
     class Mode(models.TextChoices):
-        INSPECTION = 'inspection', 'Inspection Mode'
+        ENTERPRISE = 'enterprise', 'Enterprise Mode'
         COACHING = 'coaching', 'Coaching Mode'
 
     class Status(models.TextChoices):

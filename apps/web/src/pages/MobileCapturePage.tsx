@@ -182,7 +182,7 @@ export default function MobileCapturePage() {
       // Create a File object from the Blob
       const file = new File([videoToUpload], `${title}.webm`, { type: 'video/webm' });
       const storeId = parseInt(selectedStore);
-      const mode = settings.mode === 'inspection' ? 'inspection' : 'coaching';
+      const mode = settings.mode === 'inspection' ? 'enterprise' : 'coaching';
 
       // Use the new uploads API with S3 presigned URL
       await uploadsAPI.uploadVideo(file, storeId, mode);

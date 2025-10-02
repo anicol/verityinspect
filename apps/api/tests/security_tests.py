@@ -186,12 +186,12 @@ class AuthorizationSecurityTest(TestCase):
         """Test that users can only access endpoints appropriate for their role"""
         # Create test data
         upload1 = Upload.objects.create(
-            store=self.store1, mode=Upload.Mode.INSPECTION,
+            store=self.store1, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/store1.mp4", original_filename="store1.mp4",
             created_by=self.manager1
         )
         upload2 = Upload.objects.create(
-            store=self.store2, mode=Upload.Mode.INSPECTION,
+            store=self.store2, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/store2.mp4", original_filename="store2.mp4",
             created_by=self.manager2
         )
@@ -218,12 +218,12 @@ class AuthorizationSecurityTest(TestCase):
         """Test that users can only access data from their assigned stores"""
         # Create uploads for different stores
         upload_store1 = Upload.objects.create(
-            store=self.store1, mode=Upload.Mode.INSPECTION,
+            store=self.store1, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/isolation_test1.mp4", original_filename="test1.mp4",
             created_by=self.manager1
         )
         upload_store2 = Upload.objects.create(
-            store=self.store2, mode=Upload.Mode.INSPECTION,
+            store=self.store2, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/isolation_test2.mp4", original_filename="test2.mp4",
             created_by=self.manager2
         )
@@ -271,12 +271,12 @@ class AuthorizationSecurityTest(TestCase):
         """Test prevention of accessing other users' data at same privilege level"""
         # Create uploads by different managers
         manager1_upload = Upload.objects.create(
-            store=self.store1, mode=Upload.Mode.INSPECTION,
+            store=self.store1, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/manager1_private.mp4", original_filename="private1.mp4",
             created_by=self.manager1
         )
         manager2_upload = Upload.objects.create(
-            store=self.store2, mode=Upload.Mode.INSPECTION,
+            store=self.store2, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/manager2_private.mp4", original_filename="private2.mp4",
             created_by=self.manager2
         )
@@ -391,7 +391,7 @@ class DataSecurityTest(TestCase):
         for payload in xss_payloads:
             upload = Upload.objects.create(
                 store=self.store,
-                mode=Upload.Mode.INSPECTION,
+                mode=Upload.Mode.ENTERPRISE,
                 s3_key="uploads/xss_test.mp4",
                 original_filename=payload,  # XSS in filename
                 created_by=self.user
@@ -558,7 +558,7 @@ class AuditingSecurityTest(TestCase):
         # Create an upload (should be audited)
         upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/audit_test.mp4",
             original_filename="audit_test.mp4",
             created_by=self.user

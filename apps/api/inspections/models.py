@@ -4,7 +4,7 @@ from django.conf import settings
 
 class Inspection(models.Model):
     class Mode(models.TextChoices):
-        INSPECTION = 'INSPECTION', 'Inspection Mode'
+        ENTERPRISE = 'ENTERPRISE', 'Enterprise Mode'
         COACHING = 'COACHING', 'Coaching Mode'
 
     class Status(models.TextChoices):
@@ -21,6 +21,21 @@ class Inspection(models.Model):
 
     mode = models.CharField(max_length=20, choices=Mode.choices)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+
+    # Enterprise mode fields
+    assigned_inspector = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_inspections',
+        help_text="Inspector assigned to review (enterprise mode only)"
+    )
+    inspector_notes = models.TextField(blank=True, help_text="Detailed inspector notes and observations (enterprise mode)")
+    report_url = models.CharField(max_length=500, blank=True, help_text="URL to generated PDF report (enterprise mode)")
+    report_generated_at = models.DateTimeField(null=True, blank=True, help_text="When report was generated")
+
+    # Scores
     overall_score = models.FloatField(null=True, blank=True, help_text="Overall score 0-100")
     ppe_score = models.FloatField(null=True, blank=True)
     safety_score = models.FloatField(null=True, blank=True)

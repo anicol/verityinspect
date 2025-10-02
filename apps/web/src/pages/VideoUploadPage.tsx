@@ -18,9 +18,19 @@ export default function VideoUploadPage() {
 
   const { data: stores } = useQuery('stores', storesAPI.getStores);
 
+  // Auto-select store if user only has access to one store
+  const availableStores = user?.role === 'ADMIN'
+    ? stores
+    : stores?.filter(s => s.id === user?.store);
+
+  // Auto-select the store if there's only one
+  if (availableStores?.length === 1 && storeId === '' && availableStores[0]) {
+    setStoreId(availableStores[0].id);
+  }
+
   const uploadMutation = useMutation(
     ({ file, storeId }: { file: File; storeId: number }) =>
-      uploadsAPI.uploadVideo(file, storeId, 'inspection'),
+      uploadsAPI.uploadVideo(file, storeId, 'enterprise'),
     {
       onSuccess: (upload) => {
         console.log('Upload successful:', upload);
@@ -214,31 +224,40 @@ export default function VideoUploadPage() {
           />
         </div>
 
-        <div>
-          <label htmlFor="store" className="block text-sm font-medium text-gray-700">
-            Store
-          </label>
-          <select
-            id="store"
-            required
-            value={storeId}
-            onChange={(e) => setStoreId(Number(e.target.value) || '')}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option value="">Select a store</option>
-            {user?.role === 'ADMIN'
-              ? stores?.map((store) => (
-                  <option key={store.id} value={store.id}>
-                    {store.brand_name} - {store.name}
-                  </option>
-                ))
-              : user?.store ? (
-                  <option value={user.store}>
-                    {stores?.find(s => s.id === user.store)?.name || 'My Store'}
-                  </option>
-                ) : null}
-          </select>
-        </div>
+        {/* Only show store selector if there are multiple stores */}
+        {availableStores && availableStores.length > 1 && (
+          <div>
+            <label htmlFor="store" className="block text-sm font-medium text-gray-700">
+              Store
+            </label>
+            <select
+              id="store"
+              required
+              value={storeId}
+              onChange={(e) => setStoreId(Number(e.target.value) || '')}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="">Select a store</option>
+              {availableStores.map((store) => (
+                <option key={store.id} value={store.id}>
+                  {store.brand_name} - {store.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Show selected store as read-only if only one store */}
+        {availableStores && availableStores.length === 1 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Store
+            </label>
+            <div className="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50 px-3 py-2 text-sm text-gray-900">
+              {availableStores[0].brand_name} - {availableStores[0].name}
+            </div>
+          </div>
+        )}
 
         {uploadMutation.error ? (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">

@@ -10,12 +10,15 @@ class Brand(models.Model):
     webhook_url = models.URLField(blank=True, null=True, help_text="URL for webhook notifications")
     inspection_config = models.JSONField(default=dict, help_text="Configuration for inspection criteria")
     is_active = models.BooleanField(default=True)
-    
+
+    # Enterprise features
+    has_enterprise_access = models.BooleanField(default=False, help_text="Has access to inspector-led enterprise workflow")
+
     # Trial functionality
     is_trial = models.BooleanField(default=False, help_text="Is this a trial brand")
-    trial_created_by = models.ForeignKey('accounts.User', on_delete=models.CASCADE, null=True, blank=True, 
+    trial_created_by = models.ForeignKey('accounts.User', on_delete=models.CASCADE, null=True, blank=True,
                                        related_name='trial_brands_created')
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

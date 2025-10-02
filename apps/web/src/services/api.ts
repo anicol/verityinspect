@@ -19,7 +19,7 @@ export interface PresignedUrlRequest {
   filename: string;
   file_type: string;
   store_id: number;
-  mode: 'inspection' | 'coaching';
+  mode: 'enterprise' | 'coaching';
 }
 
 export interface PresignedUrlResponse {
@@ -254,7 +254,7 @@ export const uploadsAPI = {
   uploadVideo: async (
     file: File,
     storeId: number,
-    mode: 'inspection' | 'coaching' = 'inspection'
+    mode: 'enterprise' | 'coaching' = 'enterprise'
   ): Promise<Upload> => {
     // Step 1: Request presigned URL
     const { upload_id, presigned_url } = await uploadsAPI.requestPresignedUrl({
@@ -301,7 +301,7 @@ export const inspectionsAPI = {
     }
   },
 
-  startInspection: async (videoId: number, mode: 'INSPECTION' | 'COACHING'): Promise<Inspection> => {
+  startInspection: async (videoId: number, mode: 'ENTERPRISE' | 'COACHING'): Promise<Inspection> => {
     const response = await api.post(`/inspections/start/${videoId}/`, { mode });
     return response.data;
   },

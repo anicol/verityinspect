@@ -164,7 +164,7 @@ def reprocess_upload(request, upload_id):
         Inspection.objects.filter(video=video).delete()
 
         # Re-run analysis based on upload mode
-        if upload.mode == Upload.Mode.INSPECTION:
+        if upload.mode == Upload.Mode.ENTERPRISE:
             inspection = apply_inspection_rules(video, frames)
         else:
             inspection = apply_coaching_rules(video, frames)
@@ -215,7 +215,7 @@ def retention_status(request):
         
         expired_uploads = {
             'inspection': Upload.objects.filter(
-                mode=Upload.Mode.INSPECTION,
+                mode=Upload.Mode.ENTERPRISE,
                 created_at__lt=inspection_cutoff
             ).count(),
             'coaching': Upload.objects.filter(

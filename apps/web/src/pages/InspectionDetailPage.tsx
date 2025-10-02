@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { inspectionsAPI } from '@/services/api';
+import { inspectionsAPI, videosAPI } from '@/services/api';
 import { format } from 'date-fns';
 import {
   Shield,
@@ -23,8 +23,10 @@ import {
   Activity,
   ChefHat,
   Users,
+  Plus,
 } from 'lucide-react';
 import type { Inspection, Finding, ActionItem } from '@/types';
+import AddFindingModal, { type NewFindingData } from '@/components/AddFindingModal';
 
 const categoryIcons = {
   PPE: Shield,
@@ -63,7 +65,7 @@ const statusColors = {
 
 const modeColors = {
   COACHING: 'bg-green-100 text-green-800',
-  INSPECTION: 'bg-blue-100 text-blue-800',
+  ENTERPRISE: 'bg-blue-100 text-blue-800',
 };
 
 const statusIcons = {
@@ -76,15 +78,15 @@ const statusIcons = {
 function ScoreBar({ score, label }: { score: number | null; label: string }) {
   const percentage = score || 0;
   const colorClass = percentage >= 80 ? 'bg-green-500' : percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500';
-  
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
         <span className="font-medium text-gray-700">{label}</span>
-        <span className="text-gray-900">{score !== null ? `${score}%` : 'N/A'}</span>
+        <span className="text-gray-900">{score !== null ? `${score.toFixed(1)}%` : 'N/A'}</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
+        <div
           className={`h-2 rounded-full transition-all duration-300 ${colorClass}`}
           style={{ width: `${percentage}%` }}
         />
@@ -312,6 +314,7 @@ function ActionItemCard({ actionItem }: { actionItem: ActionItem }) {
 export default function InspectionDetailPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
+  const [isAddFindingModalOpen, setIsAddFindingModalOpen] = useState(false);
 
   const { data: inspection, isLoading, error } = useQuery(
     ['inspection', id],
@@ -323,6 +326,15 @@ export default function InspectionDetailPage() {
         if (error?.response?.status === 404) return false;
         return failureCount < 2;
       }
+    }
+  );
+
+  // Fetch video data
+  const { data: video } = useQuery(
+    ['video', inspection?.video],
+    () => videosAPI.getVideo(inspection!.video),
+    {
+      enabled: !!inspection?.video,
     }
   );
 
@@ -346,6 +358,17 @@ export default function InspectionDetailPage() {
     }
   );
 
+  // Mutation for creating manual findings
+  const createFindingMutation = useMutation(
+    (data: NewFindingData) => inspectionsAPI.createManualFinding(Number(id), data),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['inspection', id]);
+        setIsAddFindingModalOpen(false);
+      }
+    }
+  );
+
   // Handlers
   const handleApproveFinding = (findingId: number) => {
     approveMutation.mutate(findingId);
@@ -355,6 +378,10 @@ export default function InspectionDetailPage() {
     if (window.confirm('Are you sure this detection is incorrect?')) {
       rejectMutation.mutate(findingId);
     }
+  };
+
+  const handleCreateFinding = (data: NewFindingData) => {
+    createFindingMutation.mutate(data);
   };
 
   // Use findings from inspection response instead of separate API call
@@ -432,44 +459,156 @@ export default function InspectionDetailPage() {
         </div>
       </div>
 
-      {/* Overall Score */}
-      {inspection.overall_score !== null && (
+      {/* Video Player */}
+      {video && video.file && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Overall Score</h2>
-          <div className="flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-gray-900 mb-2">
-                {inspection.overall_score}%
-              </div>
-              <div className={`text-sm font-medium ${
-                inspection.overall_score >= 80 ? 'text-green-600' :
-                inspection.overall_score >= 60 ? 'text-yellow-600' :
-                'text-red-600'
-              }`}>
-                {inspection.overall_score >= 80 ? 'Excellent' :
-                 inspection.overall_score >= 60 ? 'Good' : 'Needs Improvement'}
-              </div>
-            </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Inspection Video</h2>
+          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+            <video
+              controls
+              className="w-full h-full"
+              src={video.file}
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div className="mt-3 text-sm text-gray-600">
+            <p>Review the video to confirm AI detections or add violations you notice.</p>
           </div>
         </div>
       )}
 
-      {/* Category Scores */}
+      {/* Manager Review Summary (for coaching mode) */}
+      {inspection.mode === 'COACHING' && findings.length > 0 && (
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg shadow-md p-6 border border-indigo-200">
+          <div className="flex items-center mb-4">
+            <CheckCircle className="w-6 h-6 text-indigo-600 mr-2" />
+            <h2 className="text-lg font-semibold text-gray-900">Your Review Summary</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Confirmed Findings */}
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-green-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-600">Confirmed</span>
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="text-3xl font-bold text-green-700">
+                {findings.filter(f => f.is_approved).length}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">AI detections you verified</p>
+            </div>
+
+            {/* Rejected Findings */}
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-600">Rejected</span>
+                <XCircle className="w-5 h-5 text-gray-600" />
+              </div>
+              <div className="text-3xl font-bold text-gray-700">
+                {findings.filter(f => f.is_rejected).length}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">False positives removed</p>
+            </div>
+
+            {/* Manual Findings */}
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-indigo-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-600">Added by You</span>
+                <User className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div className="text-3xl font-bold text-indigo-700">
+                {findings.filter(f => f.is_manual).length}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Violations you spotted</p>
+            </div>
+
+            {/* Pending Review */}
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-yellow-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-600">Needs Review</span>
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div className="text-3xl font-bold text-yellow-700">
+                {findings.filter(f => !f.is_manual && !f.is_approved && !f.is_rejected).length}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">AI findings pending</p>
+            </div>
+          </div>
+
+          {/* Progress indicator */}
+          {findings.filter(f => !f.is_manual && !f.is_approved && !f.is_rejected).length > 0 && (
+            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-sm text-yellow-800 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                You have {findings.filter(f => !f.is_manual && !f.is_approved && !f.is_rejected).length} AI-detected finding(s) waiting for your review.
+                Scroll down to confirm or dismiss each one.
+              </p>
+            </div>
+          )}
+
+          {/* Completion message */}
+          {findings.filter(f => !f.is_manual && !f.is_approved && !f.is_rejected).length === 0 && findings.length > 0 && (
+            <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3">
+              <p className="text-sm text-green-800 flex items-center">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Great! You've reviewed all AI-detected findings. Your final report includes {findings.filter(f => !f.is_rejected).length} violation(s).
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Scores Section - Side by Side Layout */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Breakdown</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <ScoreBar score={inspection.ppe_score} label="PPE Compliance" />
-          <ScoreBar score={inspection.safety_score} label="Safety" />
-          <ScoreBar score={inspection.cleanliness_score} label="Cleanliness" />
-          <ScoreBar score={inspection.uniform_score} label="Uniform Standards" />
-          <ScoreBar score={inspection.menu_board_score} label="Menu Board" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Category Breakdown - Left Half */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Breakdown</h2>
+            <div className="space-y-6">
+              <ScoreBar score={inspection.ppe_score} label="PPE Compliance" />
+              <ScoreBar score={inspection.safety_score} label="Safety" />
+              <ScoreBar score={inspection.cleanliness_score} label="Cleanliness" />
+              <ScoreBar score={inspection.uniform_score} label="Uniform Standards" />
+              <ScoreBar score={inspection.menu_board_score} label="Menu Board" />
+            </div>
+          </div>
+
+          {/* Overall Score - Right Half */}
+          {inspection.overall_score !== null && (
+            <div className="flex flex-col items-center justify-center">
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">Overall Score</h2>
+              <div className="text-center">
+                <div className="text-6xl font-bold text-gray-900 mb-4">
+                  {inspection.overall_score.toFixed(1)}%
+                </div>
+                <div className={`text-lg font-medium ${
+                  inspection.overall_score >= 80 ? 'text-green-600' :
+                  inspection.overall_score >= 60 ? 'text-yellow-600' :
+                  'text-red-600'
+                }`}>
+                  {inspection.overall_score >= 80 ? 'Excellent' :
+                   inspection.overall_score >= 60 ? 'Good' : 'Needs Improvement'}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Findings */}
       {findings.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Findings</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Findings</h2>
+            <button
+              onClick={() => setIsAddFindingModalOpen(true)}
+              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Violation
+            </button>
+          </div>
           
           {Object.entries(findingsByCategory).map(([category, categoryFindings]) => (
             <div key={category} className="mb-6 last:mb-0">
@@ -512,7 +651,24 @@ export default function InspectionDetailPage() {
           <p className="mt-1 text-sm text-gray-500">
             This inspection completed successfully with no findings or action items.
           </p>
+          <button
+            onClick={() => setIsAddFindingModalOpen(true)}
+            className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add a Violation
+          </button>
         </div>
+      )}
+
+      {/* Add Finding Modal */}
+      {isAddFindingModalOpen && (
+        <AddFindingModal
+          inspectionId={Number(id)}
+          onClose={() => setIsAddFindingModalOpen(false)}
+          onSubmit={handleCreateFinding}
+          isSubmitting={createFindingMutation.isLoading}
+        />
       )}
     </div>
   );

@@ -41,7 +41,7 @@ class Command(BaseCommand):
         
         # Find expired uploads
         expired_inspection = Upload.objects.filter(
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             created_at__lt=inspection_cutoff
         )
         
