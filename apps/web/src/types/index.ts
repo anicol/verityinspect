@@ -49,6 +49,7 @@ export interface Brand {
   inspection_config: Record<string, any>;
   retention_config: Record<string, any>;
   is_active: boolean;
+  has_enterprise_access: boolean;
   stores_count: number;
   created_at: string;
   updated_at: string;
@@ -109,8 +110,12 @@ export interface Inspection {
   video: number;
   video_title: string;
   store_name: string;
-  mode: 'INSPECTION' | 'COACHING';
+  mode: 'ENTERPRISE' | 'COACHING';
   status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  assigned_inspector: number | null;
+  inspector_notes: string;
+  report_url: string;
+  report_generated_at: string | null;
   overall_score: number | null;
   ppe_score: number | null;
   safety_score: number | null;
@@ -209,7 +214,7 @@ export interface InspectionStats {
 export interface Upload {
   id: number;
   store: number;
-  mode: 'inspection' | 'coaching';
+  mode: 'enterprise' | 'coaching';
   s3_key: string;
   status: 'uploaded' | 'processing' | 'complete' | 'failed';
   duration_s: number | null;

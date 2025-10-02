@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { inspectionsAPI } from '@/services/api';
+import { inspectionsAPI, videosAPI } from '@/services/api';
 import { format } from 'date-fns';
 import {
   Shield,
@@ -65,7 +65,7 @@ const statusColors = {
 
 const modeColors = {
   COACHING: 'bg-green-100 text-green-800',
-  INSPECTION: 'bg-blue-100 text-blue-800',
+  ENTERPRISE: 'bg-blue-100 text-blue-800',
 };
 
 const statusIcons = {
@@ -78,15 +78,15 @@ const statusIcons = {
 function ScoreBar({ score, label }: { score: number | null; label: string }) {
   const percentage = score || 0;
   const colorClass = percentage >= 80 ? 'bg-green-500' : percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500';
-  
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
         <span className="font-medium text-gray-700">{label}</span>
-        <span className="text-gray-900">{score !== null ? `${score}%` : 'N/A'}</span>
+        <span className="text-gray-900">{score !== null ? `${score.toFixed(1)}%` : 'N/A'}</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
+        <div
           className={`h-2 rounded-full transition-all duration-300 ${colorClass}`}
           style={{ width: `${percentage}%` }}
         />
@@ -329,6 +329,15 @@ export default function InspectionDetailPage() {
     }
   );
 
+  // Fetch video data
+  const { data: video } = useQuery(
+    ['video', inspection?.video],
+    () => videosAPI.getVideo(inspection!.video),
+    {
+      enabled: !!inspection?.video,
+    }
+  );
+
   // Mutation for approving findings
   const approveMutation = useMutation(
     (findingId: number) => inspectionsAPI.approveFinding(findingId),
@@ -450,6 +459,25 @@ export default function InspectionDetailPage() {
         </div>
       </div>
 
+      {/* Video Player */}
+      {video && video.file && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Inspection Video</h2>
+          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+            <video
+              controls
+              className="w-full h-full"
+              src={video.file}
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div className="mt-3 text-sm text-gray-600">
+            <p>Review the video to confirm AI detections or add violations you notice.</p>
+          </div>
+        </div>
+      )}
+
       {/* Manager Review Summary (for coaching mode) */}
       {inspection.mode === 'COACHING' && findings.length > 0 && (
         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg shadow-md p-6 border border-indigo-200">
@@ -531,37 +559,40 @@ export default function InspectionDetailPage() {
         </div>
       )}
 
-      {/* Overall Score */}
-      {inspection.overall_score !== null && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Overall Score</h2>
-          <div className="flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-gray-900 mb-2">
-                {inspection.overall_score}%
-              </div>
-              <div className={`text-sm font-medium ${
-                inspection.overall_score >= 80 ? 'text-green-600' :
-                inspection.overall_score >= 60 ? 'text-yellow-600' :
-                'text-red-600'
-              }`}>
-                {inspection.overall_score >= 80 ? 'Excellent' :
-                 inspection.overall_score >= 60 ? 'Good' : 'Needs Improvement'}
-              </div>
+      {/* Scores Section - Side by Side Layout */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Category Breakdown - Left Half */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Breakdown</h2>
+            <div className="space-y-6">
+              <ScoreBar score={inspection.ppe_score} label="PPE Compliance" />
+              <ScoreBar score={inspection.safety_score} label="Safety" />
+              <ScoreBar score={inspection.cleanliness_score} label="Cleanliness" />
+              <ScoreBar score={inspection.uniform_score} label="Uniform Standards" />
+              <ScoreBar score={inspection.menu_board_score} label="Menu Board" />
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Category Scores */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Breakdown</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <ScoreBar score={inspection.ppe_score} label="PPE Compliance" />
-          <ScoreBar score={inspection.safety_score} label="Safety" />
-          <ScoreBar score={inspection.cleanliness_score} label="Cleanliness" />
-          <ScoreBar score={inspection.uniform_score} label="Uniform Standards" />
-          <ScoreBar score={inspection.menu_board_score} label="Menu Board" />
+          {/* Overall Score - Right Half */}
+          {inspection.overall_score !== null && (
+            <div className="flex flex-col items-center justify-center">
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">Overall Score</h2>
+              <div className="text-center">
+                <div className="text-6xl font-bold text-gray-900 mb-4">
+                  {inspection.overall_score.toFixed(1)}%
+                </div>
+                <div className={`text-lg font-medium ${
+                  inspection.overall_score >= 80 ? 'text-green-600' :
+                  inspection.overall_score >= 60 ? 'text-yellow-600' :
+                  'text-red-600'
+                }`}>
+                  {inspection.overall_score >= 80 ? 'Excellent' :
+                   inspection.overall_score >= 60 ? 'Good' : 'Needs Improvement'}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
