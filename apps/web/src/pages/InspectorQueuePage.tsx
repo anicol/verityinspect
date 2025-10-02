@@ -29,7 +29,7 @@ export default function InspectorQueuePage() {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [filters, setFilters] = useState<QueueFilters>({
     priority: '',
-    mode: '',
+    mode: 'ENTERPRISE', // Default to ENTERPRISE mode only
     store: '',
     status: 'pending',
     search: ''
@@ -189,10 +189,10 @@ export default function InspectorQueuePage() {
             value={filters.mode}
             onChange={(e) => setFilters({ ...filters, mode: e.target.value })}
             className="border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+            disabled
+            title="Inspector Queue only shows Enterprise (Inspector-Led) videos"
           >
-            <option value="">All Modes</option>
-            <option value="inspection">Inspection</option>
-            <option value="coaching">Coaching</option>
+            <option value="ENTERPRISE">Enterprise (Inspector-Led Only)</option>
           </select>
 
           <select
@@ -207,7 +207,7 @@ export default function InspectorQueuePage() {
           <button
             onClick={() => setFilters({
               priority: '',
-              mode: '',
+              mode: 'ENTERPRISE',
               store: '',
               status: 'pending',
               search: ''
@@ -282,12 +282,8 @@ export default function InspectorQueuePage() {
                       </span>
                       
                       {/* Mode Badge */}
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        video.mode === 'inspection' 
-                          ? 'text-red-600 bg-red-100' 
-                          : 'text-blue-600 bg-blue-100'
-                      }`}>
-                        {video.mode?.toUpperCase() || 'INSPECTION'}
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full text-blue-600 bg-blue-100">
+                        ENTERPRISE
                       </span>
                     </div>
                   </div>
@@ -299,27 +295,15 @@ export default function InspectorQueuePage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleStartInspection(video.id, 'inspection');
-                          }}
-                          disabled={startInspectionMutation.isLoading}
-                          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center"
-                        >
-                          <AlertCircle className="w-4 h-4 mr-2" />
-                          Start Inspection
-                        </button>
-                        
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartInspection(video.id, 'coaching');
+                            handleStartInspection(video.id, 'enterprise');
                           }}
                           disabled={startInspectionMutation.isLoading}
                           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                         >
-                          <Star className="w-4 h-4 mr-2" />
-                          Start Coaching
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          Start Inspector Review
                         </button>
-                        
+
                         <button
                           onClick={(e) => {
                             e.stopPropagation();

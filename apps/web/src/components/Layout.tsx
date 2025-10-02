@@ -16,6 +16,9 @@ import {
   User,
   ArrowRight,
   Settings,
+  Target,
+  Briefcase,
+  TrendingUp,
 } from 'lucide-react';
 
 const navigationSections = [
@@ -23,10 +26,26 @@ const navigationSections = [
     title: null, // Main section (no title)
     items: [
       { name: 'Dashboard', href: '/', icon: LayoutDashboard, key: 'dashboard' },
-      { name: 'Videos', href: '/videos', icon: Video, key: 'videos' },
-      { name: 'Inspections', href: '/inspections', icon: FileSearch, key: 'inspections' },
-      { name: 'Inspector Queue', href: '/inspector-queue', icon: CheckSquare, key: 'inspectorQueue' },
+    ]
+  },
+  {
+    title: 'Coaching',
+    icon: Target,
+    items: [
+      { name: 'My Videos', href: '/videos', icon: Video, key: 'videos' },
+      { name: 'My Inspections', href: '/inspections', icon: FileSearch, key: 'inspections' },
+      { name: 'Improvement Tracking', href: '/coaching/trends', icon: TrendingUp, key: 'coachingTrends' },
       { name: 'Action Items', href: '/actions', icon: CheckSquare, key: 'actionItems' },
+    ]
+  },
+  {
+    title: 'Enterprise',
+    icon: Briefcase,
+    enterpriseOnly: true,
+    items: [
+      { name: 'Inspector Queue', href: '/inspector-queue', icon: CheckSquare, key: 'inspectorQueue' },
+      { name: 'Enterprise Inspections', href: '/enterprise/inspections', icon: FileSearch, key: 'enterpriseInspections' },
+      { name: 'Reports', href: '/enterprise/reports', icon: FileSearch, key: 'enterpriseReports' },
     ]
   },
   {
@@ -54,10 +73,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navState = useProgressiveNavigation();
 
+  // For simplicity, we'll check enterprise access based on user role
+  // In a real app, you'd fetch the user's brand and check has_enterprise_access
+  // For now: ADMIN and INSPECTOR roles have enterprise access
+  const hasEnterpriseAccess = user?.role === 'ADMIN' || user?.role === 'INSPECTOR';
+
   const filteredSections = navigationSections
     .map(section => {
       // Filter out admin-only sections for non-admin users
       if ('adminOnly' in section && section.adminOnly && user?.role !== 'ADMIN') {
+        return null;
+      }
+
+      // Filter out enterprise-only sections for users without enterprise access
+      if ('enterpriseOnly' in section && section.enterpriseOnly && !hasEnterpriseAccess) {
         return null;
       }
 
@@ -144,7 +173,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {filteredSections.map((section, sectionIdx) => (
                   <div key={sectionIdx}>
                     {section.title && (
-                      <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
+                        {'icon' in section && section.icon && <section.icon className="w-3 h-3 mr-2" />}
                         {section.title}
                       </h3>
                     )}
@@ -201,7 +231,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {filteredSections.map((section, sectionIdx) => (
                 <div key={sectionIdx}>
                   {section.title && (
-                    <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
+                      {'icon' in section && section.icon && <section.icon className="w-3 h-3 mr-2" />}
                       {section.title}
                     </h3>
                   )}

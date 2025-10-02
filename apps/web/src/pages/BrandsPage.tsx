@@ -12,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
   Search,
+  Briefcase,
 } from 'lucide-react';
 import { brandsAPI } from '@/services/api';
 import type { Brand } from '@/types';
@@ -107,7 +108,7 @@ export default function BrandsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -127,6 +128,18 @@ export default function BrandsPage() {
               </p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Enterprise Brands</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {brands?.filter(b => b.has_enterprise_access).length || 0}
+              </p>
+            </div>
+            <Briefcase className="h-8 w-8 text-blue-600" />
           </div>
         </div>
 
@@ -165,6 +178,9 @@ export default function BrandsPage() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stores
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Plan
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -208,6 +224,22 @@ export default function BrandsPage() {
                         <StoreIcon className="h-4 w-4 mr-1 text-gray-400" />
                         {brand.stores_count}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        brand.has_enterprise_access
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {brand.has_enterprise_access ? (
+                          <>
+                            <Briefcase className="h-3 w-3 mr-1" />
+                            Enterprise
+                          </>
+                        ) : (
+                          'Standard'
+                        )}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -279,6 +311,7 @@ function BrandFormModal({ brand, onClose }: BrandFormModalProps) {
     name: brand?.name || '',
     description: brand?.description || '',
     is_active: brand?.is_active ?? true,
+    has_enterprise_access: brand?.has_enterprise_access ?? false,
   });
 
   const mutation = useMutation(
@@ -347,6 +380,25 @@ function BrandFormModal({ brand, onClose }: BrandFormModalProps) {
             <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
               Active
             </label>
+          </div>
+
+          <div className="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <input
+              type="checkbox"
+              id="has_enterprise_access"
+              checked={formData.has_enterprise_access}
+              onChange={(e) => setFormData({ ...formData, has_enterprise_access: e.target.checked })}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <div className="ml-3 flex-1">
+              <label htmlFor="has_enterprise_access" className="block text-sm font-medium text-gray-900">
+                <Briefcase className="h-4 w-4 inline mr-1 text-blue-600" />
+                Enterprise Access
+              </label>
+              <p className="text-xs text-gray-600 mt-0.5">
+                Enable inspector-led review workflow and enterprise features
+              </p>
+            </div>
           </div>
 
           {mutation.error ? (
