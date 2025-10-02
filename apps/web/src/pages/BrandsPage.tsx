@@ -349,13 +349,16 @@ function BrandFormModal({ brand, onClose }: BrandFormModalProps) {
             </label>
           </div>
 
-          {mutation.error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-red-700 text-sm">
-                {((mutation.error as any)?.response?.data?.detail || 'Failed to save brand') as string}
-              </p>
-            </div>
-          )}
+          {mutation.error && (() => {
+            const errorMessage = (mutation.error as any)?.response?.data?.detail || 'Failed to save brand';
+            return (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-700 text-sm">
+                  {String(errorMessage)}
+                </p>
+              </div>
+            );
+          })()}
 
           <div className="flex justify-end space-x-3 pt-4">
             <button
