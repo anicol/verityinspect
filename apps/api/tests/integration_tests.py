@@ -72,7 +72,7 @@ class VideoUploadWorkflowTest(TransactionTestCase):
         # Verify upload record created
         upload = Upload.objects.get(id=upload_id)
         self.assertEqual(upload.status, Upload.Status.UPLOADED)
-        self.assertEqual(upload.mode, Upload.Mode.INSPECTION)
+        self.assertEqual(upload.mode, Upload.Mode.ENTERPRISE)
         
         # Step 2: Confirm upload after S3 upload completes
         confirm_response = self.client.post(f'/api/uploads/confirm-upload/{upload_id}/')
@@ -165,7 +165,7 @@ class VideoUploadWorkflowTest(TransactionTestCase):
         # Create uploads in both modes
         inspection_upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/inspection.mp4",
             original_filename="inspection.mp4",
             created_by=self.manager
@@ -183,7 +183,7 @@ class VideoUploadWorkflowTest(TransactionTestCase):
         self.client.force_authenticate(user=self.manager)
         
         # Should be able to filter uploads by mode
-        inspection_uploads = Upload.objects.filter(mode=Upload.Mode.INSPECTION)
+        inspection_uploads = Upload.objects.filter(mode=Upload.Mode.ENTERPRISE)
         coaching_uploads = Upload.objects.filter(mode=Upload.Mode.COACHING)
         
         self.assertEqual(inspection_uploads.count(), 1)
@@ -229,12 +229,12 @@ class MultiUserWorkflowTest(TestCase):
         """Test that users only see data from their assigned stores"""
         # Create uploads for different stores
         upload1 = Upload.objects.create(
-            store=self.store1, mode=Upload.Mode.INSPECTION,
+            store=self.store1, mode=Upload.Mode.ENTERPRISE,
             s3_key="store1_upload.mp4", original_filename="store1.mp4", 
             created_by=self.manager1
         )
         upload2 = Upload.objects.create(
-            store=self.store2, mode=Upload.Mode.INSPECTION,
+            store=self.store2, mode=Upload.Mode.ENTERPRISE,
             s3_key="store2_upload.mp4", original_filename="store2.mp4",
             created_by=self.manager2
         )
@@ -301,13 +301,13 @@ class RetentionPolicyWorkflowTest(TestCase):
         
         # Create uploads with different ages and modes
         recent_inspection = Upload.objects.create(
-            store=self.store, mode=Upload.Mode.INSPECTION,
+            store=self.store, mode=Upload.Mode.ENTERPRISE,
             s3_key="recent_inspection.mp4", original_filename="recent.mp4",
             created_by=self.user
         )
         
         old_inspection = Upload.objects.create(
-            store=self.store, mode=Upload.Mode.INSPECTION,
+            store=self.store, mode=Upload.Mode.ENTERPRISE,
             s3_key="old_inspection.mp4", original_filename="old_inspection.mp4",
             created_by=self.user
         )
@@ -331,7 +331,7 @@ class RetentionPolicyWorkflowTest(TestCase):
         coaching_cutoff = now - timedelta(days=7)
         
         expired_inspections = Upload.objects.filter(
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             created_at__lt=inspection_cutoff
         )
         expired_coaching = Upload.objects.filter(
@@ -391,7 +391,7 @@ class AnalyticsWorkflowTest(TestCase):
             
             inspection = Inspection.objects.create(
                 video=video,
-                mode=Inspection.Mode.INSPECTION,
+                mode=Inspection.Mode.ENTERPRISE,
                 status=Inspection.Status.COMPLETED,
                 overall_score=70 + (i * 2)  # Improving trend: 70-88
             )
@@ -429,7 +429,7 @@ class AnalyticsWorkflowTest(TestCase):
         )
         
         inspection = Inspection.objects.create(
-            video=video, mode=Inspection.Mode.INSPECTION,
+            video=video, mode=Inspection.Mode.ENTERPRISE,
             status=Inspection.Status.COMPLETED, overall_score=75.0
         )
         
@@ -478,7 +478,7 @@ class ErrorHandlingWorkflowTest(TestCase):
     def test_upload_failure_handling(self):
         """Test handling of upload failures"""
         upload = Upload.objects.create(
-            store=self.store, mode=Upload.Mode.INSPECTION,
+            store=self.store, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/failed.mp4", original_filename="failed.mp4",
             status=Upload.Status.PROCESSING, created_by=self.user
         )
@@ -504,7 +504,7 @@ class ErrorHandlingWorkflowTest(TestCase):
         
         # Create upload for other store
         other_upload = Upload.objects.create(
-            store=other_store, mode=Upload.Mode.INSPECTION,
+            store=other_store, mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/other.mp4", original_filename="other.mp4",
             created_by=other_user
         )

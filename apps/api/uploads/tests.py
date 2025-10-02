@@ -34,22 +34,22 @@ class UploadModelTest(TestCase):
         """Test creating an upload record"""
         upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/test.mp4",
             status=Upload.Status.UPLOADED,
             original_filename="test.mp4",
             created_by=self.user
         )
         
-        self.assertEqual(upload.mode, Upload.Mode.INSPECTION)
+        self.assertEqual(upload.mode, Upload.Mode.ENTERPRISE)
         self.assertEqual(upload.status, Upload.Status.UPLOADED)
-        self.assertEqual(str(upload), "Test Store - inspection (uploaded)")
+        self.assertEqual(str(upload), "Test Store - enterprise (uploaded)")
 
     def test_upload_dual_modes(self):
         """Test inspection vs coaching mode differences"""
         inspection_upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/inspection.mp4", 
             original_filename="inspection.mp4",
             created_by=self.user
@@ -63,7 +63,7 @@ class UploadModelTest(TestCase):
             created_by=self.user
         )
         
-        self.assertEqual(inspection_upload.mode, Upload.Mode.INSPECTION)
+        self.assertEqual(inspection_upload.mode, Upload.Mode.ENTERPRISE)
         self.assertEqual(coaching_upload.mode, Upload.Mode.COACHING)
         
     def test_upload_metadata_storage(self):
@@ -78,7 +78,7 @@ class UploadModelTest(TestCase):
         
         upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/test.mp4",
             original_filename="test.mp4",
             metadata=metadata,
@@ -107,7 +107,7 @@ class DetectionTest(TestCase):
         )
         self.upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/test.mp4",
             original_filename="test.mp4",
             created_by=self.user
@@ -236,7 +236,7 @@ class ViolationTest(TestCase):
         )
         self.upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/test.mp4",
             original_filename="test.mp4", 
             created_by=self.user
@@ -302,7 +302,7 @@ class ScorecardTest(TestCase):
         )
         self.upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/test.mp4",
             original_filename="test.mp4",
             created_by=self.user
@@ -461,7 +461,7 @@ class RetentionPolicyTest(TestCase):
         # Create old inspection upload
         old_upload = Upload.objects.create(
             store=self.store,
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             s3_key="uploads/old_inspection.mp4",
             original_filename="old_inspection.mp4",
             created_by=self.user
@@ -474,7 +474,7 @@ class RetentionPolicyTest(TestCase):
         # Query for expired uploads
         cutoff_date = timezone.now() - timedelta(days=30)
         expired_uploads = Upload.objects.filter(
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             created_at__lt=cutoff_date
         )
         
@@ -510,12 +510,12 @@ class RetentionPolicyTest(TestCase):
         
         # Create uploads of different ages
         Upload.objects.create(
-            store=self.store, mode=Upload.Mode.INSPECTION,
+            store=self.store, mode=Upload.Mode.ENTERPRISE,
             s3_key="recent_inspection.mp4", original_filename="recent.mp4", created_by=self.user
         )
         
         old_inspection = Upload.objects.create(
-            store=self.store, mode=Upload.Mode.INSPECTION,
+            store=self.store, mode=Upload.Mode.ENTERPRISE,
             s3_key="old_inspection.mp4", original_filename="old_inspection.mp4", created_by=self.user
         )
         Upload.objects.filter(id=old_inspection.id).update(created_at=now - timedelta(days=35))
@@ -531,7 +531,7 @@ class RetentionPolicyTest(TestCase):
         coaching_cutoff = now - timedelta(days=7)
         
         expired_inspections = Upload.objects.filter(
-            mode=Upload.Mode.INSPECTION,
+            mode=Upload.Mode.ENTERPRISE,
             created_at__lt=inspection_cutoff
         ).count()
         

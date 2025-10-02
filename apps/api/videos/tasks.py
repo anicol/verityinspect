@@ -58,7 +58,7 @@ def process_video_upload(self, upload_id):
         frames = extract_frames_from_s3_video(video, video_path)
 
         # Apply rule engine for automated analysis
-        if upload.mode == Upload.Mode.INSPECTION:
+        if upload.mode == Upload.Mode.ENTERPRISE:
             inspection = apply_inspection_rules(video, frames)
         else:
             inspection = apply_coaching_rules(video, frames)
@@ -134,7 +134,7 @@ def reprocess_video_from_s3(self, video_id):
         frames = extract_frames_from_s3_video(video, video_path)
 
         # Apply AI analysis
-        if upload.mode == Upload.Mode.INSPECTION:
+        if upload.mode == Upload.Mode.ENTERPRISE:
             apply_inspection_rules(video, frames)
         else:
             apply_coaching_rules(video, frames)
@@ -343,7 +343,7 @@ def apply_inspection_rules(video, frames):
             title=video.title,
             created_by=video.uploaded_by,
             store=video.store,
-            mode=Inspection.Mode.INSPECTION,
+            mode=Inspection.Mode.ENTERPRISE,
             status=Inspection.Status.PENDING
         )
 
