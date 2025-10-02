@@ -325,7 +325,7 @@ class ScorecardTest(TestCase):
         
         self.assertEqual(scorecard.total_score, 85.5)
         self.assertEqual(scorecard.ppe_score, 90.0)
-        self.assertEqual(str(scorecard), "Scorecard for Test Store - inspection (uploaded) - 85.5%")
+        self.assertEqual(str(scorecard), "Scorecard for Test Store - enterprise (uploaded) - 85.5%")
 
 
 class TaskManagementTest(TestCase):
