@@ -14,6 +14,7 @@ import {
   LogOut,
   User,
   ArrowRight,
+  Settings,
 } from 'lucide-react';
 
 const navigation = [
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Brands', href: '/brands', icon: Building2, key: 'brands' },
   { name: 'Stores', href: '/stores', icon: Store, key: 'stores' },
   { name: 'Users', href: '/users', icon: Users, key: 'users' },
+  { name: 'Queue Monitor', href: '/admin/queue', icon: Settings, key: 'adminQueue', adminOnly: true },
 ] as const;
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -36,6 +38,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const filteredNavigation = navigation.filter((item) => {
     const state = navState[item.key as keyof typeof navState];
+    // Filter out admin-only items for non-admin users
+    if ('adminOnly' in item && item.adminOnly && user?.role !== 'ADMIN') {
+      return false;
+    }
     return state !== 'hidden';
   });
 

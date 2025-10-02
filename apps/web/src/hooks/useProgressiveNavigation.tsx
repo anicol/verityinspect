@@ -6,7 +6,7 @@ export interface NavigationState {
   showLogo: boolean;
   showUserEmail: boolean;
   showSkipToDashboard: boolean;
-  
+
   // Main navigation items
   dashboard: 'hidden' | 'visible-disabled' | 'enabled';
   videos: 'hidden' | 'enabled';
@@ -16,10 +16,11 @@ export interface NavigationState {
   users: 'hidden' | 'enabled';
   brands: 'hidden' | 'enabled';
   inspectorQueue: 'hidden' | 'enabled';
-  
+  adminQueue: 'hidden' | 'enabled';
+
   // Settings/Profile
   settings: 'hidden' | 'partial' | 'full';
-  
+
   // Never available in trial
   billing: 'hidden';
   teamManagement: 'hidden';
@@ -44,6 +45,7 @@ export function useProgressiveNavigation(): NavigationState {
         users: user?.role === 'ADMIN' ? 'enabled' : 'hidden',
         brands: user?.role === 'ADMIN' ? 'enabled' : 'hidden',
         inspectorQueue: ['INSPECTOR', 'ADMIN'].includes(user?.role || '') ? 'enabled' : 'hidden',
+        adminQueue: user?.role === 'ADMIN' ? 'enabled' : 'hidden',
         settings: 'full',
         billing: 'hidden', // Always hidden for trials
         teamManagement: 'hidden',
@@ -87,9 +89,10 @@ export function useProgressiveNavigation(): NavigationState {
       
       // Admin/role-based (only if unlocked)
       users: 'hidden', // Never available in trial
-      brands: 'hidden', // Never available in trial  
+      brands: 'hidden', // Never available in trial
       inspectorQueue: 'hidden', // Never available in trial
-      
+      adminQueue: 'hidden', // Never available in trial
+
       // Never available in trial
       billing: 'hidden',
       teamManagement: 'hidden',
