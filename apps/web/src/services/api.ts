@@ -315,6 +315,31 @@ export const inspectionsAPI = {
     const response = await api.get('/inspections/stats/');
     return response.data;
   },
+
+  // Finding review methods (coaching mode)
+  approveFinding: async (findingId: number): Promise<Finding> => {
+    const response = await api.post(`/inspections/findings/${findingId}/approve/`);
+    return response.data;
+  },
+
+  rejectFinding: async (findingId: number, reason?: string): Promise<Finding> => {
+    const response = await api.post(`/inspections/findings/${findingId}/reject/`, { reason });
+    return response.data;
+  },
+
+  createManualFinding: async (
+    inspectionId: number,
+    data: {
+      category: Finding['category'];
+      severity: Finding['severity'];
+      title: string;
+      description: string;
+      frame_id?: number | null;
+    }
+  ): Promise<Finding> => {
+    const response = await api.post(`/inspections/${inspectionId}/findings/create/`, data);
+    return response.data;
+  },
 };
 
 // Action Items API

@@ -155,6 +155,16 @@ export interface Finding {
   average_confidence: number | null;
   // AI-generated action metadata
   estimated_minutes: number | null;
+  // Manager review fields (for coaching mode)
+  is_manual: boolean;
+  is_approved: boolean;
+  approved_by: number | null;
+  approved_at: string | null;
+  is_rejected: boolean;
+  rejection_reason: string;
+  rejected_by: number | null;
+  rejected_at: string | null;
+  created_by: number | null;
   created_at: string;
 }
 

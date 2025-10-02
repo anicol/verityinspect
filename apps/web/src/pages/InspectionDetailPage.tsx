@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { inspectionsAPI } from '@/services/api';
 import { format } from 'date-fns';
 import {
@@ -93,7 +93,13 @@ function ScoreBar({ score, label }: { score: number | null; label: string }) {
   );
 }
 
-function FindingCard({ finding }: { finding: Finding }) {
+interface FindingCardProps {
+  finding: Finding;
+  onApprove: (findingId: number) => void;
+  onReject: (findingId: number) => void;
+}
+
+function FindingCard({ finding, onApprove, onReject }: FindingCardProps) {
   const CategoryIcon = categoryIcons[finding.category] || FileText;
 
   // Format timestamp helper
@@ -207,6 +213,48 @@ function FindingCard({ finding }: { finding: Finding }) {
             </p>
           </div>
         )}
+
+        {/* Approve/Reject buttons for manager review */}
+        {!finding.is_manual && !finding.is_approved && !finding.is_rejected && (
+          <div className="flex gap-2 pt-2">
+            <button
+              onClick={() => onApprove(finding.id)}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Correct - Keep This
+            </button>
+            <button
+              onClick={() => onReject(finding.id)}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              False Alarm - Remove
+            </button>
+          </div>
+        )}
+
+        {/* Status indicators */}
+        {finding.is_approved && (
+          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-md text-sm font-medium text-center flex items-center justify-center">
+            <CheckCircle className="w-4 h-4 mr-2" />
+            ✓ Confirmed by you
+          </div>
+        )}
+
+        {finding.is_rejected && (
+          <div className="bg-gray-100 border border-gray-300 text-gray-600 px-4 py-2 rounded-md text-sm text-center flex items-center justify-center line-through">
+            <XCircle className="w-4 h-4 mr-2" />
+            Dismissed as false positive
+          </div>
+        )}
+
+        {finding.is_manual && (
+          <div className="bg-indigo-50 border border-indigo-200 text-indigo-800 px-4 py-2 rounded-md text-sm font-medium text-center flex items-center justify-center">
+            <User className="w-4 h-4 mr-2" />
+            ✓ Added by you (100% confidence)
+          </div>
+        )}
       </div>
     </div>
   );
@@ -263,11 +311,12 @@ function ActionItemCard({ actionItem }: { actionItem: ActionItem }) {
 
 export default function InspectionDetailPage() {
   const { id } = useParams();
-  
+  const queryClient = useQueryClient();
+
   const { data: inspection, isLoading, error } = useQuery(
     ['inspection', id],
     () => inspectionsAPI.getInspection(Number(id)),
-    { 
+    {
       enabled: !!id,
       retry: (failureCount, error: any) => {
         // Don't retry on 404 errors
@@ -276,7 +325,38 @@ export default function InspectionDetailPage() {
       }
     }
   );
-  
+
+  // Mutation for approving findings
+  const approveMutation = useMutation(
+    (findingId: number) => inspectionsAPI.approveFinding(findingId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['inspection', id]);
+      }
+    }
+  );
+
+  // Mutation for rejecting findings
+  const rejectMutation = useMutation(
+    (findingId: number) => inspectionsAPI.rejectFinding(findingId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['inspection', id]);
+      }
+    }
+  );
+
+  // Handlers
+  const handleApproveFinding = (findingId: number) => {
+    approveMutation.mutate(findingId);
+  };
+
+  const handleRejectFinding = (findingId: number) => {
+    if (window.confirm('Are you sure this detection is incorrect?')) {
+      rejectMutation.mutate(findingId);
+    }
+  };
+
   // Use findings from inspection response instead of separate API call
   const findings = inspection?.findings || [];
 
@@ -399,7 +479,12 @@ export default function InspectionDetailPage() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {categoryFindings.map((finding) => (
-                  <FindingCard key={finding.id} finding={finding} />
+                  <FindingCard
+                    key={finding.id}
+                    finding={finding}
+                    onApprove={handleApproveFinding}
+                    onReject={handleRejectFinding}
+                  />
                 ))}
               </div>
             </div>

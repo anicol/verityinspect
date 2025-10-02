@@ -91,6 +91,37 @@ class Finding(models.Model):
     # AI-generated action metadata
     estimated_minutes = models.IntegerField(null=True, blank=True, help_text="AI-estimated time in minutes to address this issue")
 
+    # Manager review fields (for coaching mode self-review)
+    is_manual = models.BooleanField(default=False, help_text="True if manually added by manager, not AI-detected")
+    is_approved = models.BooleanField(default=False, help_text="Manager confirmed this finding is correct")
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_findings'
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+
+    is_rejected = models.BooleanField(default=False, help_text="Manager dismissed this as false positive")
+    rejection_reason = models.TextField(blank=True, help_text="Why this finding was rejected")
+    rejected_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='rejected_findings'
+    )
+    rejected_at = models.DateTimeField(null=True, blank=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="User who created this finding (for manual findings)"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
