@@ -59,7 +59,17 @@ class LoginSerializer(serializers.Serializer):
         password = attrs.get('password')
 
         if username and password:
+            # Try to authenticate with username
             user = authenticate(username=username, password=password)
+
+            # If failed, check if it's an email and try to find the user
+            if not user and '@' in username:
+                try:
+                    user_obj = User.objects.get(email=username)
+                    user = authenticate(username=user_obj.username, password=password)
+                except User.DoesNotExist:
+                    pass
+
             if not user:
                 raise serializers.ValidationError('Invalid credentials')
             if not user.is_active:
