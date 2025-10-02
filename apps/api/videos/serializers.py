@@ -60,11 +60,12 @@ class VideoListSerializer(serializers.ModelSerializer):
     store_name = serializers.CharField(source='store.name', read_only=True)
     file_size_mb = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
+    mode = serializers.SerializerMethodField()
 
     class Meta:
         model = Video
         fields = ('id', 'title', 'store', 'store_name', 'uploaded_by_name',
-                 'status', 'duration', 'file_size_mb', 'thumbnail', 'created_at')
+                 'status', 'duration', 'file_size_mb', 'thumbnail', 'mode', 'created_at')
 
     def get_file_size_mb(self, obj):
         if obj.file_size:
@@ -75,4 +76,10 @@ class VideoListSerializer(serializers.ModelSerializer):
         """Return the full S3 URL for the thumbnail"""
         if obj.thumbnail:
             return obj.thumbnail.url
+        return None
+
+    def get_mode(self, obj):
+        """Return the inspection mode if inspection exists"""
+        if obj.inspection:
+            return obj.inspection.mode
         return None

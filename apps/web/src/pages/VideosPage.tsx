@@ -2,11 +2,22 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { videosAPI } from '@/services/api';
-import { Video, Upload, Play, Calendar, FileText } from 'lucide-react';
+import { Video, Upload, Play, Calendar, FileText, Target, Users } from 'lucide-react';
 import { format } from 'date-fns';
+
+const modeColors = {
+  COACHING: 'bg-green-100 text-green-800',
+  ENTERPRISE: 'bg-blue-100 text-blue-800',
+};
+
+const modeIcons = {
+  COACHING: Target,
+  ENTERPRISE: Users,
+};
 
 export default function VideosPage() {
   const [statusFilter, setStatusFilter] = useState('');
+  const [modeFilter, setModeFilter] = useState('');
   
   const { data: videos, isLoading } = useQuery(
     ['videos', { status: statusFilter }],
@@ -28,6 +39,18 @@ export default function VideosPage() {
     { value: 'COMPLETED', label: 'Completed' },
     { value: 'FAILED', label: 'Failed' },
   ];
+
+  const modeOptions = [
+    { value: '', label: 'All Modes' },
+    { value: 'COACHING', label: 'Coaching (Self-Review)' },
+    { value: 'ENTERPRISE', label: 'Enterprise (Inspector)' },
+  ];
+
+  // Client-side filter for mode
+  const filteredVideos = videos?.filter(video => {
+    if (!modeFilter) return true;
+    return video.mode === modeFilter;
+  });
 
   return (
     <div className="space-y-6">
@@ -56,7 +79,7 @@ export default function VideosPage() {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow">
-        <div className="flex items-center space-x-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="status" className="block text-sm font-medium text-gray-700">
               Status
@@ -74,6 +97,23 @@ export default function VideosPage() {
               ))}
             </select>
           </div>
+          <div>
+            <label htmlFor="mode" className="block text-sm font-medium text-gray-700">
+              Mode
+            </label>
+            <select
+              id="mode"
+              value={modeFilter}
+              onChange={(e) => setModeFilter(e.target.value)}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              {modeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -84,7 +124,7 @@ export default function VideosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos?.map((video) => (
+          {filteredVideos?.map((video) => (
             <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="relative">
                 {video.thumbnail ? (
@@ -98,7 +138,7 @@ export default function VideosPage() {
                     <Video className="w-12 h-12 text-gray-400" />
                   </div>
                 )}
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       video.status === 'COMPLETED'
@@ -118,6 +158,15 @@ export default function VideosPage() {
                     )}
                     {video.status}
                   </span>
+                  {video.mode && (() => {
+                    const ModeIcon = modeIcons[video.mode];
+                    return (
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${modeColors[video.mode]}`}>
+                        <ModeIcon className="w-3 h-3 mr-1" />
+                        {video.mode === 'COACHING' ? 'Self-Review' : 'Inspector'}
+                      </span>
+                    );
+                  })()}
                 </div>
                 {video.duration && (
                   <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
@@ -175,7 +224,7 @@ export default function VideosPage() {
         </div>
       )}
 
-      {videos && videos.length === 0 && (
+      {filteredVideos && filteredVideos.length === 0 && (
         <div className="text-center py-12">
           <Video className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No videos</h3>

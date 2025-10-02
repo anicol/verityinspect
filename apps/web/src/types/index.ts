@@ -90,6 +90,7 @@ export interface Video {
   error_message: string;
   metadata: Record<string, any>;
   frames?: VideoFrame[];
+  mode: 'ENTERPRISE' | 'COACHING' | null;
   created_at: string;
   updated_at: string;
 }
