@@ -666,16 +666,13 @@ function StoreFormModal({ store, brands, currentUser, onClose }: StoreFormModalP
             </label>
           </div>
 
-          {mutation.error && (() => {
-            const errorMessage = (mutation.error as any)?.response?.data?.detail || 'Failed to save store';
-            return (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-700 text-sm">
-                  {String(errorMessage)}
-                </p>
-              </div>
-            );
-          })()}
+          {mutation.error ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-red-700 text-sm">
+                {String((mutation.error as any)?.response?.data?.detail || 'Failed to save store')}
+              </p>
+            </div>
+          ) : null}
 
           <div className="flex justify-end space-x-3 pt-4">
             <button
