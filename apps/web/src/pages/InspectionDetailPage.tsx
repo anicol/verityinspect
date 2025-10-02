@@ -24,6 +24,8 @@ import {
   ChefHat,
   Users,
   Plus,
+  Download,
+  ClipboardList,
 } from 'lucide-react';
 import type { Inspection, Finding, ActionItem } from '@/types';
 import AddFindingModal, { type NewFindingData } from '@/components/AddFindingModal';
@@ -97,11 +99,12 @@ function ScoreBar({ score, label }: { score: number | null; label: string }) {
 
 interface FindingCardProps {
   finding: Finding;
+  mode: 'COACHING' | 'ENTERPRISE';
   onApprove: (findingId: number) => void;
   onReject: (findingId: number) => void;
 }
 
-function FindingCard({ finding, onApprove, onReject }: FindingCardProps) {
+function FindingCard({ finding, mode, onApprove, onReject }: FindingCardProps) {
   const CategoryIcon = categoryIcons[finding.category] || FileText;
 
   // Format timestamp helper
@@ -216,8 +219,8 @@ function FindingCard({ finding, onApprove, onReject }: FindingCardProps) {
           </div>
         )}
 
-        {/* Approve/Reject buttons for manager review */}
-        {!finding.is_manual && !finding.is_approved && !finding.is_rejected && (
+        {/* Approve/Reject buttons - only in COACHING mode */}
+        {mode === 'COACHING' && !finding.is_manual && !finding.is_approved && !finding.is_rejected && (
           <div className="flex gap-2 pt-2">
             <button
               onClick={() => onApprove(finding.id)}
@@ -459,6 +462,68 @@ export default function InspectionDetailPage() {
         </div>
       </div>
 
+      {/* Inspector Information (for enterprise mode) */}
+      {inspection.mode === 'ENTERPRISE' && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-6 border border-blue-200">
+          <div className="flex items-center mb-4">
+            <Users className="w-6 h-6 text-blue-600 mr-2" />
+            <h2 className="text-lg font-semibold text-gray-900">Professional Inspector Review</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Inspector Assignment */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="flex items-center mb-2">
+                <User className="w-5 h-5 text-blue-600 mr-2" />
+                <span className="text-sm font-medium text-gray-600">Assigned Inspector</span>
+              </div>
+              <div className="text-lg font-semibold text-gray-900">
+                {inspection.assigned_inspector ? `Inspector #${inspection.assigned_inspector}` : 'Pending Assignment'}
+              </div>
+            </div>
+
+            {/* Report Status */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="flex items-center mb-2">
+                <ClipboardList className="w-5 h-5 text-blue-600 mr-2" />
+                <span className="text-sm font-medium text-gray-600">Report Status</span>
+              </div>
+              <div className="text-lg font-semibold text-gray-900">
+                {inspection.report_generated_at ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-green-700">Generated</span>
+                    {inspection.report_url && (
+                      <a
+                        href={inspection.report_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  'In Progress'
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Inspector Notes */}
+          {inspection.inspector_notes && (
+            <div className="mt-4 bg-white rounded-lg p-4 shadow-sm">
+              <div className="flex items-center mb-2">
+                <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                <span className="text-sm font-medium text-gray-600">Inspector Notes</span>
+              </div>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{inspection.inspector_notes}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Video Player */}
       {video && video.file && (
         <div className="bg-white rounded-lg shadow p-6">
@@ -473,7 +538,11 @@ export default function InspectionDetailPage() {
             </video>
           </div>
           <div className="mt-3 text-sm text-gray-600">
-            <p>Review the video to confirm AI detections or add violations you notice.</p>
+            {inspection.mode === 'COACHING' ? (
+              <p>Review the video to confirm AI detections or add violations you notice.</p>
+            ) : (
+              <p>Professional inspector analysis in progress. Detailed report will be available soon.</p>
+            )}
           </div>
         </div>
       )}
@@ -601,13 +670,15 @@ export default function InspectionDetailPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Findings</h2>
-            <button
-              onClick={() => setIsAddFindingModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Violation
-            </button>
+            {inspection.mode === 'COACHING' && (
+              <button
+                onClick={() => setIsAddFindingModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Violation
+              </button>
+            )}
           </div>
           
           {Object.entries(findingsByCategory).map(([category, categoryFindings]) => (
@@ -621,6 +692,7 @@ export default function InspectionDetailPage() {
                   <FindingCard
                     key={finding.id}
                     finding={finding}
+                    mode={inspection.mode}
                     onApprove={handleApproveFinding}
                     onReject={handleRejectFinding}
                   />
@@ -651,13 +723,15 @@ export default function InspectionDetailPage() {
           <p className="mt-1 text-sm text-gray-500">
             This inspection completed successfully with no findings or action items.
           </p>
-          <button
-            onClick={() => setIsAddFindingModalOpen(true)}
-            className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add a Violation
-          </button>
+          {inspection.mode === 'COACHING' && (
+            <button
+              onClick={() => setIsAddFindingModalOpen(true)}
+              className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add a Violation
+            </button>
+          )}
         </div>
       )}
 
