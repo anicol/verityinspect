@@ -10,6 +10,19 @@ from .models import Inspection, Finding, ActionItem
 User = get_user_model()
 
 
+def create_inspection_with_video(video, mode=None):
+    """Helper function to create inspection and link video (new relationship pattern)"""
+    inspection = Inspection.objects.create(
+        title=video.title,
+        created_by=video.uploaded_by,
+        store=video.store,
+        mode=mode or Inspection.Mode.INSPECTION
+    )
+    video.inspection = inspection
+    video.save()
+    return inspection
+
+
 class InspectionModelTest(TestCase):
     def setUp(self):
         self.brand = Brand.objects.create(name="Test Brand")
@@ -34,19 +47,15 @@ class InspectionModelTest(TestCase):
         )
 
     def test_create_inspection(self):
-        inspection = Inspection.objects.create(
-            video=self.video,
-            mode=Inspection.Mode.INSPECTION
-        )
+        inspection = create_inspection_with_video(self.video)
+
         self.assertEqual(inspection.mode, Inspection.Mode.INSPECTION)
         self.assertEqual(inspection.status, Inspection.Status.PENDING)
         self.assertEqual(str(inspection), "Test Video - INSPECTION (PENDING)")
+        self.assertEqual(inspection.video, self.video)  # Test backward-compatible property
 
     def test_create_finding(self):
-        inspection = Inspection.objects.create(
-            video=self.video,
-            mode=Inspection.Mode.INSPECTION
-        )
+        inspection = create_inspection_with_video(self.video)
         finding = Finding.objects.create(
             inspection=inspection,
             category=Finding.Category.PPE,
@@ -60,10 +69,7 @@ class InspectionModelTest(TestCase):
         self.assertEqual(str(finding), "PPE - Missing Face Cover")
 
     def test_create_action_item(self):
-        inspection = Inspection.objects.create(
-            video=self.video,
-            mode=Inspection.Mode.INSPECTION
-        )
+        inspection = create_inspection_with_video(self.video)
         finding = Finding.objects.create(
             inspection=inspection,
             category=Finding.Category.SAFETY,
@@ -120,11 +126,9 @@ class InspectionAPITest(TestCase):
         mock_analyze_video.assert_called_once()
 
     def test_get_inspections(self):
-        inspection = Inspection.objects.create(
-            video=self.video,
-            mode=Inspection.Mode.INSPECTION,
-            overall_score=85.5
-        )
+        inspection = create_inspection_with_video(self.video)
+        inspection.overall_score = 85.5
+        inspection.save()
         
         response = self.client.get('/api/inspections/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -132,23 +136,19 @@ class InspectionAPITest(TestCase):
         self.assertEqual(response.data['results'][0]['overall_score'], 85.5)
 
     def test_get_inspection_detail(self):
-        inspection = Inspection.objects.create(
-            video=self.video,
-            mode=Inspection.Mode.INSPECTION,
-            overall_score=85.5
-        )
+        inspection = create_inspection_with_video(self.video)
+        inspection.overall_score = 85.5
+        inspection.save()
         
         response = self.client.get(f'/api/inspections/{inspection.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['overall_score'], 85.5)
 
     def test_get_inspection_stats(self):
-        Inspection.objects.create(
-            video=self.video,
-            mode=Inspection.Mode.INSPECTION,
-            status=Inspection.Status.COMPLETED,
-            overall_score=85.5
-        )
+        inspection = create_inspection_with_video(self.video)
+        inspection.status = Inspection.Status.COMPLETED
+        inspection.overall_score = 85.5
+        inspection.save()
         
         response = self.client.get('/api/inspections/stats/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -199,17 +199,14 @@ class InspectorWorkflowTest(TestCase):
         )
         
         # Create inspections in different states
-        self.pending_inspection = Inspection.objects.create(
-            video=self.video1,
-            mode=Inspection.Mode.INSPECTION,
-            status=Inspection.Status.PENDING
-        )
-        self.completed_inspection = Inspection.objects.create(
-            video=self.video2,
-            mode=Inspection.Mode.INSPECTION, 
-            status=Inspection.Status.COMPLETED,
-            overall_score=88.5
-        )
+        self.pending_inspection = create_inspection_with_video(self.video1)
+        self.pending_inspection.status = Inspection.Status.PENDING
+        self.pending_inspection.save()
+
+        self.completed_inspection = create_inspection_with_video(self.video2)
+        self.completed_inspection.status = Inspection.Status.COMPLETED
+        self.completed_inspection.overall_score = 88.5
+        self.completed_inspection.save()
         
     def test_inspector_queue_access(self):
         """Test inspector can access their queue"""
@@ -242,11 +239,9 @@ class InspectorWorkflowTest(TestCase):
             created_at=timezone.now() - timedelta(hours=25)
         )
         
-        old_inspection = Inspection.objects.create(
-            video=old_video,
-            mode=Inspection.Mode.INSPECTION,
-            status=Inspection.Status.PENDING
-        )
+        old_inspection = create_inspection_with_video(old_video)
+        old_inspection.status = Inspection.Status.PENDING
+        old_inspection.save()
         
         self.client.force_authenticate(user=self.inspector)
         response = self.client.get('/api/inspections/?status=PENDING')
@@ -570,13 +565,12 @@ class InspectionAnalyticsTest(TestCase):
                 title=f"Video {i+1}", file=f"video_{i+1}.mp4",
                 status=Video.Status.COMPLETED
             )
-            
-            inspection = Inspection.objects.create(
-                video=video,
-                mode=Inspection.Mode.INSPECTION,
-                status=Inspection.Status.COMPLETED,
-                overall_score=75 + (i * 2)  # Improving scores: 75, 77, 79, 81, 83
-            )
+
+
+            inspection = create_inspection_with_video(video)
+            inspection.status = Inspection.Status.COMPLETED
+            inspection.overall_score = 75 + (i * 2)  # Improving scores: 75, 77, 79, 81, 83
+            inspection.save()
             
             # Set different creation dates
             Inspection.objects.filter(id=inspection.id).update(
@@ -600,12 +594,10 @@ class InspectionAnalyticsTest(TestCase):
             status=Video.Status.COMPLETED
         )
         
-        inspection = Inspection.objects.create(
-            video=video,
-            mode=Inspection.Mode.INSPECTION,
-            status=Inspection.Status.COMPLETED,
-            overall_score=75.0
-        )
+        inspection = create_inspection_with_video(video)
+        inspection.status = Inspection.Status.COMPLETED
+        inspection.overall_score = 75.0
+        inspection.save()
         
         # Create findings in different categories
         Finding.objects.create(

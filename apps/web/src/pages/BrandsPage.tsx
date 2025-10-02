@@ -352,7 +352,7 @@ function BrandFormModal({ brand, onClose }: BrandFormModalProps) {
           {mutation.error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-700 text-sm">
-                {(mutation.error as any)?.response?.data?.detail || 'Failed to save brand'}
+                {String((mutation.error as any)?.response?.data?.detail || 'Failed to save brand')}
               </p>
             </div>
           )}

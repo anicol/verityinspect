@@ -64,7 +64,7 @@ export default function StoresPage() {
 
   const filteredStores = stores?.filter(store => {
     // Non-admin users can only see stores for their brand
-    if (currentUser?.role !== 'ADMIN' && currentUser?.brand && store.brand !== currentUser.brand) {
+    if (currentUser?.role !== 'ADMIN' && currentUser?.brand_id && store.brand !== currentUser.brand_id) {
       return false;
     }
 
@@ -669,7 +669,7 @@ function StoreFormModal({ store, brands, currentUser, onClose }: StoreFormModalP
           {mutation.error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-700 text-sm">
-                {(mutation.error as any)?.response?.data?.detail || 'Failed to save store'}
+                {String((mutation.error as any)?.response?.data?.detail || 'Failed to save store')}
               </p>
             </div>
           )}

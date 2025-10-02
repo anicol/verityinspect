@@ -73,7 +73,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         items: filteredItems
       };
     })
-    .filter(Boolean);
+    .filter((section): section is NonNullable<typeof section> => section !== null);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">

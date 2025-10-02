@@ -13,7 +13,12 @@ class Inspection(models.Model):
         COMPLETED = 'COMPLETED', 'Completed'
         FAILED = 'FAILED', 'Failed'
 
-    video = models.OneToOneField('videos.Video', on_delete=models.CASCADE, related_name='inspection')
+    # Core inspection metadata (no longer tied to single video)
+    title = models.CharField(max_length=200, help_text="Inspection title", default="")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_inspections', null=True)
+    store = models.ForeignKey('brands.Store', on_delete=models.CASCADE, related_name='inspections', null=True)
+    inspection_date = models.DateTimeField(null=True, blank=True, help_text="When inspection was initiated")
+
     mode = models.CharField(max_length=20, choices=Mode.choices)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     overall_score = models.FloatField(null=True, blank=True, help_text="Overall score 0-100")
@@ -38,7 +43,12 @@ class Inspection(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.video.title} - {self.mode} ({self.status})"
+        return f"{self.title} - {self.mode} ({self.status})"
+
+    @property
+    def video(self):
+        """Backward compatibility property - returns first video"""
+        return self.videos.first() if self.videos.exists() else None
 
 
 class Finding(models.Model):
