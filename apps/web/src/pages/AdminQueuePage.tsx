@@ -49,7 +49,7 @@ interface QueueStatus {
 }
 
 const fetchQueueStatus = async (): Promise<QueueStatus> => {
-  const response = await fetch(`${API_CONFIG.baseURL}/api/admin/queue-status/`, {
+  const response = await fetch(`${API_CONFIG.baseURL}/admin/queue-status/`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
       ...API_CONFIG.headers,
