@@ -311,6 +311,7 @@ function BrandFormModal({ brand, onClose }: BrandFormModalProps) {
     name: brand?.name || '',
     description: brand?.description || '',
     is_active: brand?.is_active ?? true,
+    has_enterprise_access: brand?.has_enterprise_access ?? false,
   });
 
   const mutation = useMutation(
@@ -379,6 +380,25 @@ function BrandFormModal({ brand, onClose }: BrandFormModalProps) {
             <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
               Active
             </label>
+          </div>
+
+          <div className="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <input
+              type="checkbox"
+              id="has_enterprise_access"
+              checked={formData.has_enterprise_access}
+              onChange={(e) => setFormData({ ...formData, has_enterprise_access: e.target.checked })}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <div className="ml-3 flex-1">
+              <label htmlFor="has_enterprise_access" className="block text-sm font-medium text-gray-900">
+                <Briefcase className="h-4 w-4 inline mr-1 text-blue-600" />
+                Enterprise Access
+              </label>
+              <p className="text-xs text-gray-600 mt-0.5">
+                Enable inspector-led review workflow and enterprise features
+              </p>
+            </div>
           </div>
 
           {mutation.error ? (
