@@ -31,8 +31,8 @@ class Inspection(models.Model):
         related_name='assigned_inspections',
         help_text="Inspector assigned to review (enterprise mode only)"
     )
-    inspector_notes = models.TextField(blank=True, help_text="Detailed inspector notes and observations (enterprise mode)")
-    report_url = models.CharField(max_length=500, blank=True, help_text="URL to generated PDF report (enterprise mode)")
+    inspector_notes = models.TextField(blank=True, default='', help_text="Detailed inspector notes and observations (enterprise mode)")
+    report_url = models.CharField(max_length=500, blank=True, default='', help_text="URL to generated PDF report (enterprise mode)")
     report_generated_at = models.DateTimeField(null=True, blank=True, help_text="When report was generated")
 
     # Scores
@@ -119,7 +119,7 @@ class Finding(models.Model):
     approved_at = models.DateTimeField(null=True, blank=True)
 
     is_rejected = models.BooleanField(default=False, help_text="Manager dismissed this as false positive")
-    rejection_reason = models.TextField(blank=True, help_text="Why this finding was rejected")
+    rejection_reason = models.TextField(blank=True, default='', help_text="Why this finding was rejected")
     rejected_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

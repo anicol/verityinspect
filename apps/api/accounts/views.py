@@ -392,3 +392,30 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         user_ids = request.data.get('user_ids', [])
         User.objects.filter(id__in=user_ids).update(is_active=False)
         return Response({'status': 'deactivated', 'count': len(user_ids)})
+
+    @action(detail=True, methods=['post'])
+    def reset_password(self, request, pk=None):
+        """Admin action to reset a user's password"""
+        user = self.get_object()
+        new_password = request.data.get('new_password')
+
+        if not new_password:
+            return Response(
+                {'error': 'new_password is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(new_password) < 8:
+            return Response(
+                {'error': 'Password must be at least 8 characters long'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Set the new password
+        user.set_password(new_password)
+        user.save()
+
+        return Response({
+            'status': 'success',
+            'message': f'Password reset successfully for {user.email}'
+        })

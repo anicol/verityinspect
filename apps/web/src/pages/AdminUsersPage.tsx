@@ -16,6 +16,7 @@ import {
   Shield,
   UserCheck,
   Crown,
+  Key,
 } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
 import { brandsAPI, storesAPI } from '@/services/api';
@@ -72,12 +73,29 @@ const adminUsersAPI = {
     });
     if (!response.ok) throw new Error('Failed to delete user');
   },
+
+  resetPassword: async (id: number, newPassword: string): Promise<{ status: string; message: string }> => {
+    const response = await fetch(`${API_CONFIG.baseURL}/auth/admin/users/${id}/reset_password/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        ...API_CONFIG.headers,
+      },
+      body: JSON.stringify({ new_password: newPassword }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to reset password');
+    }
+    return response.json();
+  },
 };
 
 export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [resettingPasswordUser, setResettingPasswordUser] = useState<User | null>(null);
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [brandFilter, setBrandFilter] = useState<string>('all');
   const queryClient = useQueryClient();
@@ -355,13 +373,22 @@ export default function AdminUsersPage() {
                       <button
                         onClick={() => setEditingUser(user)}
                         className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        title="Edit user"
                       >
                         <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setResettingPasswordUser(user)}
+                        className="text-yellow-600 hover:text-yellow-900 mr-4"
+                        title="Reset password"
+                      >
+                        <Key className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(user)}
                         className="text-red-600 hover:text-red-900"
                         disabled={deleteMutation.isLoading}
+                        title="Delete user"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -383,6 +410,13 @@ export default function AdminUsersPage() {
             setIsCreateModalOpen(false);
             setEditingUser(null);
           }}
+        />
+      )}
+
+      {resettingPasswordUser && (
+        <PasswordResetModal
+          user={resettingPasswordUser}
+          onClose={() => setResettingPasswordUser(null)}
         />
       )}
     </div>
@@ -599,6 +633,149 @@ function AdminUserFormModal({ user, brands, stores, onClose }: AdminUserFormModa
             >
               {mutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {user ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+interface PasswordResetModalProps {
+  user: User;
+  onClose: () => void;
+}
+
+function PasswordResetModal({ user, onClose }: PasswordResetModalProps) {
+  const queryClient = useQueryClient();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const mutation = useMutation(
+    () => adminUsersAPI.resetPassword(user.id, newPassword),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('admin-users');
+        onClose();
+      },
+    }
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      alert('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (window.confirm(`Reset password for ${user.email}?\n\nMake sure to securely share the new password with the user.`)) {
+      mutation.mutate();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="flex items-center mb-4">
+          <Key className="h-6 w-6 text-yellow-600 mr-2" />
+          <h2 className="text-xl font-bold text-gray-900">
+            Reset Password
+          </h2>
+        </div>
+
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            <strong>User:</strong> {user.full_name} ({user.email})
+          </p>
+          <p className="text-xs text-yellow-700 mt-1">
+            Make sure to securely share the new password with the user.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              New Password *
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Enter new password (min 8 characters)"
+                minLength={8}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Confirm Password *
+            </label>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Re-enter new password"
+              minLength={8}
+            />
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="show_password"
+              checked={showPassword}
+              onChange={(e) => setShowPassword(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <label htmlFor="show_password" className="ml-2 block text-sm text-gray-900">
+              Show password
+            </label>
+          </div>
+
+          {mutation.error ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-red-700 text-sm">
+                {String((mutation.error as any)?.message || 'Failed to reset password')}
+              </p>
+            </div>
+          ) : null}
+
+          {mutation.isSuccess && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p className="text-green-700 text-sm">
+                Password reset successfully!
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={mutation.isLoading}
+              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 flex items-center"
+            >
+              {mutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Reset Password
             </button>
           </div>
         </form>
