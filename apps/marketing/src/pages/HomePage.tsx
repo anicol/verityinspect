@@ -53,7 +53,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Two Modes, One Platform
+              Two Ways to Improve — One Seamless Platform
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Choose the approach that fits your needs, or use both together for comprehensive coverage.
@@ -68,10 +68,10 @@ export default function HomePage() {
                   <Users className="w-8 h-8 text-teal-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  For Managers → Coaching Mode
+                  Walkthroughs (Coaching Mode)
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Quick, private AI feedback from a simple smartphone video. Videos deleted after processing. Free trial available.
+                  Quick, private AI video feedback that helps you spot issues early and train your team faster.
                 </p>
               </div>
               <ul className="space-y-3 mb-8">
@@ -81,11 +81,11 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-teal-600 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Complete privacy & data deletion</span>
+                  <span className="text-gray-700">Private & deleted after processing</span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-teal-600 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">No surprise audits or stress</span>
+                  <span className="text-gray-700">Confidence before every audit</span>
                 </li>
               </ul>
               <Link
@@ -103,20 +103,20 @@ export default function HomePage() {
                   <TrendingUp className="w-8 h-8 text-blue-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  For Brands → Enterprise Mode
+                  Inspections (Enterprise Mode)
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Video-powered compliance: travel savings, official records, dashboards, and trend analysis.
+                  Centralized video reviews, official reports, and dashboards for consistent quality across every store.
                 </p>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">50-70% travel cost reduction</span>
+                  <span className="text-gray-700">50–70% reduction in travel and inspection costs</span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Official compliance reporting</span>
+                  <span className="text-gray-700">Official compliance tracking</span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
@@ -134,15 +134,58 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Micro-Checks */}
       <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Micro-Checks: Small Habits, Big Improvements
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              PeakOps sends 3 randomized items daily or every few days — quick checks your team can do in minutes.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="bg-gray-50 p-6 rounded-lg text-center">
+              <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-6 h-6 text-teal-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Reinforces daily standards
+              </h3>
+            </div>
+
+            <div className="bg-gray-50 p-6 rounded-lg text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Builds accountability and team ownership
+              </h3>
+            </div>
+
+            <div className="bg-gray-50 p-6 rounded-lg text-center">
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-6 h-6 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Prevents small issues from becoming big problems
+              </h3>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               How It Works
             </h2>
             <p className="text-xl text-gray-600">
-              Three simple steps to transform your inspection process
+              Simple workflows that build better operations every day
             </p>
           </div>
           
@@ -156,10 +199,10 @@ export default function HomePage() {
                 1
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Record Walkthrough Video
+                Record & Check
               </h3>
               <p className="text-gray-600">
-                Capture a 2-3 minute video walkthrough using any smartphone. No special equipment needed.
+                Record a short walkthrough video or complete a micro-check using your smartphone.
               </p>
             </div>
 
@@ -172,10 +215,10 @@ export default function HomePage() {
                 2
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                AI Reviews Instantly
+                AI Analyzes in Minutes
               </h3>
               <p className="text-gray-600">
-                Our AI analyzes your video in minutes, identifying compliance issues and areas for improvement.
+                AI analyzes in minutes, spotting issues and highlighting what's working well.
               </p>
             </div>
 
@@ -188,10 +231,10 @@ export default function HomePage() {
                 3
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Get Scorecard + Action Items
+                Review Your Fix List
               </h3>
               <p className="text-gray-600">
-                Receive detailed scorecards with specific, actionable recommendations to improve your operations.
+                Review your Fix List — make improvements and track your store's progress over time.
               </p>
             </div>
           </div>
@@ -204,26 +247,26 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
-                The Value for Everyone
+                The Value of Continuous Improvement
               </h2>
               
               {/* For Managers */}
               <div className="mb-8">
                 <h3 className="text-xl font-semibold text-teal-600 mb-4">
-                  For Managers
+                  Managers
                 </h3>
                 <ul className="space-y-3">
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-teal-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Less stress from unexpected inspection failures</span>
+                    <span className="text-gray-700">Less stress from surprise audits</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-teal-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Faster fixes with immediate, actionable feedback</span>
+                    <span className="text-gray-700">Daily confidence through quick checks</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-teal-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">No surprise audits - stay proactively compliant</span>
+                    <span className="text-gray-700">Build stronger, more consistent teams</span>
                   </li>
                 </ul>
               </div>
@@ -231,20 +274,20 @@ export default function HomePage() {
               {/* For Brands */}
               <div>
                 <h3 className="text-xl font-semibold text-blue-600 mb-4">
-                  For Brands
+                  Brands & Franchise Owners
                 </h3>
                 <ul className="space-y-3">
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Consistent standards across all locations</span>
+                    <span className="text-gray-700">Consistent standards across every store</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">50-70% reduction in travel and inspection costs</span>
+                    <span className="text-gray-700">50–70% reduction in travel and inspection costs</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Scalable coverage for rapid expansion</span>
+                    <span className="text-gray-700">Continuous visibility and faster improvements</span>
                   </li>
                 </ul>
               </div>
@@ -290,11 +333,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Security & Privacy First
+              Security & Privacy — Built for Trust
             </h2>
-            <p className="text-xl text-gray-600">
-              Your data is protected with enterprise-grade security
-            </p>
           </div>
           
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -306,7 +346,7 @@ export default function HomePage() {
                 Coaching Mode
               </h3>
               <p className="text-gray-600">
-                <strong>Private and deleted.</strong> Videos are processed locally and permanently deleted after analysis. Results stay at your store level.
+                <strong>Private and deleted after analysis.</strong> Results stay with your store.
               </p>
             </div>
 
@@ -318,7 +358,7 @@ export default function HomePage() {
                 Enterprise Mode
               </h3>
               <p className="text-gray-600">
-                <strong>Retained and secure.</strong> Official records are encrypted and stored for compliance reporting and dashboard analytics.
+                <strong>Encrypted, retained, and available for corporate reporting.</strong>
               </p>
             </div>
           </div>
@@ -329,10 +369,10 @@ export default function HomePage() {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-teal-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Transform Your Inspections?
+            Ready to Build a Culture of Continuous Improvement?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            Start with coaching today and upgrade to enterprise when you're ready for full-scale compliance management.
+            Start with AI coaching today — add daily micro-checks and enterprise visibility as you grow.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
