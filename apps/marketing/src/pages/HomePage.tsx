@@ -25,11 +25,10 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
-              AI-powered video inspections that start with{' '}
-              <span className="text-teal-300">coaching</span>
+              Continuous improvement for every location.
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
-              Empower managers with private, fast feedback — and give brands scalable, consistent compliance when they need it.
+              PeakOps helps managers and teams get better every day with quick AI video walkthroughs and daily micro-checks — building consistency, confidence, and cleaner operations across every store.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
